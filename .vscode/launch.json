@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/../build/bin/Debug/netcoreapp3.1/DeluMc.exe",
+            "program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/DeluMc.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/../build",
+            "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
