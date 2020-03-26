@@ -3,7 +3,7 @@ using static Tensorflow.Binding;
 using Keras;
 using Tensorflow;
 
-namespace DELU_CSharp
+namespace Delu_Mc
 {
     class Program
     {
@@ -19,7 +19,6 @@ namespace DELU_CSharp
                 var result = sess.run(hello);
                 Console.WriteLine($"{result}");
             }
-
         }
     }
 }
