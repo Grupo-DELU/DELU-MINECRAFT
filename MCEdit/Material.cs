@@ -59,6 +59,15 @@ namespace Delu_Mc.MCEdit
         {
             return this.ID == other.ID && this.Data == other.Data;
         }
+
+        /// <summary>
+        /// String Conversion
+        /// </summary>
+        /// <returns>String Conversion</returns>
+        public override string ToString()
+        {
+            return $"(Material ID={ID} Data={Data} Name=\"{Name}\")";
+        }  
     }
 
     public class MaterialSet

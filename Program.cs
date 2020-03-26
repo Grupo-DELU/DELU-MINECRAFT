@@ -19,6 +19,7 @@ namespace Delu_Mc
                 var result = sess.run(hello);
                 Console.WriteLine($"{result}");
             }
+            Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);
         }
     }
 }
