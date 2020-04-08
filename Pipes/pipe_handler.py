@@ -5,7 +5,9 @@ import struct
 is_windows = sys.platform.startswith('win')
 
 if is_windows:
-    import win32pipe, win32file, pywintypes
+    import win32pipe
+    import win32file
+    import pywintypes
     class PipeServer(object):
 
         def __init__(self, name):
@@ -37,11 +39,13 @@ if is_windows:
             return win32file.ReadFile(self._pipe_handler, amountOfBytes)
 
         '''From https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment'''
+
         def writeFormat(self, dataFormat, data):
             encoded_data = struct.pack(dataFormat, data)
             self.writeBytes(encoded_data)
 
         '''From https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment'''
+
         def readFormat(self, dataFormat):
             encoded_data = self.readBytes(struct.calcsize(dataFormat))
             return struct.unpack(dataFormat, encoded_data)
@@ -57,7 +61,7 @@ if is_windows:
 
         def readUint32(self):
             return self.readFormat('=I')
-        
+
         def __del__(self):
             if self._pipe_handler is not None:
                 win32file.CloseHandle(self._pipe_handler)
