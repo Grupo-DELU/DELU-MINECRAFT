@@ -177,7 +177,11 @@ else:
 writer = MemoryStreamWriter()
 writer.writeInt32(42)
 writer.writeFloat(1.3)
+writer.writeBool(False)
+writer.writeInt32(42)
 reader = MemoryStreamReader(writer.getRawBuffer())
 print(reader.readInt32())
 print(reader.readFloat())
+print(reader.readBool())
+print(reader.readInt32())
 '''
