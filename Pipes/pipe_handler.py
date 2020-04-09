@@ -22,14 +22,26 @@ class MemoryStreamWriter(object):
         encoded_data = struct.pack(dataFormat, data)
         self.writeBytes(encoded_data)
 
+    def writeBool(self, boolean):
+        self.writeFormat('=?', boolean)
+
+    def writeByte(self, byteToWrite):
+        self.writeFormat('=b', byteToWrite)
+
+    def writeUbyte(self, byteToWrite):
+        self.writeFormat('=B', byteToWrite)
+
+    def writeInt16(self, int16ToWrite):
+        self.writeFormat('=h', int16ToWrite)
+
+    def writeUint16(self, uint16ToWrite):
+        self.writeFormat('=H', uint16ToWrite)
+
     def writeInt32(self, integer):
         self.writeFormat('=i', integer)
 
     def writeUint32(self, integer):
         self.writeFormat('=I', integer)
-
-    def writeBool(self, boolean):
-        self.writeFormat('=?', boolean)
 
     def writeFloat(self, numberFloat):
         self.writeFormat('=f', numberFloat)
@@ -54,14 +66,26 @@ class MemoryStreamReader(object):
         encoded_data = self.readBytes(struct.calcsize(dataFormat))
         return struct.unpack(dataFormat, encoded_data)[0]
 
+    def readBool(self):
+        return self.readFormat('=?')
+
+    def readByte(self):
+        return self.readFormat('=b')
+
+    def readUbyte(self):
+        return self.readFormat('=B')
+
+    def readInt16(self):
+        return self.readFormat('=h')
+
+    def readUint16(self):
+        return self.readFormat('=H')
+
     def readInt32(self):
         return self.readFormat('=i')
 
     def readUint32(self):
         return self.readFormat('=I')
-
-    def readBool(self):
-        return self.readFormat('=?')
 
     def readFloat(self):
         return self.readFormat('=f')
