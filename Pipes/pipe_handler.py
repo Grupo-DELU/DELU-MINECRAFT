@@ -96,6 +96,7 @@ class MemoryStreamReader(object):
 class PipeServerBase(object):
 
     def __init__(self, name):
+        self._raw_name = name
         self._name = self.formatName(name)
         self._pipe_handler = None
 
@@ -105,17 +106,32 @@ class PipeServerBase(object):
     def startServer(self):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
 
+    def getRawServerName(self):
+        return self._raw_name
+
     def getServerName(self):
         return self._name
 
     def connectClient(self):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
 
+    def closePipe(self):
+        raise NotImplementedError("PipeServerBase is an Abstract Class")
+
     def writeBytes(self, bytesArr):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
 
+    def writeMemoryBlock(self, bytesArr):
+        self.writeBytes(struct.pack('=i', len(bytesArr)))
+        self.writeBytes(bytesArr)
+
     def readBytes(self, amountOfBytes):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
+
+    def readMemoryBlock(self):
+        byteArr = self.readBytes(struct.calcsize('=i'))[1]
+        memorySize = struct.unpack('=i', byteArr)[0]
+        return MemoryStreamReader(self.readBytes(memorySize)[1])
 
     def __del__(self):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
@@ -161,9 +177,13 @@ if is_windows:
         def readBytes(self, amountOfBytes):
             return win32file.ReadFile(self._pipe_handler, amountOfBytes)
 
-        def __del__(self):
+        def closePipe(self):
             if self._pipe_handler is not None:
                 win32file.CloseHandle(self._pipe_handler)
+                self._pipe_handler = None
+
+        def __del__(self):
+            self.closePipe()
 
 
 elif 'linux' in sys.platform:
@@ -185,3 +205,28 @@ print(reader.readFloat())
 print(reader.readBool())
 print(reader.readInt32())
 '''
+
+serverName = "testPipe"
+pipeServer = PipeServer(serverName)
+pipeServer.startServer()
+# Here put creation of other program
+print("Raw Pipe Name: " + pipeServer.getRawServerName())
+pipeServer.connectClient()
+print("Pipe Connected")
+
+import random
+
+writer = MemoryStreamWriter()
+arrSize = 10
+writer.writeInt32(arrSize)
+for _ in xrange(arrSize):
+    writer.writeInt32(random.randint(-10,10))
+
+pipeServer.writeMemoryBlock(writer.getRawBuffer())
+reader = pipeServer.readMemoryBlock()
+readSize = reader.readInt32()
+print("Size: " + str(readSize))
+for _ in xrange(readSize):
+    print(reader.readInt32())
+
+pipeServer.closePipe()
