@@ -129,9 +129,9 @@ class PipeServerBase(object):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
 
     def readMemoryBlock(self):
-        byteArr = self.readBytes(struct.calcsize('=i'))[1]
+        byteArr = self.readBytes(struct.calcsize('=i'))
         memorySize = struct.unpack('=i', byteArr)[0]
-        return MemoryStreamReader(self.readBytes(memorySize)[1])
+        return MemoryStreamReader(self.readBytes(memorySize))
 
     def __del__(self):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
@@ -175,7 +175,9 @@ if is_windows:
             win32file.WriteFile(self._pipe_handler, bytesArr)
 
         def readBytes(self, amountOfBytes):
-            return win32file.ReadFile(self._pipe_handler, amountOfBytes)
+            # first arg is err code
+            _, data = win32file.ReadFile(self._pipe_handler, amountOfBytes)
+            return data
 
         def closePipe(self):
             if self._pipe_handler is not None:
