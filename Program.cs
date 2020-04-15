@@ -1,7 +1,7 @@
 ﻿using System;
-using static Tensorflow.Binding;
+//using static Tensorflow.Binding;
+//using Tensorflow;
 using Keras;
-using Tensorflow;
 using System.IO;
 using Delu_Mc.Pipes;
 
@@ -12,15 +12,15 @@ namespace Delu_Mc
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            var hello = tf.constant("Hello, TensorFlow!");
+            //var hello = tf.constant("Hello, TensorFlow!");
 
             // Start tf session
-            using (var sess = tf.Session())
-            {
-                // Run the op
-                var result = sess.run(hello);
-                Console.WriteLine($"{result}");
-            }
+            //using (var sess = tf.Session())
+            //{
+            //    // Run the op
+            //    var result = sess.run(hello);
+            //    Console.WriteLine($"{result}");
+            //}
             Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);
 
             if (args.Length != 1)

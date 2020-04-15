@@ -189,12 +189,87 @@ if is_windows:
 
 
 elif 'linux' in sys.platform:
-    class PipeServer(object):
-        pass
+    import os
+    import socket
+
+    class PipeServer(PipeServerBase):
+
+        def __init__(self, name, timeout = 20.0):
+            super(PipeServer, self).__init__(name)
+            self._aux_pipe_handler = None
+            self._timeout = timeout
+
+        def formatName(self, name):
+            return "/tmp/CoreFxPipe_{}".format(name)
+
+        def startServer(self):
+            # Some kind of server socket that must be made first
+            self._aux_pipe_handler = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+            try:
+                # We remove the pipe file in case it already exist
+                os.remove(self._name)
+            except OSError:
+                pass
+            
+            try:
+                self._aux_pipe_handler.bind(self._name)
+                self._aux_pipe_handler.listen(0)
+                # Prevents infinite waiting connection time
+                self._aux_pipe_handler.settimeout(self._timeout)
+            except socket.error as error:
+                self._aux_pipe_handler.close()
+                self._aux_pipe_handler = None
+                raise
+
+        def connectClient(self):
+            try:
+                self._pipe_handler, grb = self._aux_pipe_handler.accept()
+                self._pipe_handler.settimeout(self._timeout)
+            except socket.error as error:
+                self._aux_pipe_handler.close()
+                if (self._pipe_handler != None):
+                    self._pipe_handler.close()
+                self._aux_pipe_handler = None
+                self._pipe_handler = None
+                raise
+
+        def writeBytes(self, bytesArr):
+            self._pipe_handler.send(bytesArr)
+
+        def readBytes(self, amountOfBytes):
+            # byte string
+            data = self._pipe_handler.recv(amountOfBytes)
+            return data
+
+        def closePipe(self):
+            if self._pipe_handler is not None:
+                self._pipe_handler.close()
+                self._pipe_handler = None
+                self._aux_pipe_handler.close()
+                self._aux_pipe_handler = None
+                
+        def __del__(self):
+            os.remove(self._name)
+            self.closePipe()
+
 else:
     raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 
-
+'''
+serverName = "mySocket"
+pipeServer = PipeServer(serverName)
+pipeServer.startServer()
+pipeServer.connectClient()
+#while True:
+#    rcv = pipeServer.readBytes(4096)
+#    print(rcv)
+#    print(struct.unpack("=i", rcv)[0])
+#writer = MemoryStreamWriter()
+#while True:
+#    writer.writeInt32(42)
+#    pipeServer.writeBytes(writer.getRawBuffer())
+'''
 '''
 writer = MemoryStreamWriter()
 writer.writeInt32(42)
@@ -208,13 +283,14 @@ print(reader.readBool())
 print(reader.readInt32())
 '''
 
-serverName = "testPipe"
+serverName = "DeluMc.csproj"
 pipeServer = PipeServer(serverName)
 pipeServer.startServer()
 # Here put creation of other program
 print("Raw Pipe Name: " + pipeServer.getRawServerName())
 pipeServer.connectClient()
 print("Pipe Connected")
+
 
 import random
 
