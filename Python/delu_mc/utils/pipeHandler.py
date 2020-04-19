@@ -1,7 +1,7 @@
-import sys
 import struct
 import io
 
+import configUtils as configUtils
 
 class MemoryStreamWriter(object):
     def __init__(self):
@@ -137,10 +137,7 @@ class PipeServerBase(object):
         raise NotImplementedError("PipeServerBase is an Abstract Class")
 
 
-# its win32, maybe there is win64 too?
-is_windows = sys.platform.startswith('win')
-
-if is_windows:
+if configUtils.isWindows():
     import win32pipe
     import win32file
     import pywintypes
@@ -188,7 +185,7 @@ if is_windows:
             self.closePipe()
 
 
-elif 'linux' in sys.platform:
+elif configUtils.isLinux():
     import os
     import socket
 
@@ -254,57 +251,5 @@ elif 'linux' in sys.platform:
             self.closePipe()
 
 else:
+    import sys
     raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
-
-'''
-serverName = "mySocket"
-pipeServer = PipeServer(serverName)
-pipeServer.startServer()
-pipeServer.connectClient()
-#while True:
-#    rcv = pipeServer.readBytes(4096)
-#    print(rcv)
-#    print(struct.unpack("=i", rcv)[0])
-#writer = MemoryStreamWriter()
-#while True:
-#    writer.writeInt32(42)
-#    pipeServer.writeBytes(writer.getRawBuffer())
-'''
-'''
-writer = MemoryStreamWriter()
-writer.writeInt32(42)
-writer.writeFloat(1.3)
-writer.writeBool(False)
-writer.writeInt32(42)
-reader = MemoryStreamReader(writer.getRawBuffer())
-print(reader.readInt32())
-print(reader.readFloat())
-print(reader.readBool())
-print(reader.readInt32())
-'''
-
-serverName = "DeluMc.csproj"
-pipeServer = PipeServer(serverName)
-pipeServer.startServer()
-# Here put creation of other program
-print("Raw Pipe Name: " + pipeServer.getRawServerName())
-pipeServer.connectClient()
-print("Pipe Connected")
-
-
-import random
-
-writer = MemoryStreamWriter()
-arrSize = 10
-writer.writeInt32(arrSize)
-for _ in xrange(arrSize):
-    writer.writeInt32(random.randint(-10,10))
-
-pipeServer.writeMemoryBlock(writer.getRawBuffer())
-reader = pipeServer.readMemoryBlock()
-readSize = reader.readInt32()
-print("Size: " + str(readSize))
-for _ in xrange(readSize):
-    print(reader.readInt32())
-
-pipeServer.closePipe()
