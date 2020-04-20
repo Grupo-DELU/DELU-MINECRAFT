@@ -24,6 +24,15 @@ def isLinux():
     '''If the OS is Linux'''
     return 'linux' in sys.platform
 
+def isLinux64():
+    '''If the OS is Linux 64 bit'''
+    return isLinux() and platform.machine().endswith('64')
+
+
+def isLinux32():
+    '''If the OS is Linux 32 bit'''
+    return isLinux() and not isLinux64()
+
 
 DELU_MC_FOLDER_NAME = "delu_mc"
 BIN_FOLDER_NAME = "bin"
@@ -39,7 +48,12 @@ if isWindows():
         # TODO: Compile 32 bits
         raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 elif isLinux():
-    pass
+    if isLinux64():
+        OS_NAME = "linux-x64"
+    else:
+        OS_NAME = "linux-x86"
+        # TODO: Compile 32 bits
+        raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 else:
     raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 
