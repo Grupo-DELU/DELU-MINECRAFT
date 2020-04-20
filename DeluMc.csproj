@@ -6,11 +6,14 @@
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
+  <!--
   <ItemGroup>
     <PackageReference Include="Keras.NET" Version="3.7.3" />
     <PackageReference Include="NumSharp" Version="0.20.5" />
     <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.1.0" />
     <PackageReference Include="TensorFlow.NET" Version="0.15.1" />
   </ItemGroup>  
+  -->
+  
 
 </Project>
