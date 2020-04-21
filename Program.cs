@@ -59,16 +59,16 @@ namespace Delu_Mc
                     }
                 }
                 
-                //Bitmap bm = new Bitmap(zSize, xSize);
                 
                 // Do stuff here
+                Bitmap bm = new Bitmap(zSize, xSize);
                 for (int y = 0; y < ySize; y++)
                 {
                     for (int z = 0; z < zSize; z++)
                     {
                         for (int x = 0; x < xSize; x++)
                         {
-                            //bm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                            bm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
                             if (z < zSize/2)
                             {
                                 switch (biomes[z][x])
@@ -99,7 +99,7 @@ namespace Delu_Mc
                         }
                     }
                 }
-                //bm.Save(@"/home/gorgola/Desktop/DELU-MINECRAFT/testimage", System.Drawing.Imaging.ImageFormat.Bmp);
+                bm.Save(@"testimage", System.Drawing.Imaging.ImageFormat.Bmp);
                 Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
             }
