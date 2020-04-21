@@ -189,12 +189,21 @@ elif configUtils.isLinux():
     import os
     import socket
 
+    '''
+    Links of interest
+    http://man7.org/linux/man-pages/man7/socket.7.html
+    http://man7.org/linux/man-pages/man2/recv.2.html
+    https://docs.python.org/2.7/library/socket.html
+
+    Critical note:
+        -C# uses sockets as named pipes in linux .NET Core
+        -MSG_WAITALL flag
+    '''
     class PipeServer(PipeServerBase):
 
-        def __init__(self, name, timeout = 20.0):
+        def __init__(self, name):
             super(PipeServer, self).__init__(name)
             self._aux_pipe_handler = None
-            self._timeout = timeout
 
         def formatName(self, name):
             return "/tmp/CoreFxPipe_{}".format(name)
@@ -212,8 +221,7 @@ elif configUtils.isLinux():
             try:
                 self._aux_pipe_handler.bind(self._name)
                 self._aux_pipe_handler.listen(0)
-                # Prevents infinite waiting connection time
-                self._aux_pipe_handler.settimeout(self._timeout)
+                self._aux_pipe_handler.setblocking(1)
             except socket.error as error:
                 self._aux_pipe_handler.close()
                 self._aux_pipe_handler = None
@@ -222,7 +230,7 @@ elif configUtils.isLinux():
         def connectClient(self):
             try:
                 self._pipe_handler, grb = self._aux_pipe_handler.accept()
-                self._pipe_handler.settimeout(self._timeout)
+                self._pipe_handler.setblocking(1)
             except socket.error as error:
                 self._aux_pipe_handler.close()
                 if (self._pipe_handler != None):
@@ -232,11 +240,11 @@ elif configUtils.isLinux():
                 raise
 
         def writeBytes(self, bytesArr):
-            self._pipe_handler.send(bytesArr)
+            self._pipe_handler.sendall(bytesArr)
 
         def readBytes(self, amountOfBytes):
             # byte string
-            data = self._pipe_handler.recv(amountOfBytes)
+            data = self._pipe_handler.recv(amountOfBytes, socket.MSG_WAITALL)
             return data
 
         def closePipe(self):

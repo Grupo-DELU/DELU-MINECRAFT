@@ -20,7 +20,7 @@ namespace Delu_Mc
                 Console.WriteLine("Pipe requires only one argument");
                 return;
             }
-
+            
             PipeClient pipeClient = new PipeClient(args[0]);
             pipeClient.Init();
             using (BinaryReader reader = pipeClient.ReadMemoryBlock())
@@ -30,7 +30,6 @@ namespace Delu_Mc
                 int ySize = reader.ReadInt32();
                 int zSize = reader.ReadInt32();
                 int xSize = reader.ReadInt32();
-
                 Console.WriteLine($"Y: {ySize} Z: {zSize} X: {xSize}");
                 Material[][][] blocks = new Material[ySize][][];
                 for (int y = 0; y < ySize; y++)
@@ -44,9 +43,8 @@ namespace Delu_Mc
                             blocks[y][z][x] = AlphaMaterials.Set.GetMaterial(reader.ReadInt32(), reader.ReadInt32());
                         }
                     }
-                }
-
                 
+                }
                 // Biome and HeightMap taking
                 Biomes[][] biomes = new Biomes[zSize][];
                 int[][] heightMap = new int[zSize][];
@@ -63,7 +61,6 @@ namespace Delu_Mc
                 
                 //Bitmap bm = new Bitmap(zSize, xSize);
                 
-
                 // Do stuff here
                 for (int y = 0; y < ySize; y++)
                 {
@@ -71,7 +68,7 @@ namespace Delu_Mc
                     {
                         for (int x = 0; x < xSize; x++)
                         {
-                            //bm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], 0, 0));
+                            //bm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
                             if (z < zSize/2)
                             {
                                 switch (biomes[z][x])
@@ -103,6 +100,7 @@ namespace Delu_Mc
                     }
                 }
                 //bm.Save(@"/home/gorgola/Desktop/DELU-MINECRAFT/testimage", System.Drawing.Imaging.ImageFormat.Bmp);
+                Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
             }
             pipeClient.DeInit();
