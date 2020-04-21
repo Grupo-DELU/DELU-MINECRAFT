@@ -32,9 +32,16 @@ def perform(level, box, options):
                 writer.writeInt32(block_id)
                 writer.writeInt32(block_data)
 
-    # Send Work
-    pipeServer.writeMemoryBlock(writer.getRawBuffer())
+    biomes, hm = biomeHMCalculator(level,box)
+    for z in xrange(0, z_size):
+        for x in xrange(0, x_size):
+            b, h = biomes[x][z], hm[x][z]
+            writer.writeInt32(int(b))
+            writer.writeInt32(int(h))
 
+    # Send Work
+    pipeServer.writeMemoryBlock(writer.getRawBuffer())    
+    
     # Receive Work
     reader = pipeServer.readMemoryBlock()
     # We assume that we are receiving it the same way we sent it
@@ -47,3 +54,44 @@ def perform(level, box, options):
                 level.setBlockDataAt(x, y, z, block_data)
 
     pipeProcess.close()
+
+
+'''
+Look Filters/BiomeTaker & Filters/HMapTaker for more info
+about the operations. Returns a tuple (biomes, heightmap)
+'''
+def biomeHMCalculator(level, box):
+    minx = box.minx // 16 * 16
+    minz = box.minz // 16 * 16
+    boxBiomes = [[-1 for i in range(0, abs(box.minz - box.maxz))] for j in range(0, abs(box.minx - box.maxx))]
+    boxHeightMap = [[-1 for i in range(0, abs(box.minz - box.maxz))] for j in range(0, abs(box.minx - box.maxx))]
+    
+    for z in xrange(minz, box.maxz, 16):
+        for x in xrange(minx, box.maxx, 16):
+            chunkx = x // 16
+            chunkz = z // 16
+            chunk = level.getChunk(chunkx, chunkz)
+            # Get blocks from the chunk that are in the box
+            intersectionBox, slices = chunk.getChunkSlicesForBox(box)
+            
+            chunk_root_tag = chunk.root_tag
+            # For Java Edition
+            if (chunk_root_tag and "Level" in chunk_root_tag.keys() and 
+            "Biomes" in chunk_root_tag["Level"].keys() and
+            "HeightMap" in chunk_root_tag["Level"].keys()):
+
+                biomeArray = chunk_root_tag["Level"]["Biomes"].value
+                hmArray = chunk_root_tag["Level"]["HeightMap"].value
+
+                # The arrays are organized as XZ in chunk format.
+                # But we inverted the loop iteration to pass it as ZX 
+                #Z Iteration
+                for i in range(0, 16):
+                    #X Iteration
+                    for j in range(0, 16):
+                        worldX = chunkx * 16 + j
+                        worldZ = chunkz * 16 + i
+                        if ((worldX, box.miny, worldZ) in box):
+                            boxBiomes[worldX - box.minx][worldZ - box.minz] = biomeArray[i + j * 16]
+                            boxHeightMap[worldX - box.minx][worldZ - box.minz] = hmArray[i + j * 16]
+    return (boxBiomes, boxHeightMap)
