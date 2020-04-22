@@ -35,7 +35,7 @@ def perform(level, box, options):
     biomes, hm = biomeHMCalculator(level,box)
     for z in xrange(0, z_size):
         for x in xrange(0, x_size):
-            b, h = biomes[x][z], hm[x][z]
+            b, h = biomes[z][x], hm[z][x]
             writer.writeInt32(int(b))
             writer.writeInt32(int(h))
 
@@ -63,8 +63,8 @@ about the operations. Returns a tuple (biomes, heightmap)
 def biomeHMCalculator(level, box):
     minx = box.minx // 16 * 16
     minz = box.minz // 16 * 16
-    boxBiomes = [[-1 for i in range(0, abs(box.minz - box.maxz))] for j in range(0, abs(box.minx - box.maxx))]
-    boxHeightMap = [[-1 for i in range(0, abs(box.minz - box.maxz))] for j in range(0, abs(box.minx - box.maxx))]
+    boxBiomes = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
+    boxHeightMap = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
     
     for z in xrange(minz, box.maxz, 16):
         for x in xrange(minx, box.maxx, 16):
@@ -83,8 +83,7 @@ def biomeHMCalculator(level, box):
                 biomeArray = chunk_root_tag["Level"]["Biomes"].value
                 hmArray = chunk_root_tag["Level"]["HeightMap"].value
 
-                # The arrays are organized as XZ in chunk format.
-                # But we inverted the loop iteration to pass it as ZX 
+                # The arrays are organized as ZX in chunk format.
                 #Z Iteration
                 for i in range(0, 16):
                     #X Iteration
@@ -92,6 +91,7 @@ def biomeHMCalculator(level, box):
                         worldX = chunkx * 16 + j
                         worldZ = chunkz * 16 + i
                         if ((worldX, box.miny, worldZ) in box):
-                            boxBiomes[worldX - box.minx][worldZ - box.minz] = biomeArray[i + j * 16]
-                            boxHeightMap[worldX - box.minx][worldZ - box.minz] = hmArray[i + j * 16]
+                            boxBiomes[worldZ - box.minz][worldX - box.minx] = biomeArray[i * 16 + j]
+                            boxHeightMap[worldZ - box.minz][worldX - box.minx] = hmArray[i * 16 + j]
+
     return (boxBiomes, boxHeightMap)
