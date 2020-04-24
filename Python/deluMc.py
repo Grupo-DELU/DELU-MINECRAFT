@@ -58,24 +58,25 @@ def perform(level, box, options):
 
 '''
 Look Filters/BiomeTaker & Filters/HMapTaker for more info
-about the operations. Returns a tuple (biomes, heightmap)
+about the operations. Returns a tuple (biomes, heightmap, watermap)
 '''
-
 
 def biomeHMCalculator(level, box):
     minx = box.minx // 16 * 16
     minz = box.minz // 16 * 16
-    #Bounding Box MAX tiene 1+ siempre
 
+    #Bounding Box MAX tiene 1+ siempre
     boxHeightMap = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
     boxBiomes = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
     waterMap = [[0 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
     
     for z in xrange(minz, box.maxz, 16):
         for x in xrange(minx, box.maxx, 16):
+            # Chunk position
             chunkx = x // 16
             chunkz = z // 16
             chunk = level.getChunk(chunkx, chunkz)
+            
             # Get blocks from the chunk that are in the box
             intersectionBox, slices = chunk.getChunkSlicesForBox(box)
 
@@ -95,19 +96,22 @@ def biomeHMCalculator(level, box):
                         worldZ = chunkz * 16 + i
                         worldX = chunkx * 16 + j
                         if ((worldX, box.miny, worldZ) in box):
+                            # ZX Position local to the box
                             localZ = worldZ - box.minz
                             localX = worldX - box.minx
                             '''
-                            worldX - box.minx local position from box origin
-                            worldZ - box.minz local position from box origin
-                            The Heightmap detects the first empty block above a solid block, that's why we substract 1
-                            from the heightmap value.
+                            The Heightmap detects the first empty block above a solid block,
+                            that's why we substract 1 from the heightmap value.
+
+                            Also, if the highest block is water, you can not build in it! So 
+                            the heightmap is set as -1
                             '''
                             y = hmArray[i * 16 + j] - 1
+                            
                             boxBiomes[localZ][localX] = biomeArray[i * 16 + j]
                             boxHeightMap[localZ][localX] = hmArray[i * 16 + j] - 1 - box.miny
                             block = level.blockAt(worldX,y,worldZ)
-                            # Water ID, replace for alphamaterials...
+
                             if (block == 8 or block == 9):
                                 boxHeightMap[localZ][localX] = -1
                                 waterMap[localZ][localX] = 1
