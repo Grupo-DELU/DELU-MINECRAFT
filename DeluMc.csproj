@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Platforms>x64;x86</Platforms>
+    <RuntimeIdentifiers>win-x64;win-x86;linux-x64</RuntimeIdentifiers>
     <OutDir>Python\delu_mc\bin\</OutDir>
     <OutDir Condition=" '$(OS)' == 'Windows_NT' ">$(OutDir)win</OutDir>
     <OutDir Condition=" '$(OS)' != 'Windows_NT' ">$(OutDir)linux</OutDir>
