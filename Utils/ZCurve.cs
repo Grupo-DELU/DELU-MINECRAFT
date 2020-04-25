@@ -44,7 +44,7 @@ namespace DeluMc.Utils
         /// <param name="z">A 10 bit integer</param>
         /// <param name="x">A 10 bit integer</param>
         /// <returns>Z Curve Number (Morton Number)</returns>
-        public static uint ZCurve3DPos(uint y, uint z, uint x)
+        public static uint Pos3D(uint y, uint z, uint x)
         {
             return VariableTo3BitSpacing(y) | (VariableTo3BitSpacing(z) << 1) | (VariableTo3BitSpacing(x) << 2);
         }
@@ -55,7 +55,7 @@ namespace DeluMc.Utils
         /// <param name="z">A 16 bit integer</param>
         /// <param name="x">A 16 bit integer</param>
         /// <returns>Z Curve Number (Morton Number)</returns>
-        public static uint ZCurve2DPos(uint z, uint x)
+        public static uint Pos2D(uint z, uint x)
         {
             return VariableTo2BitSpacing(z) | (VariableTo2BitSpacing(x) << 1);
         }
