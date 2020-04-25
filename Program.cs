@@ -15,7 +15,14 @@ namespace Delu_Mc
         {
 #if DEBUG
             // Launch Debugger
-            System.Diagnostics.Debugger.Launch();
+            if(System.Diagnostics.Debugger.Launch())
+            {
+                Console.WriteLine("Debugger Launched!");
+            }
+            else
+            {
+                Console.Error.WriteLine("Failed to Launch Debugger!");
+            }
 #endif
 
             Console.WriteLine("Hello World!");
