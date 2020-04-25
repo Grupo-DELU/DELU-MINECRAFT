@@ -2,6 +2,8 @@ namespace DeluMc.Utils
 {
     /// <summary>
     /// Z Curve Numbers (Morton Numbers)
+    /// Read theory: https://www.doc.ic.ac.uk/~phjk/Publications/IsMortonYetCCPandE2004.pdf
+    /// Read implementation: https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
     /// </summary>
     public static class ZCurve
     {
