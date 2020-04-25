@@ -49,9 +49,9 @@ if isWindows():
         raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 elif isLinux():
     if isLinux64():
-        OS_NAME = "linux-x64"
+        OS_NAME = "linux64"
     else:
-        OS_NAME = "linux-x86"
+        OS_NAME = "linux86"
         # TODO: Compile 32 bits
         raise RuntimeError("Unsupported operating system: {}".format(sys.platform))
 else:

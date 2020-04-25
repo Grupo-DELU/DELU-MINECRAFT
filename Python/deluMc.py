@@ -31,12 +31,13 @@ def perform(level, box, options):
                 writer.writeInt32(block_id)
                 writer.writeInt32(block_data)
 
-    biomes, hm = biomeHMCalculator(level, box)
+    biomes, hm, wm = biomeHMCalculator(level, box)
     for z in xrange(0, z_size):
         for x in xrange(0, x_size):
-            b, h = biomes[z][x], hm[z][x]
+            b, h, w = biomes[z][x], hm[z][x], wm[z][x]
             writer.writeInt32(int(b))
             writer.writeInt32(int(h))
+            writer.writeInt32(int(w))
 
     # Send Work
     pipeServer.writeMemoryBlock(writer.getRawBuffer())
@@ -57,46 +58,62 @@ def perform(level, box, options):
 
 '''
 Look Filters/BiomeTaker & Filters/HMapTaker for more info
-about the operations. Returns a tuple (biomes, heightmap)
+about the operations. Returns a tuple (biomes, heightmap, watermap)
 '''
-
 
 def biomeHMCalculator(level, box):
     minx = box.minx // 16 * 16
     minz = box.minz // 16 * 16
-    boxBiomes = [[-1 for i in range(0, abs(box.minx - box.maxx))]
-                 for j in range(0, abs(box.minz - box.maxz))]
-    boxHeightMap = [[-1 for i in range(0, abs(box.minx - box.maxx))]
-                    for j in range(0, abs(box.minz - box.maxz))]
 
+    #Bounding Box MAX tiene 1+ siempre
+    boxHeightMap = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
+    boxBiomes = [[-1 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
+    waterMap = [[0 for i in range(0, abs(box.minx - box.maxx))] for j in range(0, abs(box.minz - box.maxz))]
+    
     for z in xrange(minz, box.maxz, 16):
         for x in xrange(minx, box.maxx, 16):
+            # Chunk position
             chunkx = x // 16
             chunkz = z // 16
             chunk = level.getChunk(chunkx, chunkz)
+            
             # Get blocks from the chunk that are in the box
             intersectionBox, slices = chunk.getChunkSlicesForBox(box)
 
             chunk_root_tag = chunk.root_tag
             # For Java Edition
-            if (chunk_root_tag and "Level" in chunk_root_tag.keys() and
-                "Biomes" in chunk_root_tag["Level"].keys() and
-                    "HeightMap" in chunk_root_tag["Level"].keys()):
+            if (chunk_root_tag and "Level" in chunk_root_tag.keys() and 
+                "Biomes" in chunk_root_tag["Level"].keys() and 
+                "HeightMap" in chunk_root_tag["Level"].keys()):
 
-                biomeArray = chunk_root_tag["Level"]["Biomes"].value
                 hmArray = chunk_root_tag["Level"]["HeightMap"].value
+                biomeArray = chunk_root_tag["Level"]["Biomes"].value
 
-                # The arrays are organized as ZX in chunk format.
-                # Z Iteration
+                #Z Iteration
                 for i in range(0, 16):
-                    # X Iteration
+                    #X Iteration
                     for j in range(0, 16):
-                        worldX = chunkx * 16 + j
                         worldZ = chunkz * 16 + i
+                        worldX = chunkx * 16 + j
                         if ((worldX, box.miny, worldZ) in box):
-                            boxBiomes[worldZ - box.minz][worldX -
-                                                         box.minx] = biomeArray[i * 16 + j]
-                            boxHeightMap[worldZ - box.minz][worldX -
-                                                            box.minx] = hmArray[i * 16 + j]
+                            # ZX Position local to the box
+                            localZ = worldZ - box.minz
+                            localX = worldX - box.minx
+                            '''
+                            The Heightmap detects the first empty block above a solid block,
+                            that's why we substract 1 from the heightmap value.
 
-    return (boxBiomes, boxHeightMap)
+                            Also, if the highest block is water, you can not build in it! So 
+                            the heightmap is set as -1
+                            '''
+                            y = hmArray[i * 16 + j] - 1
+                            
+                            boxBiomes[localZ][localX] = biomeArray[i * 16 + j]
+                            boxHeightMap[localZ][localX] = hmArray[i * 16 + j] - 1 - box.miny
+                            block = level.blockAt(worldX,y,worldZ)
+
+                            if (block == 8 or block == 9):
+                                boxHeightMap[localZ][localX] = -1
+                                waterMap[localZ][localX] = 1
+                                
+    return (boxBiomes, boxHeightMap, waterMap)
