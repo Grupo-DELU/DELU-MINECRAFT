@@ -13,6 +13,7 @@ namespace Delu_Mc
     {
         static void Main(string[] args)
         {
+            System.Diagnostics.Debugger.Launch();
             Console.WriteLine("Hello World!");
             Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);
 
