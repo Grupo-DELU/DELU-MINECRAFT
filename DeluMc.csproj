@@ -11,6 +11,7 @@
     <OutDir Condition=" '$(OS)' != 'Windows_NT' ">$(OutDir)linux</OutDir>
     <OutDir Condition=" ( '$(Platform)' == 'x64' ) OR '$(Platform)' == 'AnyCPU' ">$(OutDir)64</OutDir>
     <OutDir Condition=" '$(Platform)' == 'x86' ">$(OutDir)32</OutDir>
+    <PublishDir>$(OutDir)</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
