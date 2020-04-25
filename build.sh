@@ -11,3 +11,6 @@ echo Building Windows x64 $build_type
 dotnet build --configuration $build_type -p:Platform=x64 -p:OS=Windows_NT -r win-x64
 echo Building Windows x32 $build_type
 dotnet build --configuration $build_type -p:Platform=x86 -p:OS=Windows_NT -r win-x86
+
+echo Copying Files from "./Python" to "~/.mcedit/MCEdit/Filters/"
+cp -r "./Python"* "~/.mcedit/MCEdit/Filters/"
