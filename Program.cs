@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using Delu_Mc.Pipes;
 using Delu_Mc.MCEdit;
 using Delu_Mc.MCEdit.Block;
-
+using Delu_Mc.Masks;
 
 namespace Delu_Mc
 {
@@ -45,61 +46,94 @@ namespace Delu_Mc
                     }
                 
                 }
-                // Biome and HeightMap taking
+                // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
                 Biomes[][] biomes = new Biomes[zSize][];
                 int[][] heightMap = new int[zSize][];
+                int[][] waterMap = new int[zSize][];
+                int[][] treeMap = new int[zSize][];
+                
+                Bitmap waterMask = new Bitmap(zSize, xSize);
+                Bitmap hm = new Bitmap(zSize, xSize);
+                Bitmap tm = new Bitmap(zSize, xSize);
+
                 for (int z = 0; z < zSize; z++)
                 {
                     biomes[z] = new Biomes[xSize];
                     heightMap[z] = new int[xSize];
+                    waterMap[z] = new int[xSize];
+                    treeMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
                         heightMap[z][x] = reader.ReadInt32();
+                        waterMap[z][x] = reader.ReadInt32();
+                        treeMap[z][x] = 0;
+
+                        // Nota, esto esta al reves tambien. Esta flipped en z (screen cords I guess)
+                        if (waterMap[z][x] == 1) waterMask.SetPixel(z, x, Color.Blue);
                     }
                 }
+                waterMask.Save(@"waterMask", System.Drawing.Imaging.ImageFormat.Bmp);   
+
+                // Testing tasks
+                Action<int,int,int,int> hmtmAction = (fz,fx,z,x) => 
+                    HeightMap.FixBoxHeights(blocks, heightMap, treeMap, fz,fx, z, x);
+                int ax = (xSize / 4);
+                int az = (zSize / 4);
+
+                Console.WriteLine("AX: " + ax + "AZ: " + az);
+
+                int c = 0;
+                Task[] tasks = new Task[16];
+
+                // Be carefull with lambda variable catch
+                for (int i = 0; i < 4; ++i)
+                {
+                    int ti = i;
+                    for (int j = 0; j < 4; ++j)
+                    {
+                        int tj = j;
+
+                        int fz = az * (ti + 1) - 1;
+                        int fx = ax * (tj + 1) - 1;
+                        if (i == 3) fz = zSize - 1;
+                        if (j == 3) fx = xSize - 1;
+
+                        tasks[c] = Task.Run(() => hmtmAction(az*ti, ax*tj, fz, fx));
+
+                        ++c;
+                    }
+                }
+                Task.WaitAll(tasks);
                 
-                
+                for (int i = 0; i < zSize; i++)
+                {
+                    for (int j = 0; j < xSize; j++)
+                    {
+                        Console.Write(treeMap[i][j] + " ");
+                    }
+                    Console.WriteLine();
+                }
                 // Do stuff here
-                Bitmap bm = new Bitmap(zSize, xSize);
+
                 for (int y = 0; y < ySize; y++)
                 {
                     for (int z = 0; z < zSize; z++)
                     {
                         for (int x = 0; x < xSize; x++)
                         {
-                            bm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
-                            if (z < zSize/2)
-                            {
-                                switch (biomes[z][x])
-                                {
-                                    case Biomes.FlowerForest:
-                                        write.Write(AlphaMaterials.Beacon_138_0.ID);
-                                        write.Write(AlphaMaterials.Beacon_138_0.Data);
-                                        break;
-                                    case Biomes.RoofedForestM:
-                                        write.Write(AlphaMaterials.NetherBrick_112_0.ID);
-                                        write.Write(AlphaMaterials.NetherBrick_112_0.Data);
-                                        break;
-                                    case Biomes.River:
-                                        write.Write(AlphaMaterials.Water_Flowing_Level0_8_7.ID);
-                                        write.Write(AlphaMaterials.Water_Flowing_Level0_8_7.Data);
-                                        break;
-                                    default:
-                                        write.Write(AlphaMaterials.Bedrock_7_0.ID);
-                                        write.Write(AlphaMaterials.Bedrock_7_0.Data);
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                write.Write(blocks[y][z][x].ID);
-                                write.Write(blocks[y][z][x].Data);
-                            }
+                            tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
+                            
+                            if (heightMap[z][x] >= 0) hm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                            else hm.SetPixel(z,x, Color.FromArgb(255, 255, 0, 0));
+                            
+                            write.Write(blocks[y][z][x].ID);
+                            write.Write(blocks[y][z][x].Data);
                         }
                     }
                 }
-                bm.Save(@"testimage", System.Drawing.Imaging.ImageFormat.Bmp);
+                tm.Save(@"treeMask  ", System.Drawing.Imaging.ImageFormat.Bmp);   
+                hm.Save(@"NO_TREE_Heightmap", System.Drawing.Imaging.ImageFormat.Bmp);
                 Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
             }
