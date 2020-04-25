@@ -13,7 +13,11 @@ namespace Delu_Mc
     {
         static void Main(string[] args)
         {
+#if DEBUG
+            // Launch Debugger
             System.Diagnostics.Debugger.Launch();
+#endif
+
             Console.WriteLine("Hello World!");
             Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);
 
@@ -22,7 +26,7 @@ namespace Delu_Mc
                 Console.WriteLine("Pipe requires only one argument");
                 return;
             }
-            
+
             PipeClient pipeClient = new PipeClient(args[0]);
             pipeClient.Init();
             using (BinaryReader reader = pipeClient.ReadMemoryBlock())
@@ -45,14 +49,14 @@ namespace Delu_Mc
                             blocks[y][z][x] = AlphaMaterials.Set.GetMaterial(reader.ReadInt32(), reader.ReadInt32());
                         }
                     }
-                
+
                 }
                 // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
                 Biomes[][] biomes = new Biomes[zSize][];
                 int[][] heightMap = new int[zSize][];
                 int[][] waterMap = new int[zSize][];
                 int[][] treeMap = new int[zSize][];
-                
+
                 Bitmap waterMask = new Bitmap(zSize, xSize);
                 Bitmap hm = new Bitmap(zSize, xSize);
                 Bitmap tm = new Bitmap(zSize, xSize);
@@ -74,11 +78,11 @@ namespace Delu_Mc
                         if (waterMap[z][x] == 1) waterMask.SetPixel(z, x, Color.Blue);
                     }
                 }
-                waterMask.Save(@"waterMask", System.Drawing.Imaging.ImageFormat.Bmp);   
+                waterMask.Save(@"waterMask", System.Drawing.Imaging.ImageFormat.Bmp);
 
                 // Testing tasks
-                Action<int,int,int,int> hmtmAction = (fz,fx,z,x) => 
-                    HeightMap.FixBoxHeights(blocks, heightMap, treeMap, fz,fx, z, x);
+                Action<int, int, int, int> hmtmAction = (fz, fx, z, x) =>
+                       HeightMap.FixBoxHeights(blocks, heightMap, treeMap, fz, fx, z, x);
                 int ax = (xSize / 4);
                 int az = (zSize / 4);
 
@@ -100,13 +104,13 @@ namespace Delu_Mc
                         if (i == 3) fz = zSize - 1;
                         if (j == 3) fx = xSize - 1;
 
-                        tasks[c] = Task.Run(() => hmtmAction(az*ti, ax*tj, fz, fx));
+                        tasks[c] = Task.Run(() => hmtmAction(az * ti, ax * tj, fz, fx));
 
                         ++c;
                     }
                 }
                 Task.WaitAll(tasks);
-                
+
                 for (int i = 0; i < zSize; i++)
                 {
                     for (int j = 0; j < xSize; j++)
@@ -124,16 +128,16 @@ namespace Delu_Mc
                         for (int x = 0; x < xSize; x++)
                         {
                             tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
-                            
-                            if (heightMap[z][x] >= 0) hm.SetPixel(z,x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
-                            else hm.SetPixel(z,x, Color.FromArgb(255, 255, 0, 0));
-                            
+
+                            if (heightMap[z][x] >= 0) hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                            else hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+
                             write.Write(blocks[y][z][x].ID);
                             write.Write(blocks[y][z][x].Data);
                         }
                     }
                 }
-                tm.Save(@"treeMask  ", System.Drawing.Imaging.ImageFormat.Bmp);   
+                tm.Save(@"treeMask  ", System.Drawing.Imaging.ImageFormat.Bmp);
                 hm.Save(@"NO_TREE_Heightmap", System.Drawing.Imaging.ImageFormat.Bmp);
                 Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);

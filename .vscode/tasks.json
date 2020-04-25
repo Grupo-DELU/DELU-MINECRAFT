@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build Debug",
             "command": "./build.sh",
             "windows": {
                 "command": ".\\build"
@@ -11,10 +11,14 @@
             "args": [
                 "Debug"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
-            "label": "build release",
+            "label": "build Release",
             "command": "./build.sh",
             "windows": {
                 "command": ".\\build"
