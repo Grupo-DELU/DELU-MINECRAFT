@@ -2,12 +2,12 @@
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
-using Delu_Mc.Pipes;
-using Delu_Mc.MCEdit;
-using Delu_Mc.MCEdit.Block;
-using Delu_Mc.Masks;
+using DeluMc.Pipes;
+using DeluMc.MCEdit;
+using DeluMc.MCEdit.Block;
+using DeluMc.Masks;
 
-namespace Delu_Mc
+namespace DeluMc
 {
     class Program
     {

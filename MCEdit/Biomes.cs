@@ -1,4 +1,4 @@
-namespace Delu_Mc.MCEdit
+namespace DeluMc.MCEdit
 {
     public enum Biomes {
     	Ocean = 0,

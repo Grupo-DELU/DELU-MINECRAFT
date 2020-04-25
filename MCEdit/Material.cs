@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Delu_Mc.MCEdit
+namespace DeluMc.MCEdit
 {
     /// <summary>
     /// MCEdit Block material

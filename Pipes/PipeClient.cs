@@ -1,7 +1,7 @@
 using System.IO;
 using System.IO.Pipes;
 
-namespace Delu_Mc.Pipes
+namespace DeluMc.Pipes
 {
     public class PipeClient
     {

@@ -1,8 +1,8 @@
 using System;
-using Delu_Mc.MCEdit;
-using Delu_Mc.MCEdit.Block;
+using DeluMc.MCEdit;
+using DeluMc.MCEdit.Block;
 
-namespace Delu_Mc.Masks
+namespace DeluMc.Masks
 {
     public static class HeightMap
     {

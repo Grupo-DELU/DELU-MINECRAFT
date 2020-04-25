@@ -48,7 +48,7 @@ def printMaterialSet(mats, name):
 if __name__ == '__main__':
 	print "Exporting to Blocks.cs"
 	with open("Blocks.cs", "w+") as f:
-		f.write("namespace Delu_Mc.MCEdit\n{")
+		f.write("namespace DeluMc.MCEdit\n{")
 		f.write("\n\tnamespace Block\n\t{")
 		f.write(printMaterialSet(indevMaterials, "Indev Materials"))
 		f.write(printMaterialSet(pocketMaterials, "Pocket Materials"))
