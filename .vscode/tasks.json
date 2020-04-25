@@ -3,7 +3,10 @@
     "tasks": [
         {
             "label": "build",
-            "command": "${workspaceFolder}/build",
+            "command": "$./build.sh",
+            "windows": {
+                "command": ".\\build"
+            },
             "type": "shell",
             "args": [
                 "Debug"
