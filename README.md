@@ -36,11 +36,18 @@ Once installed, you should be able to get all the dependencies using ```dotnet r
 
 We recommend using [VS Code](https://code.visualstudio.com/download) with its C# and Python extensions.
 
-## MCEdit Filters
+## MCEdit Filters Folder
 
 To install the filter you need to copy the contents of the project Python folder to MCEdit's external filters folder. On Windows it is normally located in ```...\Documents\MCEdit\Filters```. For Linux it is usually located in ```/home/user_name/.mcedit/MCEdit/Filters/```
 
+## Building
+
+To build use ```build [Debug|Release]``` for Windows and ```./build.sh [Debug|Release]``` for Linux. It will compile everything from C# for Windows x64, Windows x86 and Linux x64. As well, it will copy the contents of the Python folder to MCEdit's [filters folder](#mcedit-filters-folder). If some part of the code is required to use an specific OS library, the process defines **WINDOWS** and **LINUX** to check the OS at compile time.
+
+If the program is built using Debug, it will add debugging capabilities to the build. For Windows it will trigger the debugger at the start. For Linux it will sleep the thread for 15 seconds so a debugger can be attached in that time.
+
 ## Links of interest
+
 * [MCEdit-Unified Repository](https://github.com/Podshot/MCEdit-Unified)
 
 * [GDMC Website](http://gendesignmc.engineering.nyu.edu)
