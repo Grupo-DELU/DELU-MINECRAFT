@@ -29,7 +29,7 @@ namespace Delu_Mc
             }
 #else
             Console.WriteLine("Sleeping Thread to Launch Debugger!");
-            const int kMillisecondsToSleep = 20000; // 20 Seconds
+            const int kMillisecondsToSleep = 15000; // 20 Seconds
             System.Threading.Thread.Sleep(kMillisecondsToSleep);
             Console.WriteLine("You should've launched the Debugger!");
 #endif
@@ -100,7 +100,7 @@ namespace Delu_Mc
                         if (waterMap[z][x] == 1) waterMask.SetPixel(z, x, Color.Blue);
                     }
                 }
-                waterMask.Save(@"waterMask", System.Drawing.Imaging.ImageFormat.Bmp);
+                waterMask.Save(@"waterMask.png", System.Drawing.Imaging.ImageFormat.Png);
 
                 // Testing tasks
                 Action<int, int, int, int> hmtmAction = (fz, fx, z, x) =>
@@ -159,8 +159,8 @@ namespace Delu_Mc
                         }
                     }
                 }
-                tm.Save(@"treeMask  ", System.Drawing.Imaging.ImageFormat.Bmp);
-                hm.Save(@"NO_TREE_Heightmap", System.Drawing.Imaging.ImageFormat.Bmp);
+                tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
+                hm.Save(@"NO_TREE_Heightmap.png", System.Drawing.Imaging.ImageFormat.Png);
                 Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
             }
