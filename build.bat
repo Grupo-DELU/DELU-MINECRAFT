@@ -1,6 +1,6 @@
 @echo off
 if "%~1"=="" goto :NO_ARGUMENT
-set build_type=%1
+set build_type="%1"
 goto :BUILD
 :NO_ARGUMENT
 set build_type="Release"
