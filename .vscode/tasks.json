@@ -3,13 +3,10 @@
     "tasks": [
         {
             "label": "build",
-            "command": "dotnet",
-            "type": "process",
+            "command": "${workspaceFolder}/build",
+            "type": "shell",
             "args": [
-                "build",
-                "${workspaceFolder}/DeluMc.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "Debug"
             ],
             "problemMatcher": "$msCompile"
         },
