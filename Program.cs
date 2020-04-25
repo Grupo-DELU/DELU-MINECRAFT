@@ -11,11 +11,15 @@ namespace Delu_Mc
 {
     class Program
     {
-        static void Main(string[] args)
+
+        /// <summary>
+        /// Handle Debugger
+        /// </summary>
+        [System.Diagnostics.Conditional("DEBUG")]
+        static void Debugger()
         {
-#if DEBUG
-            // Launch Debugger
-            if(System.Diagnostics.Debugger.Launch())
+#if !LINUX
+            if (System.Diagnostics.Debugger.Launch())
             {
                 Console.WriteLine("Debugger Launched!");
             }
@@ -23,7 +27,18 @@ namespace Delu_Mc
             {
                 Console.Error.WriteLine("Failed to Launch Debugger!");
             }
+#else
+            Console.WriteLine("Sleeping Thread to Launch Debugger!");
+            const int kMillisecondsToSleep = 20000;
+            System.Threading.Thread.Sleep(kMillisecondsToSleep);
+            Console.WriteLine("You should've launched the Debugger!");
 #endif
+        }
+
+        static void Main(string[] args)
+        {
+            // Launch Debugger
+            Debugger();
 
             Console.WriteLine("Hello World!");
             Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);

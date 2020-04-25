@@ -12,6 +12,7 @@
     <OutDir Condition=" ( '$(Platform)' == 'x64' ) OR '$(Platform)' == 'AnyCPU' ">$(OutDir)64</OutDir>
     <OutDir Condition=" '$(Platform)' == 'x86' ">$(OutDir)32</OutDir>
     <PublishDir>$(OutDir)</PublishDir>
+    <DefineConstants Condition=" '$(OS)' != 'Windows_NT' And !$(DefineConstants.Contains('LINUX'))">$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
