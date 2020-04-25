@@ -29,7 +29,7 @@ namespace Delu_Mc
             }
 #else
             Console.WriteLine("Sleeping Thread to Launch Debugger!");
-            const int kMillisecondsToSleep = 20000;
+            const int kMillisecondsToSleep = 20000; // 20 Seconds
             System.Threading.Thread.Sleep(kMillisecondsToSleep);
             Console.WriteLine("You should've launched the Debugger!");
 #endif
