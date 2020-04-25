@@ -1,4 +1,7 @@
 {
     "python.pythonPath": "C:\\Users\\chris\\Miniconda2\\envs\\py27\\python.exe",
-    "python.formatting.provider": "autopep8"
+    "python.formatting.provider": "autopep8",
+    "files.exclude": {
+        "**/obj": true
+    }
 }
