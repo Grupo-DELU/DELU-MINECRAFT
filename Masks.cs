@@ -20,7 +20,7 @@ namespace DeluMc.Masks
         /// <param name="ix">Initial x coordinate</param>
         /// <param name="fz">Final z coordinate</param>
         /// <param name="fx">Final z coordinate</param>
-        public static void FixBoxHeights(Material[][][] box, int[][] heightmap, int[][] treeMap, 
+        public static void FixBoxHeights(Material[][][] box, int[][] heightmap, int[][] treeMap,
                                     int iz, int ix, int fz, int fx)
         {
             int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
@@ -39,9 +39,15 @@ namespace DeluMc.Masks
                             treeMap[i][j] = 1;
                             heightmap[i][j] = FindGroundHeight(box, heightmap, i, j);
                         }
-                        else treeMap[i][j] = 0;
+                        else
+                        {
+                            treeMap[i][j] = 0;
+                        }
                     }
-                    else treeMap[i][j] = 0;
+                    else
+                    {
+                        treeMap[i][j] = 0;
+                    }
                 }
             }
         }
@@ -62,7 +68,7 @@ namespace DeluMc.Masks
             int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
             int airID = AlphaMaterials.Air_0_0.ID;
 
-            int y = heightMap[z][x];
+            int y = heightMap[z][x]; // TODO: Dangerous y might be negative
             Material block = box[y][z][x];
 
             // Replace for a IsTree function
@@ -76,7 +82,7 @@ namespace DeluMc.Masks
                 {
                     block = box[y][z][x];
                 }
-            }        
+            }
             return y;
         }
     }

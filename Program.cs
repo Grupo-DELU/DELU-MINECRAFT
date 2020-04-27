@@ -40,9 +40,6 @@ namespace DeluMc
             // Launch Debugger
             Debugger();
 
-            Console.WriteLine("Hello World!");
-            Console.WriteLine(MCEdit.Block.ClassicMaterials.Stone_1_0);
-
             if (args.Length != 1)
             {
                 Console.WriteLine("Pipe requires only one argument");
@@ -97,52 +94,52 @@ namespace DeluMc
                         treeMap[z][x] = 0;
 
                         // Nota, esto esta al reves tambien. Esta flipped en z (screen cords I guess)
-                        if (waterMap[z][x] == 1) waterMask.SetPixel(z, x, Color.Blue);
+                        if (waterMap[z][x] == 1)
+                        {
+                            waterMask.SetPixel(z, x, Color.Blue);
+                        }
                     }
                 }
                 waterMask.Save(@"waterMask.png", System.Drawing.Imaging.ImageFormat.Png);
 
-                // Testing tasks
-                Action<int, int, int, int> hmtmAction = (fz, fx, z, x) =>
-                       HeightMap.FixBoxHeights(blocks, heightMap, treeMap, fz, fx, z, x);
-                int ax = (xSize / 4);
-                int az = (zSize / 4);
-
-                Console.WriteLine("AX: " + ax + "AZ: " + az);
-
-                int c = 0;
-                Task[] tasks = new Task[16];
-
-                // Be carefull with lambda variable catch
-                for (int i = 0; i < 4; ++i)
                 {
-                    int ti = i;
-                    for (int j = 0; j < 4; ++j)
+                    // Height Map Fix and Tree Map
+                    int ax = (xSize / 4);
+                    int az = (zSize / 4);
+
+                    int c = 0;
+                    Task[] tasks = new Task[16];
+
+                    // Be carefull with lambda variable catch
+                    for (int i = 0; i < 4; ++i)
                     {
-                        int tj = j;
+                        int ti = i;
+                        for (int j = 0; j < 4; ++j)
+                        {
+                            int tj = j;
 
-                        int fz = az * (ti + 1) - 1;
-                        int fx = ax * (tj + 1) - 1;
-                        if (i == 3) fz = zSize - 1;
-                        if (j == 3) fx = xSize - 1;
+                            int fz = az * (ti + 1) - 1;
+                            int fx = ax * (tj + 1) - 1;
+                            if (i == 3)
+                            {
+                                fz = zSize - 1;
+                            }
+                            if (j == 3)
+                            {
+                                fx = xSize - 1;
+                            }
 
-                        tasks[c] = Task.Run(() => hmtmAction(az * ti, ax * tj, fz, fx));
+                            tasks[c] = Task.Run(() => HeightMap.FixBoxHeights(blocks, heightMap, treeMap, az * ti, ax * tj, fz, fx));
 
-                        ++c;
+                            ++c;
+                        }
                     }
+                    Task.WaitAll(tasks);
                 }
-                Task.WaitAll(tasks);
 
-                for (int i = 0; i < zSize; i++)
-                {
-                    for (int j = 0; j < xSize; j++)
-                    {
-                        Console.Write(treeMap[i][j] + " ");
-                    }
-                    Console.WriteLine();
-                }
-                // Do stuff here
 
+
+                // Write Data Back to Python
                 for (int y = 0; y < ySize; y++)
                 {
                     for (int z = 0; z < zSize; z++)
@@ -151,16 +148,25 @@ namespace DeluMc
                         {
                             tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
 
-                            if (heightMap[z][x] >= 0) hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
-                            else hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+                            if (heightMap[z][x] >= 0)
+                            {
+                                hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                            }
+                            else
+                            {
+                                hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+                            }
 
                             write.Write(blocks[y][z][x].ID);
                             write.Write(blocks[y][z][x].Data);
                         }
                     }
                 }
+
                 tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
                 hm.Save(@"NO_TREE_Heightmap.png", System.Drawing.Imaging.ImageFormat.Png);
+
+                // Return data To Python
                 Console.WriteLine(write.BaseStream.Length);
                 pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
             }
