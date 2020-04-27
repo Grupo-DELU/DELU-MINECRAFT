@@ -6,6 +6,7 @@ using DeluMc.Pipes;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
 using DeluMc.Masks;
+using DeluMc.Utils;
 
 namespace DeluMc
 {
@@ -135,6 +136,18 @@ namespace DeluMc
                         }
                     }
                     Task.WaitAll(tasks);
+                }
+
+                {
+                    Tasker.WorkBlock[] workBlocks = {
+                        (int z, int x) => {Console.WriteLine($"Block ({z}, {x})");}
+                    };
+
+                    Tasker.WorkChunk[] workChunks = {
+                        (int zStart, int zEnd, int xStart, int xEnd) => {Console.WriteLine($"Chunk ({zStart}, {xStart}) -> ({zEnd}, {xEnd})");}
+                    };
+
+                    Tasker.Run2DTasks(zSize, xSize, workChunks, workBlocks);
                 }
 
 
