@@ -76,10 +76,12 @@ namespace DeluMc
                 int[][] heightMap = new int[zSize][];
                 int[][] waterMap = new int[zSize][];
                 int[][] treeMap = new int[zSize][];
+                int[][] deltaMap = new int[zSize][];
 
                 Bitmap waterMask = new Bitmap(zSize, xSize);
                 Bitmap hm = new Bitmap(zSize, xSize);
                 Bitmap tm = new Bitmap(zSize, xSize);
+                Bitmap deltaMapBit = new Bitmap(zSize, xSize);
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -87,12 +89,14 @@ namespace DeluMc
                     heightMap[z] = new int[xSize];
                     waterMap[z] = new int[xSize];
                     treeMap[z] = new int[xSize];
+                    deltaMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
                         heightMap[z][x] = reader.ReadInt32();
                         waterMap[z][x] = reader.ReadInt32();
                         treeMap[z][x] = 0;
+                        deltaMap[z][x] = 0;
 
                         // Nota, esto esta al reves tambien. Esta flipped en z (screen cords I guess)
                         if (waterMap[z][x] == 1)
@@ -138,7 +142,10 @@ namespace DeluMc
                     Task.WaitAll(tasks);
                 }
 
+
+                /*
                 {
+                    // Example: Remove Later
                     Tasker.WorkBlock[] workBlocks = {
                         (int z, int x) => {Console.WriteLine($"Block ({z}, {x})");}
                     };
@@ -149,7 +156,15 @@ namespace DeluMc
 
                     Tasker.Run2DTasks(zSize, xSize, workChunks, workBlocks);
                 }
+                */
 
+                {
+                    Tasker.WorkBlock[] workBlocks = {
+                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);}
+                    };
+
+                    Tasker.Run2DTasks(zSize, xSize, null, workBlocks);
+                }
 
 
                 // Write Data Back to Python
@@ -159,16 +174,36 @@ namespace DeluMc
                     {
                         for (int x = 0; x < xSize; x++)
                         {
-                            tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
+                            {
+                                // Drawing
+                                tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
 
-                            if (heightMap[z][x] >= 0)
-                            {
-                                hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                                if (heightMap[z][x] >= 0)
+                                {
+                                    hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
+                                }
+                                else
+                                {
+                                    hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+                                }
+
+                                if (0 <= deltaMap[z][x] && deltaMap[z][x] <= DeltaMap.kMaxDelta)
+                                {
+                                    float tVal = 1.0f - (float)(deltaMap[z][x]) / (float)DeltaMap.kMaxDelta;
+                                    deltaMapBit.SetPixel(z, x,
+                                        Color.FromArgb(255, 0, (int)(255.0f * tVal + 200.0f * (1.0f - tVal)), 0)
+                                    );
+                                }
+                                else if (deltaMap[z][x] > DeltaMap.kMaxDelta)
+                                {
+                                    deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+                                }
+                                else
+                                {
+                                    deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 0, 0, 255));
+                                }
                             }
-                            else
-                            {
-                                hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
-                            }
+
 
                             write.Write(blocks[y][z][x].ID);
                             write.Write(blocks[y][z][x].Data);
@@ -176,6 +211,7 @@ namespace DeluMc
                     }
                 }
 
+                deltaMapBit.Save(@"deltamap.png", System.Drawing.Imaging.ImageFormat.Png);
                 tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
                 hm.Save(@"NO_TREE_Heightmap.png", System.Drawing.Imaging.ImageFormat.Png);
 
