@@ -6,6 +6,19 @@ namespace DeluMc.Masks
 {
     public static class HeightMap
     {
+
+        /// <summary>
+        /// If the block position is considered acceptable
+        /// </summary>
+        /// <param name="treeMap">Treemap to test</param>
+        /// <param name="z">Z position</param>
+        /// <param name="x">X position</param>
+        /// <returns>If the block position is considered acceptable</returns>
+        public static bool IsAcceptableTreeMapBlock(in int[][] treeMap, int z, int x)
+        {
+            return 0 <= z && z < treeMap.Length && 0 <= x && x < treeMap[0].Length && treeMap[z][x] != 1;
+        }
+
         /// <summary>
         /// Iterates the box from [iz,ix] to [fz,fx] and calculates the
         /// real height in every (z,x) position of the box.

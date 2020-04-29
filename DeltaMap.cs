@@ -7,6 +7,19 @@ namespace DeluMc.Masks
     /// </summary>
     public static class DeltaMap
     {
+
+        /// <summary>
+        /// If the block position is considered acceptable
+        /// </summary>
+        /// <param name="deltaMap">Deltamap to test</param>
+        /// <param name="z">Z position</param>
+        /// <param name="x">X position</param>
+        /// <returns>If the block position is considered acceptable</returns>
+        public static bool IsAcceptableBlock(in int[][] deltaMap, int z, int x)
+        {
+            return 0 <= z && z < deltaMap.Length && 0 <= x && x < deltaMap[0].Length && 0 <= deltaMap[z][x] && deltaMap[z][x] <= kMaxDelta;
+        }
+
         /// <summary>
         /// Maximum acceptable delta
         /// </summary>
