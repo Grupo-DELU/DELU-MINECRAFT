@@ -164,11 +164,11 @@ namespace DeluMc.Utils
 
                     if (zIter == kZSubdivisions - 1)
                     {
-                        zEnd = zSize - 1;
+                        zEnd = zSize;
                     }
                     if (xIter == kZSubdivisions - 1)
                     {
-                        xEnd = xSize - 1;
+                        xEnd = xSize;
                     }
 
                     tasks[taskIter] =

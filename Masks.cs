@@ -26,9 +26,9 @@ namespace DeluMc.Masks
             int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
             int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
 
-            for (int i = iz; i <= fz; ++i)
+            for (int i = iz; i < fz; ++i)
             {
-                for (int j = ix; j <= fx; ++j)
+                for (int j = ix; j < fx; ++j)
                 {
                     int y = heightmap[i][j];
                     if (y >= 0)
@@ -68,7 +68,12 @@ namespace DeluMc.Masks
             int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
             int airID = AlphaMaterials.Air_0_0.ID;
 
-            int y = heightMap[z][x]; // TODO: Dangerous y might be negative
+            int y = heightMap[z][x];
+            if (y == -1)
+            {
+                return -1;
+            }
+            
             Material block = box[y][z][x];
 
             // Replace for a IsTree function

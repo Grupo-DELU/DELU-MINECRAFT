@@ -107,42 +107,6 @@ namespace DeluMc
                 }
                 waterMask.Save(@"waterMask.png", System.Drawing.Imaging.ImageFormat.Png);
 
-                {
-                    // Height Map Fix and Tree Map
-                    int ax = (xSize / 4);
-                    int az = (zSize / 4);
-
-                    int c = 0;
-                    Task[] tasks = new Task[16];
-
-                    // Be carefull with lambda variable catch
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        int ti = i;
-                        for (int j = 0; j < 4; ++j)
-                        {
-                            int tj = j;
-
-                            int fz = az * (ti + 1) - 1;
-                            int fx = ax * (tj + 1) - 1;
-                            if (i == 3)
-                            {
-                                fz = zSize - 1;
-                            }
-                            if (j == 3)
-                            {
-                                fx = xSize - 1;
-                            }
-
-                            tasks[c] = Task.Run(() => HeightMap.FixBoxHeights(blocks, heightMap, treeMap, az * ti, ax * tj, fz, fx));
-
-                            ++c;
-                        }
-                    }
-                    Task.WaitAll(tasks);
-                }
-
-
                 /*
                 {
                     // Example: Remove Later
@@ -157,6 +121,14 @@ namespace DeluMc
                     Tasker.Run2DTasks(zSize, xSize, workChunks, workBlocks);
                 }
                 */
+                {
+                    Tasker.WorkChunk[] workChunks = { 
+                        (int zStart, int zEnd, int xStart, int xEnd) => 
+                            {HeightMap.FixBoxHeights(blocks, heightMap, treeMap, zStart, xStart, zEnd, xEnd);}
+                    };
+
+                    Tasker.Run2DTasks(zSize, xSize, workChunks, null);
+                }
 
                 {
                     Tasker.WorkBlock[] workBlocks = {
