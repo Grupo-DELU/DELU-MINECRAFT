@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
 
-namespace DeluMc.Schematics.Palettes
+namespace DeluMc.HouseSchematics.Palettes
 {
     /*  Schematics char meaning
      *      -'w' -> Walls

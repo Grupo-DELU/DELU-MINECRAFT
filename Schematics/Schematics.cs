@@ -1,6 +1,6 @@
 using System;
 
-namespace DeluMc.Schematics
+namespace DeluMc.HouseSchematics
 {
     
 }
