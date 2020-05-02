@@ -77,11 +77,13 @@ namespace DeluMc
                 int[][] waterMap = new int[zSize][];
                 int[][] treeMap = new int[zSize][];
                 int[][] deltaMap = new int[zSize][];
+                bool[][] acceptableMap = new bool[zSize][];
 
                 Bitmap waterMask = new Bitmap(zSize, xSize);
                 Bitmap hm = new Bitmap(zSize, xSize);
                 Bitmap tm = new Bitmap(zSize, xSize);
                 Bitmap deltaMapBit = new Bitmap(zSize, xSize);
+                Bitmap acceptableMapBit = new Bitmap(zSize, xSize);
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -90,6 +92,7 @@ namespace DeluMc
                     waterMap[z] = new int[xSize];
                     treeMap[z] = new int[xSize];
                     deltaMap[z] = new int[xSize];
+                    acceptableMap[z] = new bool[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -122,8 +125,8 @@ namespace DeluMc
                 }
                 */
                 {
-                    Tasker.WorkChunk[] workChunks = { 
-                        (int zStart, int zEnd, int xStart, int xEnd) => 
+                    Tasker.WorkChunk[] workChunks = {
+                        (int zStart, int zEnd, int xStart, int xEnd) =>
                             {HeightMap.FixBoxHeights(blocks, heightMap, treeMap, zStart, xStart, zEnd, xEnd);}
                     };
 
@@ -131,11 +134,23 @@ namespace DeluMc
                 }
 
                 {
+                    // Delta Map
                     Tasker.WorkBlock[] workBlocks = {
                         (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);}
                     };
 
                     Tasker.Run2DTasks(zSize, xSize, null, workBlocks);
+                }
+
+                {
+                    // Acceptable Map
+                    Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
+                    {
+                        acceptableMap[z][x] = DeltaMap.IsAcceptableBlock(deltaMap, z, x) && HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x) && waterMap[z][x] != 1;
+                    }
+                    };
+
+                    Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
                 }
 
 
@@ -174,6 +189,15 @@ namespace DeluMc
                                 {
                                     deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 0, 0, 255));
                                 }
+
+                                if (acceptableMap[z][x])
+                                {
+                                    acceptableMapBit.SetPixel(z, x, Color.FromArgb(255, 0, 255, 0));
+                                }
+                                else
+                                {
+                                    acceptableMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
+                                }
                             }
 
 
@@ -183,6 +207,7 @@ namespace DeluMc
                     }
                 }
 
+                acceptableMapBit.Save(@"acceptablemap.png", System.Drawing.Imaging.ImageFormat.Png);
                 deltaMapBit.Save(@"deltamap.png", System.Drawing.Imaging.ImageFormat.Png);
                 tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
                 hm.Save(@"NO_TREE_Heightmap.png", System.Drawing.Imaging.ImageFormat.Png);
