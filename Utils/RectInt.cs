@@ -24,12 +24,12 @@ namespace DeluMc.Utils
         /// <summary>
         /// Creates a Integer Rect
         /// </summary>
-        /// <param name="Min">Minimum of Rect</param>
-        /// <param name="Max">Maximum of Rect</param>
-        public RectInt(in Vector2Int Min, in Vector2Int Max)
+        /// <param name="min">Minimum of Rect</param>
+        /// <param name="max">Maximum of Rect</param>
+        public RectInt(in Vector2Int min, in Vector2Int max)
         {
-            this.Min = Min;
-            this.Max = Max;
+            this.Min = min;
+            this.Max = max;
         }
 
         /// <summary>

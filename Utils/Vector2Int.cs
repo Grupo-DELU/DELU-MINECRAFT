@@ -20,12 +20,12 @@ namespace DeluMc.Utils
         /// <summary>
         /// Vector2Int Constructor
         /// </summary>
-        /// <param name="Z">Z Position of Vector 2</param>
-        /// <param name="X">X Position of Vector 2</param>
-        public Vector2Int(int Z = 0, int X = 0)
+        /// <param name="z">Z Position of Vector 2</param>
+        /// <param name="x">X Position of Vector 2</param>
+        public Vector2Int(int z = 0, int x = 0)
         {
-            this.Z = Z;
-            this.X = X;
+            this.Z = z;
+            this.X = x;
         }
 
         /// <summary>
