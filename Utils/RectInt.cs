@@ -1,5 +1,8 @@
 namespace DeluMc.Utils
 {
+    /// <summary>
+    /// Rectangle of Ints
+    /// </summary>
     public struct RectInt
     {
         /// <summary>
