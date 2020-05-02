@@ -43,6 +43,16 @@ namespace DeluMc.Utils
         }
 
         /// <summary>
+        /// Makes this rect include the point
+        /// </summary>
+        /// <param name="point">Point</param>
+        public void Include(in Vector2Int point)
+        {
+            this.Min = Vector2Int.Min(this.Min, point);
+            this.Max = Vector2Int.Max(this.Max, point);
+        }
+
+        /// <summary>
         /// If a point is inside the rect
         /// </summary>
         /// <param name="point">Point to Test</param>
