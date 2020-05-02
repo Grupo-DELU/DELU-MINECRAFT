@@ -30,10 +30,10 @@ namespace DeluMc.Utils
         }
 
         /// <summary>
-        /// Includes another Rect inside this rect
+        /// Joins this rect with other Rect (Union)
         /// </summary>
         /// <param name="other">Other Rect</param>
-        public void Include(in RectInt other)
+        public void Union(in RectInt other)
         {
             this.Min = Vector2Int.Min(this.Min, other.Min);
             this.Max = Vector2Int.Max(this.Max, other.Max);
