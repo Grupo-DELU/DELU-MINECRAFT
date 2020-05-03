@@ -162,11 +162,11 @@ namespace DeluMc.Utils
                     xStart = xIter * xStep;
                     xEnd = xStep * (xIter + 1);
 
-                    if (zIter == kZSubdivisions - 1)
+                    if (zIter == zSubdivisions - 1)
                     {
                         zEnd = zSize;
                     }
-                    if (xIter == kZSubdivisions - 1)
+                    if (xIter == xSubdivisions - 1)
                     {
                         xEnd = xSize;
                     }
