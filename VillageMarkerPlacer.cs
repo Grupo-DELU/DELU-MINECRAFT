@@ -53,6 +53,18 @@ namespace DeluMc
     public static class VillageMarkerPlacer
     {
         /// <summary>
+        /// If the the point is part of a village
+        /// </summary>
+        /// <param name="villageMap">Villages Map</param>
+        /// <param name="z">Z Coordinate</param>
+        /// <param name="x">X Coordinate</param>
+        /// <returns></returns>
+        public static bool IsVillage(int[][] villageMap, int z, int x)
+        {
+            return villageMap[z][x] == 1;
+        }
+
+        /// <summary>
         /// Expected number of circles to be found
         /// </summary>
         private const int kExpectedCircles = 10;
