@@ -81,6 +81,7 @@ namespace DeluMc
 
         private static List<Vector2Int> SelectNewCircles(bool[][] acceptableMap, int[][] villageMap, List<Vector2Int> openCircles, int radius)
         {
+            System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
             Mutex mut = new Mutex();
             List<Vector2Int> newCircles = new List<Vector2Int>();
 
@@ -91,7 +92,7 @@ namespace DeluMc
                        int zStart = Math.Max(0, center.Z - radius);
                        int zEnd = Math.Min(acceptableMap.Length, center.Z + radius + 1);
                        int xStart = Math.Max(0, center.X - radius);
-                       int xEnd = Math.Min(acceptableMap.Length, center.X + radius + 1);
+                       int xEnd = Math.Min(acceptableMap[0].Length, center.X + radius + 1);
 
                        List<Vector2Int> maxNodes = new List<Vector2Int>();
                        int maxDist = 0;
@@ -153,6 +154,106 @@ namespace DeluMc
         {
             return Math.Max(Math.Abs(from.Z - toZ), Math.Abs(from.X - toX));
         }
+
+        /// <summary>
+        /// Minimum circle interceptions required to add a new node
+        /// </summary>
+        private const int kMinCircleInterceptions = 3;
+
+        private static void GetValidNodes(
+            bool[][] acceptableMap, int[][] villageMap, int radius, List<Vector2Int> openCircles,
+            in RectInt coverRect, List<Vector2Int> selectedNodes)
+        {
+            System.Diagnostics.Debug.Assert(openCircles.Count != 0);
+            System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
+
+            RectInt testCover = new RectInt(openCircles[0]);
+            List<RectInt> circlesBoxes = new List<RectInt>(openCircles.Count);
+
+            {
+                // Create circle boxes for intersections
+                // Fill testCover to iterate over it
+                int zStart;
+                int zEnd;
+                int xStart;
+                int xEnd;
+                for (int i = 0; i < openCircles.Count; i++)
+                {
+                    Vector2Int center = openCircles[i];
+                    zStart = Math.Max(0, center.Z - radius);
+                    zEnd = Math.Min(acceptableMap.Length, center.Z + radius);
+                    xStart = Math.Max(0, center.X - radius);
+                    xEnd = Math.Min(acceptableMap[0].Length, center.X + radius);
+                    circlesBoxes.Add(new RectInt(new Vector2Int(zStart, xStart), new Vector2Int(zEnd, xEnd)));
+                    testCover.Include(circlesBoxes[circlesBoxes.Count - 1]);
+                }
+            }
+
+
+            Vector2Int testCoverSize = testCover.Size;
+
+
+            {
+                // Clean Village Map of unused places
+                Tasker.WorkBlock[] cleanVillageMap = {
+                    (int z, int x) =>
+                    {
+                        // Originaly is relative to min of cover box
+                        z += testCover.Min.Z;
+                        x += testCover.Min.X;
+
+                        if (acceptableMap[z][x] && villageMap[z][x] < 0)
+                        {
+                            villageMap[z][x] = 0;
+                        }
+                    }
+                    };
+
+                Tasker.Run2DTasks(testCoverSize.Z, testCoverSize.X, null, cleanVillageMap);
+            }
+
+
+            {
+                int oldEnd = selectedNodes.Count;
+                Mutex mut = new Mutex();
+                Tasker.WorkChunk[] getSelected =
+                {
+                    (int zStart, int zEnd, int xStart, int xEnd) =>
+                    {
+                        // Originaly is relative to min of cover box
+                        zStart += testCover.Min.Z;
+                        zEnd += testCover.Min.Z;
+                        xStart += testCover.Min.X;
+                        xEnd += testCover.Min.X;
+                        List<Vector2Int> newSelected = new List<Vector2Int>();
+
+                        for (int z = zStart; z < zEnd; z++)
+                        {
+                            for (int x = xStart; x < xEnd; x++)
+                            {
+
+                            }
+                        }
+
+                        if (newSelected.Count > 0)
+                        {
+                            mut.WaitOne();
+                            selectedNodes.AddRange(newSelected);
+                            mut.ReleaseMutex();
+                        }
+                    }
+                };
+
+                Tasker.Run2DTasks(testCoverSize.Z, testCoverSize.X, getSelected, null);
+
+                for (int i = oldEnd; i < selectedNodes.Count; i++)
+                {
+                    coverRect.Include(selectedNodes[i]);
+                }
+            }
+        }
+
+
 
     }
 }

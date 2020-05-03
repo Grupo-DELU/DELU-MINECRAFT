@@ -22,6 +22,16 @@ namespace DeluMc.Utils
         public Vector2Int Size { get { return Max - Min + Vector2Int.One; } }
 
         /// <summary>
+        /// Creates a Integer Rect from a point
+        /// </summary>
+        /// <param name="point">Point to start the Integer Rect</param>    
+        public RectInt(in Vector2Int point)
+        {
+            this.Min = point;
+            this.Max = point;
+        }
+
+        /// <summary>
         /// Creates a Integer Rect
         /// </summary>
         /// <param name="min">Minimum of Rect</param>
