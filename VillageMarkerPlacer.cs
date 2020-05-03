@@ -19,7 +19,7 @@ namespace DeluMc
         /// Probability of Success of Seed
         /// It is the sum of the distance from the seed to all the nodes in the Village
         /// </summary>
-        public float PValue { get; private set; }
+        public int PValue { get; private set; }
 
         /// <summary>
         /// Rect that covers the village
@@ -34,11 +34,11 @@ namespace DeluMc
         /// <summary>
         /// Creates a Village Marker
         /// </summary>
-        /// <param name="seed"></param>
-        /// <param name="pValue"></param>
-        /// <param name="rect"></param>
-        /// <param name="points"></param>
-        public VillageMarker(in Vector2Int seed, float pValue, in RectInt rect, Vector2Int[] points)
+        /// <param name="seed">Seed of Vialle</param>
+        /// <param name="pValue">Probability of Success Value</param>
+        /// <param name="rect">Rect that covers the village</param>
+        /// <param name="points">Points Belonging to the village</param>
+        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, Vector2Int[] points)
         {
             this.Seed = seed;
             this.PValue = pValue;
@@ -46,25 +46,41 @@ namespace DeluMc
             this.Points = points;
         }
     }
-
+    
+    /// <summary>
+    /// Village Marker Placer Algorithm Class
+    /// </summary>
     public static class VillageMarkerPlacer
     {
-
+        /// <summary>
+        /// Expected number of circles to be found
+        /// </summary>
         private const int kExpectedCircles = 10;
 
+        /// <summary>
+        /// Create a new Village Marker
+        /// </summary>
+        /// <param name="acceptableMap">Acceptable Nodes map</param>
+        /// <param name="villageMap">Villages Map</param>
+        /// <param name="z">Z Coordinate for Seed of Village</param>
+        /// <param name="x">X Coordinate of Village</param>
+        /// <param name="maxNumNodes">Maximum Number of Nodes expected to be part of the village (there might be more or less)</param>
+        /// <param name="radius">Radius for Circle Generation and Collection</param>
+        /// <returns>Village Marker</returns>
         public static VillageMarker CreateVillage(bool[][] acceptableMap, int[][] villageMap, int z, int x, int maxNumNodes, int radius)
         {
-            Vector2Int N = new Vector2Int { Z = z, X = x };
+            Vector2Int seed = new Vector2Int { Z = z, X = x };
             List<Vector2Int> openCircles = new List<Vector2Int>(kExpectedCircles);
-            openCircles.Add(N);
+            openCircles.Add(seed);
             List<Vector2Int> selectedNodes = new List<Vector2Int>(maxNumNodes);
-            float pValue = 0.0f;
+            int pValue = 0;
+            int prevSelectedNodesCount = -1;
 
-            RectInt coverRect = new RectInt(N, N);
+            RectInt coverRect = new RectInt(seed, seed);
 
-            while (selectedNodes.Count < maxNumNodes)
+            while (selectedNodes.Count < maxNumNodes && prevSelectedNodesCount != selectedNodes.Count)
             {
-                openCircles = SelectNewCircles(acceptableMap, villageMap, openCircles, radius);
+                openCircles = OpenNewCircles(acceptableMap, villageMap, openCircles, radius);
 
                 if (openCircles.Count == 0)
                 {
@@ -72,72 +88,80 @@ namespace DeluMc
                     break;
                 }
 
-                // TODO: Add SelectedNodes here. Intercept each node to all the rects formed around circles (kinda like rasterization)
+                prevSelectedNodesCount = selectedNodes.Count;
+                pValue += GetValidNodes(acceptableMap, villageMap, radius, seed, openCircles, coverRect, selectedNodes);
             }
 
-
-            return new VillageMarker(N, pValue, coverRect, selectedNodes.ToArray());
+            return new VillageMarker(seed, pValue, coverRect, selectedNodes.ToArray());
         }
 
-        private static List<Vector2Int> SelectNewCircles(bool[][] acceptableMap, int[][] villageMap, List<Vector2Int> openCircles, int radius)
+        /// <summary>
+        /// Open new Circles for Village generation
+        /// </summary>
+        /// <param name="acceptableMap">Acceptable Nodes map</param>
+        /// <param name="villageMap">Villages Map</param>
+        /// <param name="openCircles">Currently open circles</param>
+        /// <param name="radius">Circles Radius</param>
+        /// <returns>Newly opened circles</returns>
+        private static List<Vector2Int> OpenNewCircles(bool[][] acceptableMap, int[][] villageMap, List<Vector2Int> openCircles, int radius)
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
             Mutex mut = new Mutex();
             List<Vector2Int> newCircles = new List<Vector2Int>();
 
             Parallel.For(0, openCircles.Count,
-                   index =>
-                   {
-                       Vector2Int center = openCircles[index];
-                       int zStart = Math.Max(0, center.Z - radius);
-                       int zEnd = Math.Min(acceptableMap.Length, center.Z + radius + 1);
-                       int xStart = Math.Max(0, center.X - radius);
-                       int xEnd = Math.Min(acceptableMap[0].Length, center.X + radius + 1);
+                index =>
+                {
+                    Vector2Int center = openCircles[index];
+                    int zStart = Math.Max(0, center.Z - radius);
+                    int zEnd = Math.Min(acceptableMap.Length - 1, center.Z + radius);
+                    int xStart = Math.Max(0, center.X - radius);
+                    int xEnd = Math.Min(acceptableMap[0].Length - 1, center.X + radius);
 
-                       List<Vector2Int> maxNodes = new List<Vector2Int>();
-                       int maxDist = 0;
-                       int curDist;
+                    List<Vector2Int> maxNodes = new List<Vector2Int>();
+                    int maxDist = 0;
+                    int curDist;
 
-                       /// TODO: This is the naive way to do it. A better way would be like peeling an onion, do tat later
-                       for (int z = zStart; z < zEnd; z++)
-                       {
-                           for (int x = xStart; x < xEnd; x++)
-                           {
-                               if (acceptableMap[z][x] && villageMap[z][x] <= 0)
-                               {
-                                   curDist = ChebyshevDistance(center, z, x);
-                                   if (maxDist < curDist)
-                                   {
-                                       if (maxNodes.Count > 0)
-                                       {
-                                           maxNodes.RemoveRange(0, maxNodes.Count);
-                                       }
-                                       maxDist = curDist;
-                                       maxNodes.Add(new Vector2Int(z, x));
-                                   }
-                                   else if (maxDist == curDist)
-                                   {
-                                       maxNodes.Add(new Vector2Int(z, x));
-                                   }
-                               }
-                           }
-                       }
+                    /// TODO: This is the naive way to do it. A better way would be like peeling an onion, do tat later
+                    for (int z = zStart; z < zEnd; z++)
+                    {
+                        for (int x = xStart; x < xEnd; x++)
+                        {
+                            if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                            {
+                                curDist = ChebyshevDistance(center, z, x);
+                                if (maxDist < curDist)
+                                {
+                                    if (maxNodes.Count > 0)
+                                    {
+                                        maxNodes.RemoveRange(0, maxNodes.Count);
+                                    }
+                                    maxDist = curDist;
+                                    maxNodes.Add(new Vector2Int(z, x));
+                                }
+                                else if (maxDist == curDist)
+                                {
+                                    maxNodes.Add(new Vector2Int(z, x));
+                                }
+                            }
+                        }
+                    }
 
-                       if (maxNodes.Count > 0 && maxDist > 0)
-                       {
-                           mut.WaitOne();
-                           try
-                           {
-                               newCircles.AddRange(maxNodes);
-                           }
-                           finally
-                           {
-                               mut.ReleaseMutex();
-                           }
-                       }
-                   });
+                    if (maxNodes.Count > 0 && maxDist > 0)
+                    {
+                        mut.WaitOne();
+                        try
+                        {
+                            newCircles.AddRange(maxNodes);
+                        }
+                        finally
+                        {
+                            mut.ReleaseMutex();
+                        }
+                    }
+                });
 
-
+            mut.Dispose();
             return newCircles;
         }
 
@@ -160,13 +184,27 @@ namespace DeluMc
         /// </summary>
         private const int kMinCircleInterceptions = 3;
 
-        private static void GetValidNodes(
-            bool[][] acceptableMap, int[][] villageMap, int radius, List<Vector2Int> openCircles,
+        /// <summary>
+        /// Get Valid Nodes from Open Circles
+        /// </summary>
+        /// <param name="acceptableMap">Acceptable Nodes map</param>
+        /// <param name="villageMap">Villages Map</param>
+        /// <param name="radius">Circles Radius</param>
+        /// <param name="seed">Seed of Village</param>
+        /// <param name="openCircles">Currently open circles</param>
+        /// <param name="coverRect">Cover Rect for the village being generated</param>
+        /// <param name="selectedNodes">Selected Nodes for the village</param>
+        /// <returns>PValue of added nodes to Village</returns>
+        private static int GetValidNodes(
+            bool[][] acceptableMap, int[][] villageMap, int radius, in Vector2Int seed, List<Vector2Int> openCircles,
             in RectInt coverRect, List<Vector2Int> selectedNodes)
         {
             System.Diagnostics.Debug.Assert(openCircles.Count != 0);
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
 
+            /// <summary>
+            /// Cover Rect for Current Open Circles
+            /// </summary>
             RectInt testCover = new RectInt(openCircles[0]);
             List<RectInt> circlesBoxes = new List<RectInt>(openCircles.Count);
 
@@ -181,17 +219,18 @@ namespace DeluMc
                 {
                     Vector2Int center = openCircles[i];
                     zStart = Math.Max(0, center.Z - radius);
-                    zEnd = Math.Min(acceptableMap.Length, center.Z + radius);
+                    zEnd = Math.Min(acceptableMap.Length - 1, center.Z + radius);
                     xStart = Math.Max(0, center.X - radius);
-                    xEnd = Math.Min(acceptableMap[0].Length, center.X + radius);
+                    xEnd = Math.Min(acceptableMap[0].Length - 1, center.X + radius);
                     circlesBoxes.Add(new RectInt(new Vector2Int(zStart, xStart), new Vector2Int(zEnd, xEnd)));
                     testCover.Include(circlesBoxes[circlesBoxes.Count - 1]);
                 }
             }
 
-
+            /// <summary>
+            /// Size of Cover Rect for Current Open Circles
+            /// </summary>
             Vector2Int testCoverSize = testCover.Size;
-
 
             {
                 // Clean Village Map of unused places
@@ -207,12 +246,12 @@ namespace DeluMc
                             villageMap[z][x] = 0;
                         }
                     }
-                    };
+                };
 
                 Tasker.Run2DTasks(testCoverSize.Z, testCoverSize.X, null, cleanVillageMap);
             }
 
-
+            int newPValue = 0;
             {
                 int oldEnd = selectedNodes.Count;
                 Mutex mut = new Mutex();
@@ -231,7 +270,22 @@ namespace DeluMc
                         {
                             for (int x = xStart; x < xEnd; x++)
                             {
-
+                                if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                                {
+                                    for (int i = 0; i < circlesBoxes.Count; i++)
+                                    {
+                                        if (circlesBoxes[i].IsInside(z, x))
+                                        {
+                                            --villageMap[z][x];
+                                            if (-kMinCircleInterceptions == villageMap[z][x])
+                                            {
+                                                villageMap[z][x] = 1;
+                                                newSelected.Add(new Vector2Int(z, x));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -246,14 +300,15 @@ namespace DeluMc
 
                 Tasker.Run2DTasks(testCoverSize.Z, testCoverSize.X, getSelected, null);
 
+                mut.Dispose();
+
                 for (int i = oldEnd; i < selectedNodes.Count; i++)
                 {
                     coverRect.Include(selectedNodes[i]);
+                    newPValue += ChebyshevDistance(seed, selectedNodes[i].Z, selectedNodes[i].X);
                 }
             }
+            return newPValue;
         }
-
-
-
     }
 }

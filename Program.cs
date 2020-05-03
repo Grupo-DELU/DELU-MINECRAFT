@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using DeluMc.Pipes;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
@@ -78,12 +78,14 @@ namespace DeluMc
                 int[][] treeMap = new int[zSize][];
                 int[][] deltaMap = new int[zSize][];
                 bool[][] acceptableMap = new bool[zSize][];
+                int[][] villageMap = new int[zSize][];
 
                 Bitmap waterMask = new Bitmap(zSize, xSize);
                 Bitmap hm = new Bitmap(zSize, xSize);
                 Bitmap tm = new Bitmap(zSize, xSize);
                 Bitmap deltaMapBit = new Bitmap(zSize, xSize);
                 Bitmap acceptableMapBit = new Bitmap(zSize, xSize);
+                Bitmap villageMapBit = new Bitmap(zSize, xSize);
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -93,6 +95,7 @@ namespace DeluMc
                     treeMap[z] = new int[xSize];
                     deltaMap[z] = new int[xSize];
                     acceptableMap[z] = new bool[xSize];
+                    villageMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -110,20 +113,6 @@ namespace DeluMc
                 }
                 waterMask.Save(@"waterMask.png", System.Drawing.Imaging.ImageFormat.Png);
 
-                /*
-                {
-                    // Example: Remove Later
-                    Tasker.WorkBlock[] workBlocks = {
-                        (int z, int x) => {Console.WriteLine($"Block ({z}, {x})");}
-                    };
-
-                    Tasker.WorkChunk[] workChunks = {
-                        (int zStart, int zEnd, int xStart, int xEnd) => {Console.WriteLine($"Chunk ({zStart}, {xStart}) -> ({zEnd}, {xEnd})");}
-                    };
-
-                    Tasker.Run2DTasks(zSize, xSize, workChunks, workBlocks);
-                }
-                */
                 {
                     Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
@@ -153,6 +142,29 @@ namespace DeluMc
                     Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
                 }
 
+                List<VillageMarker> villages = new List<VillageMarker>();
+                {
+                    Random rand = new Random();
+                    int numberOfTries = 10000;
+                    int expectedVillageSize = 100;
+                    int radius = 4;
+                    int villageCount = 4;
+                    while (villageCount != 0 && numberOfTries != 0)
+                    {
+                        int z = rand.Next(0, zSize);
+                        int x = rand.Next(0, xSize);
+                        if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                        {
+                            VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius);
+                            if (village.Points.Length >= expectedVillageSize / 2)
+                            {
+                                --villageCount;
+                            }
+                            villages.Add(village);
+                        }
+                        --numberOfTries;
+                    }
+                }
 
                 // Write Data Back to Python
                 for (int y = 0; y < ySize; y++)
@@ -163,7 +175,10 @@ namespace DeluMc
                         {
                             {
                                 // Drawing
-                                tm.SetPixel(z, x, Color.FromArgb(255, 0, 255 * treeMap[z][x], 0));
+                                if (treeMap[z][x] == 1)
+                                {
+                                    tm.SetPixel(z, x, Color.FromArgb(255, 0, 255, 0));
+                                }
 
                                 if (heightMap[z][x] >= 0)
                                 {
@@ -185,10 +200,6 @@ namespace DeluMc
                                 {
                                     deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
                                 }
-                                else
-                                {
-                                    deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 0, 0, 255));
-                                }
 
                                 if (acceptableMap[z][x])
                                 {
@@ -198,8 +209,16 @@ namespace DeluMc
                                 {
                                     acceptableMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
                                 }
-                            }
 
+                                if (villageMap[z][x] == 1)
+                                {
+                                    villageMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 255, 0));
+                                }
+                                else if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                                {
+                                    villageMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 165, 0));
+                                }
+                            }
 
                             write.Write(blocks[y][z][x].ID);
                             write.Write(blocks[y][z][x].Data);
@@ -207,6 +226,14 @@ namespace DeluMc
                     }
                 }
 
+                {
+                    for (int i = 0; i < villages.Count; i++)
+                    {
+                        villageMapBit.SetPixel(villages[i].Seed.Z, villages[i].Seed.X, Color.FromArgb(255, 0, 0, 255));
+                    }
+                }
+
+                villageMapBit.Save(@"villagemap.png", System.Drawing.Imaging.ImageFormat.Png);
                 acceptableMapBit.Save(@"acceptablemap.png", System.Drawing.Imaging.ImageFormat.Png);
                 deltaMapBit.Save(@"deltamap.png", System.Drawing.Imaging.ImageFormat.Png);
                 tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
