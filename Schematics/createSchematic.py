@@ -12,15 +12,15 @@ Schematics char meaning
 import json;
 
 displayName = "Create Schematic"
-inputs = (
-    ("Identifier", ("wall", "corner", "house")),
-    ("ID", 1)
-    )
+inputs = ()
 
 def perform(level, box, options):
+    # Size YZX
     output = {
         "blocks" : [[['o' for i in range(0, box.size[0])] for j in range(0, box.size[2])] 
-            for k in range(0, box.size[1])]}
+            for k in range(0, box.size[1])],
+        "size" : [box.size[1], box.size[2], box.size[0]]    
+        }
     
     for y in xrange(box.miny, box.maxy):
         for z in xrange(box.minz, box.maxz):
@@ -30,7 +30,8 @@ def perform(level, box, options):
                 localZ = z - box.minz
                 (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
     
-    file = open("%s.json"%((options["Identifier"] + "_%s"%(options["ID"]))), 'w')
+    name = raw_input("Insert name: ")
+    file = open("%s.json"%(name), 'w')
     json.dump(output, file, indent = 4)
     file.close()
     
