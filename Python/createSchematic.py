@@ -31,6 +31,7 @@ def perform(level, box, options):
                 localZ = z - box.minz
                 (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
     
+    # TODO: Folder for schematics in MCEdit-unified
     name = raw_input("Insert name: ")
     file = open("%s.json"%(name), 'w')
     json.dump(output, file, indent = 4)
@@ -53,7 +54,5 @@ def blockToFormat(id):
         return 'r'
     elif (id == 45):
         return 'e'
-    elif (id == 0):
+    else:   # air or anything else
         return 'o'
-    else:
-        raise Exception("Block identifier not supported for the schematic")
