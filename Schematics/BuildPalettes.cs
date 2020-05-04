@@ -74,7 +74,7 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.RedWool_35_14,
             AlphaMaterials.AcaciaFence_192_0,
             AlphaMaterials.OakWood_BarkOnly_17_12,
-            null,
+            AlphaMaterials.OakDoor_Lower_Unopened_East_64_0,
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.Gravel_13_0);
 
@@ -83,7 +83,7 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.GlassPane_102_0,
             AlphaMaterials.ChiseledSandstone_24_1,
-            null,
+            AlphaMaterials.BirchDoor_Lower_Unopened_East_194_0,
             AlphaMaterials.Sandstone_24_0,
             AlphaMaterials.Gravel_13_0);
     }
