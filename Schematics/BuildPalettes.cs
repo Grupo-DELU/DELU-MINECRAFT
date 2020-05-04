@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
 
-namespace DeluMc.HouseSchematics.Palettes
+namespace DeluMc.Buildings.Palettes
 {
     /*  Schematics char meaning
      *      -'w' -> Walls
      *      -'f' -> Floor
      *      -'v' -> Windows
-     *      -'d' -> Doors
      *      -'c' -> Columns
+     *      -'d' -> Doors
      *      -'r' -> Roof
+     *      -'e' -> Road
      *      -'o' -> Air
      */     
     
@@ -39,6 +40,7 @@ namespace DeluMc.HouseSchematics.Palettes
                 throw new Exception("\'" + blockType + "\' not found in BuildingPalette used.");
             }
 
+
             return palette[blockType];
         }
 
@@ -47,34 +49,42 @@ namespace DeluMc.HouseSchematics.Palettes
             Material floor = null, 
             Material windows = null,
             Material columns = null,
-            Material roof = null)
+            Material door = null,
+            Material roof = null,
+            Material road = null)
         {
             palette.Add('w', wall);
             palette.Add('f', floor);
             palette.Add('v', windows);
             palette.Add('c', columns);
+            palette.Add('d', door);
             palette.Add('r', roof);
             palette.Add('o', AlphaMaterials.Air_0_0);
+            palette.Add('e', road);
         }
     }
 
     /// <summary>
     /// Multiple predefined palettess
     /// </summary>
-    public static class Palettes
+    public static class PremadePalettes
     {
         public static readonly BuildingPalette forestPalette = new BuildingPalette(
             AlphaMaterials.DarkOakWoodPlanks_5_5,
             AlphaMaterials.RedWool_35_14,
             AlphaMaterials.AcaciaFence_192_0,
             AlphaMaterials.OakWood_BarkOnly_17_12,
-            AlphaMaterials.Cobblestone_4_0);
+            null,
+            AlphaMaterials.Cobblestone_4_0,
+            AlphaMaterials.Gravel_13_0);
 
         public static readonly BuildingPalette desertPalette = new BuildingPalette(
             AlphaMaterials.SmoothSandstone_24_2,
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.GlassPane_102_0,
             AlphaMaterials.ChiseledSandstone_24_1,
-            AlphaMaterials.Sandstone_24_0);
+            null,
+            AlphaMaterials.Sandstone_24_0,
+            AlphaMaterials.Gravel_13_0);
     }
 }
