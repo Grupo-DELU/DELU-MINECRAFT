@@ -80,13 +80,6 @@ namespace DeluMc
                 bool[][] acceptableMap = new bool[zSize][];
                 int[][] villageMap = new int[zSize][];
 
-                Bitmap waterMask = new Bitmap(zSize, xSize);
-                Bitmap hm = new Bitmap(zSize, xSize);
-                Bitmap tm = new Bitmap(zSize, xSize);
-                Bitmap deltaMapBit = new Bitmap(zSize, xSize);
-                Bitmap acceptableMapBit = new Bitmap(zSize, xSize);
-                Bitmap villageMapBit = new Bitmap(zSize, xSize);
-
                 for (int z = 0; z < zSize; z++)
                 {
                     biomes[z] = new Biomes[xSize];
@@ -103,15 +96,8 @@ namespace DeluMc
                         waterMap[z][x] = reader.ReadInt32();
                         treeMap[z][x] = 0;
                         deltaMap[z][x] = 0;
-
-                        // Nota, esto esta al reves tambien. Esta flipped en z (screen cords I guess)
-                        if (waterMap[z][x] == 1)
-                        {
-                            waterMask.SetPixel(z, x, Color.Blue);
-                        }
                     }
                 }
-                waterMask.Save(@"waterMask.png", System.Drawing.Imaging.ImageFormat.Png);
 
                 {
                     Tasker.WorkChunk[] workChunks = {
@@ -173,53 +159,6 @@ namespace DeluMc
                     {
                         for (int x = 0; x < xSize; x++)
                         {
-                            {
-                                // Drawing
-                                if (treeMap[z][x] == 1)
-                                {
-                                    tm.SetPixel(z, x, Color.FromArgb(255, 0, 255, 0));
-                                }
-
-                                if (heightMap[z][x] >= 0)
-                                {
-                                    hm.SetPixel(z, x, Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]));
-                                }
-                                else
-                                {
-                                    hm.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
-                                }
-
-                                if (0 <= deltaMap[z][x] && deltaMap[z][x] <= DeltaMap.kMaxDelta)
-                                {
-                                    float tVal = 1.0f - (float)(deltaMap[z][x]) / (float)DeltaMap.kMaxDelta;
-                                    deltaMapBit.SetPixel(z, x,
-                                        Color.FromArgb(255, 0, (int)(255.0f * tVal + 200.0f * (1.0f - tVal)), 0)
-                                    );
-                                }
-                                else if (deltaMap[z][x] > DeltaMap.kMaxDelta)
-                                {
-                                    deltaMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
-                                }
-
-                                if (acceptableMap[z][x])
-                                {
-                                    acceptableMapBit.SetPixel(z, x, Color.FromArgb(255, 0, 255, 0));
-                                }
-                                else
-                                {
-                                    acceptableMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 0, 0));
-                                }
-
-                                if (villageMap[z][x] == 1)
-                                {
-                                    villageMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 255, 0));
-                                }
-                                else if (acceptableMap[z][x] && villageMap[z][x] <= 0)
-                                {
-                                    villageMapBit.SetPixel(z, x, Color.FromArgb(255, 255, 165, 0));
-                                }
-                            }
-
                             write.Write(blocks[y][z][x].ID);
                             write.Write(blocks[y][z][x].Data);
                         }
@@ -227,17 +166,100 @@ namespace DeluMc
                 }
 
                 {
-                    for (int i = 0; i < villages.Count; i++)
+                    // Drawing
+                    Mapper.SaveMapInfo[] saveMapInfos =
                     {
-                        villageMapBit.SetPixel(villages[i].Seed.Z, villages[i].Seed.X, Color.FromArgb(255, 0, 0, 255));
-                    }
-                }
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "villagemap",
+                            colorWork = (int z, int x) => {
+                                if (villageMap[z][x] == 1)
+                                {
+                                    return Color.Yellow;
+                                }
+                                else if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                                {
+                                    return Color.Orange;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = (Mapper.ColorApplier colorApplier) =>
+                            {
+                                for (int i = 0; i < villages.Count; i++)
+                                {
+                                    colorApplier.Invoke(villages[i].Seed.Z, villages[i].Seed.X, Color.Blue);
+                                }
+                            }
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "acceptablemap",
+                            colorWork = (int z, int x) => {
+                                if (acceptableMap[z][x])
+                                {
+                                    return Color.Green;
+                                }
+                                else
+                                {
+                                    return Color.Red;
+                                }
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "deltamap",
+                            colorWork = (int z, int x) => {
+                                if (0 <= deltaMap[z][x] && deltaMap[z][x] <= DeltaMap.kMaxDelta)
+                                {
+                                    float tVal = 1.0f - (float)(deltaMap[z][x]) / (float)DeltaMap.kMaxDelta;
+                                    return Color.FromArgb(255, 0, (int)(255.0f * tVal + 200.0f * (1.0f - tVal)), 0);
+                                }
+                                else if (deltaMap[z][x] > DeltaMap.kMaxDelta)
+                                {
+                                    return Color.Red;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "treemap",
+                            colorWork = (int z, int x) => {
+                                if (treeMap[z][x] == 1)
+                                {
+                                    return Color.Green;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "heightmap",
+                            colorWork = (int z, int x) => {
+                                if (heightMap[z][x] >= 0)
+                                {
+                                    return Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]);
+                                }
+                                else
+                                {
+                                    return Color.Red;
+                                }
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "watermap",
+                            colorWork = (int z, int x) => {
+                                if (waterMap[z][x] == 1)
+                                {
+                                    return Color.Blue;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                    };
 
-                villageMapBit.Save(@"villagemap.png", System.Drawing.Imaging.ImageFormat.Png);
-                acceptableMapBit.Save(@"acceptablemap.png", System.Drawing.Imaging.ImageFormat.Png);
-                deltaMapBit.Save(@"deltamap.png", System.Drawing.Imaging.ImageFormat.Png);
-                tm.Save(@"treeMask.png", System.Drawing.Imaging.ImageFormat.Png);
-                hm.Save(@"NO_TREE_Heightmap.png", System.Drawing.Imaging.ImageFormat.Png);
+                    Mapper.SaveMaps(saveMapInfos);
+                }
 
                 // Return data To Python
                 Console.WriteLine(write.BaseStream.Length);
