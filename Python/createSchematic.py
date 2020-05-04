@@ -3,7 +3,7 @@ Schematics char meaning
     -'w' -> Walls -> Bedrock -> 7
     -'f' -> Floor -> Sponge -> 19
     -'v' -> Windows -> Glass -> 20
-    -'d' -> Door -> not defined yet
+    -'d' -> Door -> CraftingTable -> 58
     -'c' -> Columns -> Netherack -> 87
     -'r' -> Roof -> Quartz BLOCK (NOT ORE) -> 155
     -'e' -> Road -> Bricks -> 45 (NOT SLAB)
@@ -48,6 +48,8 @@ def blockToFormat(id):
         return 'f'
     elif (id == 20):
         return 'v'
+    elif (id == 58):
+        return 'd'
     elif (id == 87):
         return 'c'
     elif (id == 155):

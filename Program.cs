@@ -7,7 +7,8 @@ using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
 using DeluMc.Masks;
 using DeluMc.Utils;
-
+using DeluMc.Buildings;
+using DeluMc.Buildings.Palettes;
 namespace DeluMc
 {
     class Program
@@ -99,6 +100,16 @@ namespace DeluMc
                     }
                 }
 
+                HousePlacer.RequestHouseArea(
+                    new HousePlacer.HouseAreaInput(
+                        0,
+                        new Vector2Int(), 
+                        new Vector2Int(zSize-1,xSize-1),
+                        null,
+                        null,
+                        blocks,
+                        Orientation.South,
+                        PremadePalettes.forestPalette));
                 {
                     Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
