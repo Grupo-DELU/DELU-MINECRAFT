@@ -106,6 +106,7 @@ def biomeHMCalculator(level, box):
                             Also, if the highest block is water, you can not build in it! So 
                             the heightmap is set as -1
                             '''
+                            # TODO: Clamp height
                             y = hmArray[i * 16 + j] - 1
                             
                             boxBiomes[localZ][localX] = biomeArray[i * 16 + j]
