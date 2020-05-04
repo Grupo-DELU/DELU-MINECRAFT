@@ -108,9 +108,11 @@ def biomeHMCalculator(level, box):
                             '''
                             # TODO: Clamp height
                             y = hmArray[i * 16 + j] - 1
-                            
+                            if (y >= box.maxy):
+                                y = box.maxy - 1
+
                             boxBiomes[localZ][localX] = biomeArray[i * 16 + j]
-                            boxHeightMap[localZ][localX] = hmArray[i * 16 + j] - 1 - box.miny
+                            boxHeightMap[localZ][localX] = y - box.miny
                             block = level.blockAt(worldX,y,worldZ)
 
                             if (block == 8 or block == 9):
