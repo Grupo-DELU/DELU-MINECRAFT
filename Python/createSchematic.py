@@ -11,6 +11,7 @@ Schematics char meaning
 """
 
 import json;
+import os;
 
 displayName = "Create Schematic"
 inputs = ()
@@ -32,8 +33,11 @@ def perform(level, box, options):
                 (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
     
     # TODO: Folder for schematics in MCEdit-unified
+    if not(os.path.exists("HouseSCH")):
+        os.mkdir("HouseSCH")
+
     name = raw_input("Insert name: ")
-    file = open("%s.json"%(name), 'w')
+    file = open("HouseSCH%s%s.json"%(os.path.sep, name), 'w')
     json.dump(output, file, indent = 4)
     file.close()
     
