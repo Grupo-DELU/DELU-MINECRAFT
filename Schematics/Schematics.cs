@@ -395,16 +395,19 @@ namespace DeluMc.Buildings
         /// </summary>
         static HousePlacer()
         {
-            string housesPath;
-#if LINUX
-            housesPath = @".mcedit/MCEdit/Filters/Python/HouseSCH";
-#else
-            housesPath = @"MCEdit\Filters\Python\HouseSCH";
-#endif
-            string path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), housesPath);
-            string[] files = Directory.GetFiles(path, "*.json");
+            char sep = System.IO.Path.DirectorySeparatorChar;
+            string housesPath = System.IO.Path.GetDirectoryName(
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
             
-            Console.WriteLine("Loading house schematics at " + path);
+            housesPath = housesPath.Remove(0,5);    // Removing file: at start
+            housesPath = string.Format(housesPath + "{0}..{0}..{0}..{0}HouseSCH", sep);
+            housesPath = Path.GetFullPath(housesPath);
+
+            Console.WriteLine("Loading house schematics at " + housesPath);
+            
+            //string path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), housesPath);
+            string[] files = Directory.GetFiles(housesPath, "*.json");
+            
             houses = new HouseSchematic[files.Length];
 
             for (int i = 0; i < files.Length; i++)
