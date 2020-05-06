@@ -77,7 +77,7 @@ namespace DeluMc
                 int[][] heightMap = new int[zSize][];
                 int[][] waterMap = new int[zSize][];
                 int[][] treeMap = new int[zSize][];
-                int[][] deltaMap = new int[zSize][];
+                float[][] deltaMap = new float[zSize][];
                 bool[][] acceptableMap = new bool[zSize][];
                 int[][] villageMap = new int[zSize][];
 
@@ -87,7 +87,7 @@ namespace DeluMc
                     heightMap[z] = new int[xSize];
                     waterMap[z] = new int[xSize];
                     treeMap[z] = new int[xSize];
-                    deltaMap[z] = new int[xSize];
+                    deltaMap[z] = new float[xSize];
                     acceptableMap[z] = new bool[xSize];
                     villageMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
@@ -220,8 +220,8 @@ namespace DeluMc
                             colorWork = (int z, int x) => {
                                 if (0 <= deltaMap[z][x] && deltaMap[z][x] <= DeltaMap.kMaxDelta)
                                 {
-                                    float tVal = 1.0f - (float)(deltaMap[z][x]) / (float)DeltaMap.kMaxDelta;
-                                    return Color.FromArgb(255, 0, (int)(255.0f * tVal + 200.0f * (1.0f - tVal)), 0);
+                                    float tVal = 1.0f - deltaMap[z][x] / DeltaMap.kMaxDelta;
+                                    return Color.FromArgb(255, 0, (int)(255.0f * tVal + 100.0f * (1.0f - tVal)), 0);
                                 }
                                 else if (deltaMap[z][x] > DeltaMap.kMaxDelta)
                                 {

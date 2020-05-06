@@ -15,7 +15,7 @@ namespace DeluMc.Masks
         /// <param name="z">Z position</param>
         /// <param name="x">X position</param>
         /// <returns>If the block position is considered acceptable</returns>
-        public static bool IsAcceptableBlock(in int[][] deltaMap, int z, int x)
+        public static bool IsAcceptableBlock(in float[][] deltaMap, int z, int x)
         {
             return 0 <= z && z < deltaMap.Length && 0 <= x && x < deltaMap[0].Length && 0 <= deltaMap[z][x] && deltaMap[z][x] <= kMaxDelta;
         }
@@ -23,7 +23,7 @@ namespace DeluMc.Masks
         /// <summary>
         /// Maximum acceptable delta
         /// </summary>
-        public const int kMaxDelta = 1;
+        public const float kMaxDelta = 1.0f;
 
         /// <summary>
         /// Calculate Delta Map in a Position
@@ -33,7 +33,7 @@ namespace DeluMc.Masks
         /// <param name="deltaMap">Deltamap to generate </param>
         /// <param name="z">Z position</param>
         /// <param name="x">X position</param>
-        public static void CalculateDeltaMap(in int[][] heightMap, in int[][] waterMap, int[][] deltaMap, int z, int x)
+        public static void CalculateDeltaMap(in int[][] heightMap, in int[][] waterMap, float[][] deltaMap, int z, int x)
         {
             if (heightMap[z][x] < 0 || waterMap[z][x] == 1)
             {
@@ -58,7 +58,7 @@ namespace DeluMc.Masks
                     {
                         if (heightMap[posZ][posX] > -1 || waterMap[posZ][posX] != 1)
                         {
-                            deltaMap[z][x] += Math.Abs(heightMap[posZ][posX] - heightMap[z][x]);
+                            deltaMap[z][x] += (float)Math.Abs(heightMap[posZ][posX] - heightMap[z][x]);
                             ++count;
                         }
 
@@ -66,7 +66,7 @@ namespace DeluMc.Masks
                 }
             }
 
-            deltaMap[z][x] = (int)((float)deltaMap[z][x] / (float)count);
+            deltaMap[z][x] /= (float)count;
 
         }
     }
