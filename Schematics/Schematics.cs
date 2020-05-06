@@ -395,17 +395,15 @@ namespace DeluMc.Buildings
         /// </summary>
         static HousePlacer()
         {
-            char sep = System.IO.Path.DirectorySeparatorChar;
             string housesPath = System.IO.Path.GetDirectoryName(
                 System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
             
-            housesPath = housesPath.Remove(0,5);    // Removing file: at start
-            housesPath = string.Format(housesPath + "{0}..{0}..{0}..{0}HouseSCH", sep);
+            housesPath = new System.Uri(housesPath).LocalPath;    // Removing file: at start
+            housesPath = Path.Join(housesPath, "..", "..", "..", "HouseSCH");
             housesPath = Path.GetFullPath(housesPath);
 
-            Console.WriteLine("Loading house schematics at " + housesPath);
+            Console.WriteLine($"Loading house schematics at \"{housesPath}\"");
             
-            //string path = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), housesPath);
             string[] files = Directory.GetFiles(housesPath, "*.json");
             
             houses = new HouseSchematic[files.Length];
