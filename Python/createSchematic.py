@@ -1,27 +1,51 @@
 """
 Schematics char meaning
-    -'w' -> Walls -> Bedrock -> 7
-    -'f' -> Floor -> Sponge -> 19
-    -'v' -> Windows -> Glass -> 20
-    -'d' -> Door -> CraftingTable -> 58
-    -'c' -> Columns -> Netherack -> 87
-    -'r' -> Roof -> Quartz BLOCK (NOT ORE) -> 155
+    -'w' -> block1 -> Bedrock -> 7
+    -'f' -> block2 -> Sponge -> 19
+    -'v' -> block3 -> Glass -> 20
+    -'c' -> block4 -> Netherack -> 87
+    -'r' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
     -'e' -> Road -> Bricks -> 45 (NOT SLAB)
-    -'o' -> Air -> Anything that isn't above
+    -'d' -> Door -> CraftingTable -> 58
+    -'o' -> Air -> Air -> 0
+    -'n' -> Don't replace -> Anything that isn't above
+
+Converts the box blocks into the schematic char formats and
+serializes the data of the structure into a .json file to
+load it in the C# main application.
 """
 
 import json;
 import os;
 
+formatDict = {
+    7:'w',
+    19:'f',
+    20:'v',
+    87:'c',
+    155:'r',
+    45:'e',
+    58:'d',
+    0:'o',}
+
+buildDict = {
+    "House": 0,
+    "Farm": 1,
+    "Plaza": 2}
+
 displayName = "Create Schematic"
-inputs = ()
+inputs = (
+    ("Build type", ("House", "Farm", "Plaza")),
+    )
 
 def perform(level, box, options):
     # Size YZX
+    # Creates .json dictionary structure
     output = {
         "blocks" : [[['o' for i in range(0, box.size[0])] for j in range(0, box.size[2])] 
             for k in range(0, box.size[1])],
-        "size" : [box.size[1], box.size[2], box.size[0]]    
+        "size" : [box.size[1], box.size[2], box.size[0]],
+        "buildType" : buildDict[options["Build type"]],
         }
     
     for y in xrange(box.miny, box.maxy):
@@ -32,12 +56,11 @@ def perform(level, box, options):
                 localZ = z - box.minz
                 (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
     
-    # TODO: Folder for schematics in MCEdit-unified
-    if not(os.path.exists("HouseSCH")):
-        os.mkdir("HouseSCH")
+    if not(os.path.exists("schematics")):
+        os.mkdir("schematics")
 
     name = raw_input("Insert name: ")
-    file = open("HouseSCH%s%s.json"%(os.path.sep, name), 'w')
+    file = open(os.path.join("schematics", "%s.json"%(name)), 'w')
     json.dump(output, file, indent = 4)
     file.close()
     
@@ -46,19 +69,6 @@ Converts block ID to char identifier associated.
 Conversion table above.
 """
 def blockToFormat(id):
-    if (id == 7):
-        return 'w'
-    elif (id == 19):
-        return 'f'
-    elif (id == 20):
-        return 'v'
-    elif (id == 58):
-        return 'd'
-    elif (id == 87):
-        return 'c'
-    elif (id == 155):
-        return 'r'
-    elif (id == 45):
-        return 'e'
-    else:   # air or anything else
-        return 'o'
+    if (id in formatDict):
+        return formatDict[id]
+    return 'n'

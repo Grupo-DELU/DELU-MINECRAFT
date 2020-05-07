@@ -5,15 +5,17 @@ using DeluMc.MCEdit.Block;
 
 namespace DeluMc.Buildings.Palettes
 {
-    /*  Schematics char meaning
-     *      -'w' -> Walls
-     *      -'f' -> Floor
-     *      -'v' -> Windows
-     *      -'c' -> Columns
-     *      -'d' -> Doors
-     *      -'r' -> Roof
-     *      -'e' -> Road
-     *      -'o' -> Air
+    /*
+    Schematics char meaning
+        -'w' -> block1 -> Bedrock -> 7
+        -'f' -> block2 -> Sponge -> 19
+        -'v' -> block3 -> Glass -> 20
+        -'c' -> block4 -> Netherack -> 87
+        -'r' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
+        -'e' -> Road -> Bricks -> 45 (NOT SLAB)
+        -'d' -> Door -> CraftingTable -> 58
+        -'o' -> Air -> Air -> 0
+        -'n' -> Don't replace -> Anything that isn't above
      */     
     
     /// <summary>

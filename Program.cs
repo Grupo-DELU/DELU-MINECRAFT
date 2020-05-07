@@ -109,7 +109,7 @@ namespace DeluMc
                         null,
                         blocks,
                         Orientation.South,
-                        PremadePalettes.forestPalette));
+                        PremadePalettes.forestPalette), BuildType.House);
                 {
                     Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
