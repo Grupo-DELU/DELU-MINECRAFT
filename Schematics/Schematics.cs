@@ -35,6 +35,17 @@ namespace DeluMc.Buildings
 
 
     /// <summary>
+    /// Different build types
+    /// </summary>
+    public enum BuildType
+    {
+        House = 0,
+        Farm = 1,
+        Plaza = 2,
+    };
+
+
+    /// <summary>
     /// Compares houses by area (is inverted to sort in descending order)
     /// </summary>
     public class HouseAreaComparer : IComparer<HousePlacer.HouseSchematic>
@@ -48,8 +59,7 @@ namespace DeluMc.Buildings
     }
 
 
-    // TODO: Better method of finding suitable house
-    // TODO: Check if house overlaps water/tree/road/house map (maybe not water, neither tree map) 
+    // TODO: Modify road/house map
     // TODO: Finish comments
     // TODO: Probably the bound/size check can be unified like the building.
     // TODO: Also do a request struct for individual placement
@@ -60,10 +70,7 @@ namespace DeluMc.Buildings
     /// </summary>
     public static class HousePlacer
     {
-        /// <summary>
-        /// Houses loaded from the .json files.
-        /// </summary>
-        private static HouseSchematic[] houses;
+        private static Dictionary<BuildType, List<HouseSchematic>> houses = new Dictionary<BuildType, List<HouseSchematic>>();
 
         public struct HouseAreaInput
         {
@@ -106,6 +113,7 @@ namespace DeluMc.Buildings
         /// </summary>
         public class HouseSchematic
         {
+            public BuildType buildType { get; set; } = 0;
             public char[][][] blocks { get; set; } = null;
             public int[] size { get; set; } = null;
         }
@@ -167,23 +175,25 @@ namespace DeluMc.Buildings
         /// </summary>
         /// <param name="request">House in area request</param>
         /// <returns>True if a house was built/False otherwise</returns>
-        public static bool RequestHouseArea(HouseAreaInput request)
+        public static bool RequestHouseArea(HouseAreaInput request, BuildType houseType = BuildType.House)
         {
             int sizeX = Math.Abs(request.min.X - request.max.X) + 1;
             int sizeZ = Math.Abs(request.min.Z - request.max.Z) + 1;
             int reqArea = sizeX * sizeZ;
 
             Console.WriteLine("Area requested: " + reqArea);
-            for (int i = 0; i < houses.Length; i++)
+            Console.WriteLine("House type requested: " + Enum.GetName(typeof(BuildType), houseType));
+            for (int i = 0; i < houses[houseType].Count; i++)
             {
-                int houseArea = houses[i].size[1] * houses[i].size[2];
+                HouseSchematic house = houses[houseType][i];
+                int houseArea = house.size[1] * house.size[2];
                 Console.WriteLine("House area: " + houseArea);
                 if (houseArea <= reqArea)
                 {
-                    if (CheckBoxFit(request, houses[i]))
+                    if (CheckBoxFit(request, house))
                     {
                         Console.WriteLine("House chosen: " + i);
-                        request.house = houses[i];
+                        request.house = house;
                         BuildInArea(request);
                         return true;
                     }
@@ -259,6 +269,9 @@ namespace DeluMc.Buildings
                     // Pintar carretera acaa
                     block = palette.GetFromPalette(blockType);
                     break;
+                case 'n':
+                    block = null;
+                    break;
                 default:
                     block = palette.GetFromPalette(blockType);
                     break;
@@ -304,17 +317,22 @@ namespace DeluMc.Buildings
 
 
         /// <summary>
-        /// 
+        /// Builds/places blocks of a schematic house in the map at position (y, z, x)
+        /// with certain orientation and relative to a pivot in the house.
         /// </summary>
-        /// <param name="map"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <param name="x"></param>
-        /// <param name="house"></param>
-        /// <param name="or"></param>
-        private static bool BuildHouse(Material[][][] map, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot)
+        /// <param name="map">Map to place house on</param>
+        /// <param name="y">House y position</param>
+        /// <param name="z">House z pivot position</param>
+        /// <param name="x">House x pivot position</param>
+        /// <param name="house">House to place</param>
+        /// <param name="or">House orientation</param>
+        /// <param name="pivot">House pivot</param>
+        private static void BuildHouse(Material[][][] map, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot)
         {
+            // Orig is the house "left bottom corner" in world position (something like min)
             int origZ, origX; 
+            // Used to substract half of the house lenght in xz axis
+            // in case the pivot is the center of the house
             int mod = (pivot == HousePivot.Center ? 1: 0);
 
             // Y iteration
@@ -332,28 +350,27 @@ namespace DeluMc.Buildings
                             case Orientation.North:
                                 origZ = z - house.size[1]/2 * mod;
                                 origX = x - house.size[2]/2 * mod;
-                                map[y + i][origZ + k][origX + j] = block;
+                                map[y + i][origZ + k][origX + j] = (block != null ? block : map[y + i][origZ + k][origX + j]);
                                 break;
                             case Orientation.East:
                                 origZ = z - house.size[2]/2 * mod;
                                 origX = x + house.size[1]/2 * mod;
-                                map[y + i][origZ + j][origX - k] = block;
+                                map[y + i][origZ + j][origX - k] = (block != null ? block : map[y + i][origZ + j][origX - k]);
                                 break;  
                             case Orientation.South:
                                 origZ = z + house.size[1]/2 * mod; // Must check if ModZ is needed or not
                                 origX = x + house.size[2]/2 * mod;
-                                map[y + i][origZ - k][origX - j] = block;
+                                map[y + i][origZ - k][origX - j] = (block != null ? block : map[y + i][origZ - k][origX - j]);
                                 break;
                             case Orientation.West:
                                 origZ = z + house.size[2]/2 * mod; // Must check if ModZ/X is needed or not 
                                 origX = x - house.size[1]/2 * mod; // Must check if ModZ/X is needed or not
-                                map[y + i][origZ - j][origX + k] = block;
+                                map[y + i][origZ - j][origX + k] = (block != null ? block : map[y + i][origZ - j][origX + k]);
                                 break;
                         }
                     }
                 }
             }
-            return true;
         }
 
 
@@ -371,7 +388,7 @@ namespace DeluMc.Buildings
         public static bool PlaceHouse(Material[][][] map, int y, int z, int x, in string path, 
             Orientation orientation, HousePivot pivot = HousePivot.BottomLeft)
         {
-            HouseSchematic house = houses[0]; // PlaceHolder
+            HouseSchematic house = houses[BuildType.House][0]; // PlaceHolder
             bool result = false;
             switch (pivot)
             {  
@@ -395,25 +412,47 @@ namespace DeluMc.Buildings
         /// </summary>
         static HousePlacer()
         {
+            // Builds the dictionary that contais the houses
+            foreach (BuildType t in Enum.GetValues(typeof(BuildType)))
+            {
+                houses[t] = new List<HouseSchematic>();
+            }
+
             string housesPath = System.IO.Path.GetDirectoryName(
                 System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
             
+            try
+            {
+#if LINUX 
+                housesPath = housesPath.Replace("file:","");
+#endif
+                housesPath = new System.Uri(housesPath).LocalPath;
+            }
+            catch (UriFormatException e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
             housesPath = new System.Uri(housesPath).LocalPath;    // Removing file: at start
-            housesPath = Path.Join(housesPath, "..", "..", "..", "HouseSCH");
+            housesPath = Path.Join(housesPath, "..", "..", "schematics");
             housesPath = Path.GetFullPath(housesPath);
 
             Console.WriteLine($"Loading house schematics at \"{housesPath}\"");
             
             string[] files = Directory.GetFiles(housesPath, "*.json");
-            
-            houses = new HouseSchematic[files.Length];
 
             for (int i = 0; i < files.Length; i++)
             {
-                houses[i] = JsonSerializer.Deserialize<HouseSchematic>(File.ReadAllText(files[i]));
-                Console.WriteLine("Loaded house " + files[i]);
+                HouseSchematic house = JsonSerializer.Deserialize<HouseSchematic>(File.ReadAllText(files[i]));
+                houses[house.buildType].Add(house);
+                Console.WriteLine($"Loaded house {files[i]}");
             }
-            Array.Sort(houses, new HouseAreaComparer());
+
+            // Sorts every house list by area (descending order)
+            foreach (var key in houses.Keys)
+            {
+                houses[(BuildType)key].Sort(new HouseAreaComparer());
+            }
         }
     }
 }
