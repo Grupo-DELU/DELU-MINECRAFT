@@ -58,8 +58,6 @@ namespace DeluMc.Buildings
         }
     }
 
-
-    // TODO: Modify road/house map
     // TODO: Finish comments
     // TODO: Probably the bound/size check can be unified like the building.
     // TODO: Also do a request struct for individual placement
@@ -77,8 +75,8 @@ namespace DeluMc.Buildings
             public int y;
             public Vector2Int min;
             public Vector2Int max;
-            public int[][][] roadMap;
-            public int[][][] houseMap;
+            public int[][] roadMap;
+            public int[][] houseMap;
             public Material[][][] map;
             public HouseSchematic house;
             public Orientation orientation;
@@ -88,8 +86,8 @@ namespace DeluMc.Buildings
                 int y, 
                 Vector2Int min, 
                 Vector2Int max, 
-                int[][][] roadMap, 
-                int[][][] houseMap, 
+                int[][] roadMap, 
+                int[][] houseMap, 
                 Material[][][] map,
                 Orientation orientation,
                 Palettes.BuildingPalette palettes) 
@@ -154,16 +152,16 @@ namespace DeluMc.Buildings
             switch (request.orientation)
             {
                 case Orientation.North:
-                    BuildHouse(request.map, request.y, request.min.Z,request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z,request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
                     break;
                 case Orientation.East:
-                    BuildHouse(request.map, request.y, request.min.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
                     break;
                 case Orientation.South:
-                    BuildHouse(request.map, request.y, request.max.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
                     break;
                 case Orientation.West:
-                    BuildHouse(request.map, request.y, request.max.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
                     break;
             }
         }
@@ -249,7 +247,7 @@ namespace DeluMc.Buildings
         /// block, except when it is a door block. Also, it draws into the road map if the block
         /// to place is a road block.
         /// </summary>
-        /// <param name="y"></param>
+        /// <param name="y"></param>null
         /// <param name="z"></param>
         /// <param name="x"></param>
         /// <param name="house"></param>
@@ -265,10 +263,6 @@ namespace DeluMc.Buildings
                 case 'd':
                     block = ProcessDoor(y, z, x, house, palette, ori);
                     break;
-                case 'e':
-                    // Pintar carretera acaa
-                    block = palette.GetFromPalette(blockType);
-                    break;
                 case 'n':
                     block = null;
                     break;
@@ -277,6 +271,35 @@ namespace DeluMc.Buildings
                     break;
             }
             return block;
+        }
+
+        /// <summary>
+        /// Identifies the house block type and paints the house/road map accordingly
+        /// </summary>
+        /// <param name="hy">House block Y position</param>
+        /// <param name="hz">House block Z position</param>
+        /// <param name="hx">House block X position</param>
+        /// <param name="wz">World block Z position</param>
+        /// <param name="wx">World block X position</param>
+        /// <param name="houseMap">Houses map</param>
+        /// <param name="roadMap">Road maps</param>
+        /// <param name="house">House to be placed</param>
+        private static void PaintMaps(int hy, int hz, int hx, int wz, int wx, int[][] houseMap, int[][] roadMap, HouseSchematic house)
+        {
+            // Important: Road block must be at the bottom of the schematic box or else, it could be
+            // marked as home (applies when doing schematics).
+            char blockType = house.blocks[hy][hz][hx];
+            if (blockType == 'e')
+            {
+                roadMap[wz][wx] = 1;
+            }
+            else
+            {
+                if (roadMap[wz][wx] == 0)
+                {
+                    houseMap[wz][wx] = 1;
+                }
+            }
         }
 
 
@@ -327,7 +350,7 @@ namespace DeluMc.Buildings
         /// <param name="house">House to place</param>
         /// <param name="or">House orientation</param>
         /// <param name="pivot">House pivot</param>
-        private static void BuildHouse(Material[][][] map, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot)
+        private static void BuildHouse(Material[][][] map, int[][] houseMap, int[][] roadMap, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot)
         {
             // Orig is the house "left bottom corner" in world position (something like min)
             int origZ, origX; 
@@ -351,21 +374,25 @@ namespace DeluMc.Buildings
                                 origZ = z - house.size[1]/2 * mod;
                                 origX = x - house.size[2]/2 * mod;
                                 map[y + i][origZ + k][origX + j] = (block != null ? block : map[y + i][origZ + k][origX + j]);
+                                PaintMaps(i, k, j, origZ + k, origX + j, houseMap, null, house);
                                 break;
                             case Orientation.East:
                                 origZ = z - house.size[2]/2 * mod;
                                 origX = x + house.size[1]/2 * mod;
                                 map[y + i][origZ + j][origX - k] = (block != null ? block : map[y + i][origZ + j][origX - k]);
+                                PaintMaps(i, k, j, origZ + j, origX - k, houseMap, null, house);
                                 break;  
                             case Orientation.South:
                                 origZ = z + house.size[1]/2 * mod; // Must check if ModZ is needed or not
                                 origX = x + house.size[2]/2 * mod;
                                 map[y + i][origZ - k][origX - j] = (block != null ? block : map[y + i][origZ - k][origX - j]);
+                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, null, house);
                                 break;
                             case Orientation.West:
                                 origZ = z + house.size[2]/2 * mod; // Must check if ModZ/X is needed or not 
                                 origX = x - house.size[1]/2 * mod; // Must check if ModZ/X is needed or not
                                 map[y + i][origZ - j][origX + k] = (block != null ? block : map[y + i][origZ - j][origX + k]);
+                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, null, house);
                                 break;
                         }
                     }
@@ -401,7 +428,7 @@ namespace DeluMc.Buildings
             }
             if (result)
             {
-                BuildHouse(map, y, z, x, house, orientation, pivot);
+                BuildHouse(map, null, null, y, z, x, house, orientation, pivot);
             }
             return result;
         }

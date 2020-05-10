@@ -80,6 +80,8 @@ namespace DeluMc
                 float[][] deltaMap = new float[zSize][];
                 bool[][] acceptableMap = new bool[zSize][];
                 int[][] villageMap = new int[zSize][];
+                int[][] houseMap = new int[zSize][];
+                int[][] roadMap = new int[zSize][];
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -90,6 +92,8 @@ namespace DeluMc
                     deltaMap[z] = new float[xSize];
                     acceptableMap[z] = new bool[xSize];
                     villageMap[z] = new int[xSize];
+                    houseMap[z] = new int[xSize];
+                    roadMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -262,6 +266,28 @@ namespace DeluMc
                                 if (waterMap[z][x] == 1)
                                 {
                                     return Color.Blue;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "houseMap",
+                            colorWork = (int z, int x) => {
+                                if (houseMap[z][x] == 1)
+                                {
+                                    return Color.Brown;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "roadMap",
+                            colorWork = (int z, int x) => {
+                                if (roadMap[z][x] == 1)
+                                {
+                                    return Color.Purple;
                                 }
                                 return Color.Transparent;
                                 },

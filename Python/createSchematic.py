@@ -13,6 +13,9 @@ Schematics char meaning
 Converts the box blocks into the schematic char formats and
 serializes the data of the structure into a .json file to
 load it in the C# main application.
+
+IMPORTANT NOTE: Important: Road block must be at the bottom of the schematic box or else, it could be
+marked as home (applies when doing schematics).
 """
 
 import json;
