@@ -165,6 +165,15 @@ namespace DeluMc
                         }
                         --numberOfTries;
                     }
+
+                    if (villages.Count > 1)
+                    {
+                        RoadGenerator.FirstRoad(
+                            villages[0].Seed.Z, villages[0].Seed.X, 
+                            villages[1].Seed.Z, villages[2].Seed.X,
+                            acceptableMap, deltaMap, waterMap, roadMap
+                            );
+                    }
                 }
 
                 // Write Data Back to Python
@@ -288,6 +297,10 @@ namespace DeluMc
                                 if (roadMap[z][x] == 1)
                                 {
                                     return Color.Purple;
+                                }
+                                else if (roadMap[z][x] == 2)
+                                {
+                                    return Color.Brown;
                                 }
                                 return Color.Transparent;
                                 },
