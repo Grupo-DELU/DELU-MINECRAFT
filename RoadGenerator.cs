@@ -137,7 +137,8 @@ namespace DeluMc
 
             if (acceptableMap[z][x])
             {
-                return distance * (1.0f + deltaMap[z][x] * SlopeMultiplier + (1 - roadMap[z][x]));
+                float noRoad = roadMap[z][x] == 0 ? 1.0f : 0.0f;
+                return distance * (1.0f + deltaMap[z][x] * SlopeMultiplier + NotRoadMultiplier * noRoad);
             }
             else if (waterMap[z][x] == 1)
             {
@@ -146,7 +147,208 @@ namespace DeluMc
             return float.PositiveInfinity;
         }
 
+        /// <summary>
+        /// Place a Road Patch
+        /// </summary>
+        /// <param name="Z">Z Coord</param>
+        /// <param name="X">X Coord</param>
+        /// <param name="rectCover">Cover for Map</param>
+        /// <param name="acceptableMap">Acceptable Map</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="roadMap">Road Map</param>
+        private static void RoadPatchPlacement(
+            int Z, int X, in RectInt rectCover, bool[][] acceptableMap, int[][] waterMap, int[][] roadMap
+        )
+        {
+            if (rectCover.IsInside(Z, X) && roadMap[Z][X] == 0)
+            {
+                if (acceptableMap[Z][X])
+                {
+                    // Road
+                    roadMap[Z][X] = 1;
+                }
+                else if (waterMap[Z][X] == 1)
+                {
+                    // Bridge
+                    roadMap[Z][X] = 2;
+                }
+            }
+        }
 
+        /// <summary>
+        /// Paint a Road
+        /// </summary>
+        /// <param name="road">Road to Paint</param>
+        /// <param name="acceptableMap">Acceptable Map</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="roadMap">Road Map</param>
+        private static void PaintRoad(in List<Vector2Int> road, bool[][] acceptableMap, int[][] waterMap, int[][] roadMap)
+        {
+            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length, acceptableMap[0].Length));
+
+            if (road.Count <= 1)
+            {
+                // Nothing to Paint
+                return;
+            }
+
+            int roadZ, roadX;
+
+            for (int i = 0; i < road.Count - 1; i++)
+            {
+                Vector2Int dir = road[i + 1] - road[i];
+                if (dir.Z == 0)
+                {
+                    // No change in Z
+                    // Horizontal Movement
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        roadZ = road[i].Z + dz;
+                        RoadPatchPlacement(roadZ, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+                else if (dir.Z > 0)
+                {
+                    // Increase in Z
+                    if (dir.X == 0)
+                    {
+                        // No change in X
+                        // Vertical Movement
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            roadX = road[i].X + dx;
+                            RoadPatchPlacement(road[i].Z, roadX, rectCover, acceptableMap, waterMap, roadMap);
+                        }
+                    }
+                    else if (dir.X > 0)
+                    {
+                        // Increase in X
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                    else if (dir.X < 0)
+                    {
+                        // Decrease in X
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+                else if (dir.Z < 0)
+                {
+                    // Decrease in Z
+                    if (dir.X == 0)
+                    {
+                        // No change in X
+                        // Vertical Movement
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            roadX = road[i].X + dx;
+                            RoadPatchPlacement(road[i].Z, roadX, rectCover, acceptableMap, waterMap, roadMap);
+                        }
+                    }
+                    else if (dir.X > 0)
+                    {
+                        // Increase in X
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                    else if (dir.X < 0)
+                    {
+                        // Decrease in X
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+            }
+
+            {
+                Vector2Int dir = road[road.Count - 1] - road[road.Count - 2];
+                int i = road.Count - 1;
+                if (dir.Z == 0)
+                {
+                    // No change in Z
+                    // Horizontal Movement
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        roadZ = road[road.Count - 1].Z + dz;
+                        RoadPatchPlacement(roadZ, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+                else if (dir.Z > 0)
+                {
+                    // Increase in Z
+                    if (dir.X == 0)
+                    {
+                        // No change in X
+                        // Vertical Movement
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            roadX = road[i].X + dx;
+                            RoadPatchPlacement(road[i].Z, roadX, rectCover, acceptableMap, waterMap, roadMap);
+                        }
+                    }
+                    else if (dir.X > 0)
+                    {
+                        // Increase in X
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                    else if (dir.X < 0)
+                    {
+                        // Decrease in X
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+                else if (dir.Z < 0)
+                {
+                    // Decrease in Z
+                    if (dir.X == 0)
+                    {
+                        // No change in X
+                        // Vertical Movement
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            roadX = road[i].X + dx;
+                            RoadPatchPlacement(road[i].Z, roadX, rectCover, acceptableMap, waterMap, roadMap);
+                        }
+                    }
+                    else if (dir.X > 0)
+                    {
+                        // Increase in X
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                    else if (dir.X < 0)
+                    {
+                        // Decrease in X
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generate the first road between two points
+        /// </summary>
+        /// <param name="sZ">Starting Point Z Coordinate</param>
+        /// <param name="sX">Starting Point X Coordinate</param>
+        /// <param name="tZ">Target Point Z Coordinate</param>
+        /// <param name="tX">Target Point X Coordinate</param>
+        /// <param name="acceptableMap">Acceptable Map</param>
+        /// <param name="deltaMap">Delta Map</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="roadMap">Road Map</param>
+        /// <returns>Road Connecting the two points, if any</returns>
         public static List<Vector2Int> FirstRoad(int sZ, int sX, int tZ, int tX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap)
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
@@ -181,9 +383,11 @@ namespace DeluMc
                     List<Vector2Int> road = new List<Vector2Int>();
                     while (curr != null)
                     {
+                        // Add Point to Road
                         road.Add(curr.RealPoint);
                         curr = parents[curr];
                     }
+                    PaintRoad(road, acceptableMap, waterMap, roadMap);
                     return road;
                 }
 
