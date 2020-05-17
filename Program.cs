@@ -117,7 +117,7 @@ namespace DeluMc
                 {
                     // Delta Map
                     Tasker.WorkBlock[] workBlocks = {
-                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x); 
+                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);}
                     };
 
@@ -344,7 +344,7 @@ namespace DeluMc
                             colorWork = (int z, int x) => {
                                 if (mainRoadMap[z][x] == 1)
                                 {
-                                    return Color.IndianRed;
+                                    return Color.Turquoise;
                                 }
                                 return Color.Transparent;
                                 },
