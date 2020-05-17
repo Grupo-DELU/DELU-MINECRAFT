@@ -88,7 +88,7 @@ namespace DeluMc
         /// Wave Multiplier for Heuristic Function
         /// It is hard to cross water
         /// </summary>
-        public static float WaterMultiplier = 4.0f;
+        public static float WaterMultiplier = 12.0f;
 
         /// <summary>
         /// Wave Multiplier for Heuristic Function
@@ -575,7 +575,8 @@ namespace DeluMc
             while (!priorityQueue.IsEmpty())
             {
                 curr = priorityQueue.ExtractDominating();
-
+                target = roadQT.NearestNeighbor(curr.RealPoint).DataNode.Data;
+                
                 if (curr.RealPoint.Z == target.Z && curr.RealPoint.X == target.X)
                 {
                     // We found goal
