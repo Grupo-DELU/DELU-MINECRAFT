@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
+using System.Drawing;
 using System.Collections.Generic;
 using DeluMc.Pipes;
-using DeluMc.MCEdit;
-using DeluMc.MCEdit.Block;
 using DeluMc.Masks;
 using DeluMc.Utils;
+using DeluMc.MCEdit;
 using DeluMc.Buildings;
+using DeluMc.MCEdit.Block;
 using DeluMc.Buildings.Palettes;
+
 namespace DeluMc
 {
     class Program
