@@ -133,10 +133,10 @@ namespace DeluMc
 
                     Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
                 }
-                
-                int[][] main = new int[zSize][];
+
+                int[][] mainRoadMap = new int[zSize][];
                 for (int i = 0; i < zSize; ++i)
-                    main[i] = new int[xSize];
+                    mainRoadMap[i] = new int[xSize];
 
                 DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
                 List<VillageMarker> villages = new List<VillageMarker>();
@@ -167,12 +167,12 @@ namespace DeluMc
                             villages[0].Seed.Z, villages[0].Seed.X,
                             villages[1].Seed.Z, villages[1].Seed.X,
                             acceptableMap, deltaMap, waterMap, roadMap
-                        );            
+                        );
                         foreach (Vector2Int roadPoint in road)
                         {
-                            roadQT.Insert(roadPoint, roadPoint);   
-                            main[roadPoint.Z][roadPoint.X] = 1; 
-                        }             
+                            roadQT.Insert(roadPoint, roadPoint);
+                            mainRoadMap[roadPoint.Z][roadPoint.X] = 1;
+                        }
                     }
                     for (int i = 2; i < villages.Count; ++i)
                     {
@@ -184,8 +184,8 @@ namespace DeluMc
                         );
                         foreach (Vector2Int roadPoint in road)
                         {
-                            roadQT.Insert(roadPoint, roadPoint);    
-                        }    
+                            roadQT.Insert(roadPoint, roadPoint);
+                        }
                     }
                 }
 
@@ -333,7 +333,7 @@ namespace DeluMc
                         new Mapper.SaveMapInfo{
                             zSize = zSize, xSize = xSize, name = "mainRoadMap",
                             colorWork = (int z, int x) => {
-                                if (main[z][x] == 1)
+                                if (mainRoadMap[z][x] == 1)
                                 {
                                     return Color.PaleVioletRed;
                                 }
