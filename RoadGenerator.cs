@@ -237,7 +237,7 @@ namespace DeluMc
         /// <param name="roadMap">Road Map</param>
         private static void PaintRoad(in List<Vector2Int> road, bool[][] acceptableMap, int[][] waterMap, int[][] roadMap)
         {
-            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length, acceptableMap[0].Length));
+            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
 
             if (road.Count <= 1)
             {
