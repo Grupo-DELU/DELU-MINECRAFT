@@ -158,25 +158,28 @@ namespace DeluMc
 
                     if (villages.Count > 1)
                     {
-                        RoadGenerator.FirstRoad(
-                            villages[0].Seed.Z, villages[0].Seed.X, 
-                            villages[1].Seed.Z, villages[2].Seed.X,
-                            acceptableMap, deltaMap, waterMap, roadMap
+                        for (int i = 0; i < villages.Count - 1; i++)
+                        {
+                            RoadGenerator.FirstRoad(
+                                villages[i].Seed.Z, villages[i].Seed.X,
+                                villages[i + 1].Seed.Z, villages[i + 1].Seed.X,
+                                acceptableMap, deltaMap, waterMap, roadMap
                             );
+                        }
                     }
                 }
 
                 HousePlacer.RequestHouseArea(
                     new HousePlacer.HouseAreaInput(
                         0,
-                        new Vector2Int(), 
-                        new Vector2Int(zSize-1,xSize-1),
+                        new Vector2Int(),
+                        new Vector2Int(zSize - 1, xSize - 1),
                         roadMap,
                         houseMap,
                         blocks,
                         Orientation.South,
                         PremadePalettes.forestPalette), BuildType.House);
-                        
+
                 // Write Data Back to Python
                 for (int y = 0; y < ySize; y++)
                 {
