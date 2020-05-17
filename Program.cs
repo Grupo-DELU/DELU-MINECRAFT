@@ -160,7 +160,7 @@ namespace DeluMc
                     {
                         RoadGenerator.FirstRoad(
                             villages[0].Seed.Z, villages[0].Seed.X, 
-                            villages[1].Seed.Z, villages[2].Seed.X,
+                            villages[1].Seed.Z, villages[1].Seed.X,
                             acceptableMap, deltaMap, waterMap, roadMap
                             );
                     }

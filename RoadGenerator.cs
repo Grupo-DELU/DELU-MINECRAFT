@@ -96,6 +96,11 @@ namespace DeluMc
         public static float NotRoadMultiplier = 0.5f;
 
         /// <summary>
+        /// Cost of failing to position parts of the 3x1 road
+        /// </summary>
+        public static float FailedSideOfRoadCost = 3.0f;
+
+        /// <summary>
         /// Calculate distance between two points
         /// Uses Manhattan distance
         /// </summary>
@@ -145,6 +150,54 @@ namespace DeluMc
                 return distance * (1.0f + WaterMultiplier);
             }
             return float.PositiveInfinity;
+        }
+
+        /// <summary>
+        /// Distance Heuristic Function for A*
+        /// </summary>
+        /// <param name="z">Current Z</param>
+        /// <param name="x">Current X</param>
+        /// <param name="tZ">Target Z</param>
+        /// <param name="tX">Target X</param>
+        /// <param name="acceptableMap">Acceptable Map</param>
+        /// <param name="deltaMap">Delta Map for Slopes</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="roadMap">Road Map</param>
+        /// <returns>Calculated Heuristic</returns>
+        public static float Heuristic(int z, int x, int tZ, int tX, in RectInt rectCover, in bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap)
+        {
+            int nZ, nX;
+            int count = 0;
+            float temp;
+            float acc = 0.0f;
+            float failedAcc = 0.0f;
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    nZ = z + dz;
+                    nX = x + dx;
+                    if (rectCover.IsInside(nZ, nX))
+                    {
+                        temp = Distance(nZ, nX, tZ, tX, acceptableMap, deltaMap, waterMap, roadMap);
+                        if (temp == float.PositiveInfinity)
+                        {
+                            if (nZ == z && nX == x)
+                            {
+                                return float.PositiveInfinity;
+                            }
+                            failedAcc += FailedSideOfRoadCost;
+                        }
+                        else
+                        {
+                            acc += temp;
+                            ++count;
+                        }
+                    }
+                }
+            }
+            return (acc / (float)count) + failedAcc;
         }
 
         /// <summary>
@@ -223,15 +276,29 @@ namespace DeluMc
                     else if (dir.X > 0)
                     {
                         // Increase in X
+                        // x x 0
+                        // x x x
+                        // 0 x x
                         RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                     else if (dir.X < 0)
                     {
                         // Decrease in X
+                        // 0 x x
+                        // x x x
+                        // x x 0
                         RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                 }
@@ -252,14 +319,22 @@ namespace DeluMc
                     {
                         // Increase in X
                         RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                     else if (dir.X < 0)
                     {
                         // Decrease in X
                         RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                 }
@@ -294,15 +369,29 @@ namespace DeluMc
                     else if (dir.X > 0)
                     {
                         // Increase in X
+                        // x x 0
+                        // x x x
+                        // 0 x x
                         RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                     else if (dir.X < 0)
                     {
                         // Decrease in X
+                        // 0 x x
+                        // x x x
+                        // x x 0
                         RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                 }
@@ -323,14 +412,22 @@ namespace DeluMc
                     {
                         // Increase in X
                         RoadPatchPlacement(road[i].Z - 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z + 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                     else if (dir.X < 0)
                     {
                         // Decrease in X
                         RoadPatchPlacement(road[i].Z + 1, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X - 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z + 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
+                        RoadPatchPlacement(road[i].Z - 1, road[i].X, rectCover, acceptableMap, waterMap, roadMap);
                         RoadPatchPlacement(road[i].Z - 1, road[i].X + 1, rectCover, acceptableMap, waterMap, roadMap);
                     }
                 }
@@ -352,13 +449,13 @@ namespace DeluMc
         public static List<Vector2Int> FirstRoad(int sZ, int sX, int tZ, int tX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap)
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
-            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length, acceptableMap[0].Length));
+            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
             Dictionary<Point, Point> parents = new Dictionary<Point, Point>();
             Dictionary<Point, float> distances = new Dictionary<Point, float>();
             MinHeap<Point> priorityQueue = new MinHeap<Point>(new CoordinatesBasedComparer());
 
             Func<int, int, int, int, float> distanceHeuristicFunc
-                = (int z, int x, int tZ, int tX) => { return Distance(z, x, tZ, tX, acceptableMap, deltaMap, waterMap, roadMap); };
+                = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap); };
 
             Func<int, int, float> heuristicFunc
                 = (int z, int x) => { return distanceHeuristicFunc(z, x, tZ, tX); };
