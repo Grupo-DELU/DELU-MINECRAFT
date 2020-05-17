@@ -46,7 +46,7 @@ namespace DeluMc
             this.Points = points;
         }
     }
-    
+
     /// <summary>
     /// Village Marker Placer Algorithm Class
     /// </summary>
@@ -321,6 +321,21 @@ namespace DeluMc
                 }
             }
             return newPValue;
+        }
+
+        /// <summary>
+        /// Eliminates a Village Marker from the Village Map
+        /// </summary>
+        /// <param name="village">Village to eliminate</param>
+        /// <param name="villageMap">Current Village Map</param>
+        public static void EliminateVillageMarker(VillageMarker village, int[][] villageMap)
+        {
+            Parallel.For(0, village.Points.Length,
+                index =>
+                {
+                    villageMap[village.Points[index].Z][village.Points[index].X] = 0;
+                }
+            );
         }
     }
 }
