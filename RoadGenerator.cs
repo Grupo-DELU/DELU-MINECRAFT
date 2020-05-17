@@ -204,7 +204,7 @@ namespace DeluMc
                         temp = Distance(nZ, nX, tZ, tX, acceptableMap, deltaMap, waterMap, roadMap);
                         if (temp == float.PositiveInfinity)
                         {
-                            if (nZ == z && nX == x)
+                            if (dz == 0 && dx == 0)
                             {
                                 return float.PositiveInfinity;
                             }
@@ -529,6 +529,13 @@ namespace DeluMc
             while (!priorityQueue.IsEmpty())
             {
                 curr = priorityQueue.ExtractDominating();
+                currDistance = distances[curr];
+
+                if (float.IsInfinity(currDistance))
+                {
+                    /// Failed to find road
+                    return new List<Vector2Int>();
+                }
 
                 if (curr.RealPoint.Z == tZ && curr.RealPoint.X == tX)
                 {
@@ -543,8 +550,6 @@ namespace DeluMc
                     PaintRoad(road, acceptableMap, waterMap, roadMap);
                     return road;
                 }
-
-                currDistance = distances[curr];
 
                 for (int dz = -1; dz <= 1; dz++)
                 {
@@ -567,16 +572,19 @@ namespace DeluMc
                             }
                             else
                             {
-                                distances[child] = childDistance;
-                                parents[child] = curr;
-                                priorityQueue.Add(child);
+                                if (!float.IsInfinity(child.Distance))
+                                {
+                                    distances[child] = childDistance;
+                                    parents[child] = curr;
+                                    priorityQueue.Add(child);
+                                }
                             }
                         }
                     }
                 }
 
             }
-            return null;
+            return new List<Vector2Int>();
         }
 
 
@@ -615,6 +623,13 @@ namespace DeluMc
             while (!priorityQueue.IsEmpty())
             {
                 curr = priorityQueue.ExtractDominating();
+                currDistance = distances[curr];
+
+                if (float.IsInfinity(currDistance))
+                {
+                    /// Failed to find road
+                    return new List<Vector2Int>();
+                }
 
                 if (roadMap[curr.RealPoint.Z][curr.RealPoint.X] == MainRoadMarker
                     || roadMap[curr.RealPoint.Z][curr.RealPoint.X] == MainBridgeMarker)
@@ -630,8 +645,6 @@ namespace DeluMc
                     PaintRoad(road, acceptableMap, waterMap, roadMap);
                     return road;
                 }
-
-                currDistance = distances[curr];
 
                 for (int dz = -1; dz <= 1; dz++)
                 {
@@ -658,16 +671,19 @@ namespace DeluMc
                             }
                             else
                             {
-                                distances[child] = childDistance;
-                                parents[child] = curr;
-                                priorityQueue.Add(child);
+                                if (!float.IsInfinity(child.Distance))
+                                {
+                                    distances[child] = childDistance;
+                                    parents[child] = curr;
+                                    priorityQueue.Add(child);
+                                }
                             }
                         }
                     }
                 }
 
             }
-            return null;
+            return new List<Vector2Int>();
         }
     }
 }

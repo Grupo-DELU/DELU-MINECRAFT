@@ -83,6 +83,7 @@ namespace DeluMc
                 int[][] villageMap = new int[zSize][];
                 int[][] houseMap = new int[zSize][];
                 int[][] roadMap = new int[zSize][];
+                int[][] mainRoadMap = new int[zSize][];
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -95,6 +96,7 @@ namespace DeluMc
                     villageMap[z] = new int[xSize];
                     houseMap[z] = new int[xSize];
                     roadMap[z] = new int[xSize];
+                    mainRoadMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -134,10 +136,6 @@ namespace DeluMc
 
                     Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
                 }
-
-                int[][] mainRoadMap = new int[zSize][];
-                for (int i = 0; i < zSize; ++i)
-                    mainRoadMap[i] = new int[xSize];
 
                 DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
                 List<VillageMarker> villages = new List<VillageMarker>();
