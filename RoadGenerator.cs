@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeluMc.Utils;
 using Utils.Collections;
+using Utils.SpatialTrees.QuadTrees;
 
 namespace DeluMc
 {
@@ -498,6 +499,99 @@ namespace DeluMc
                         childX = curr.RealPoint.X + dx;
                         if (rectCover.IsInside(childZ, childX))
                         {
+                            childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
+                            child = new Point { RealPoint = new Vector2Int(childZ, childX), Distance = heuristicFunc(childZ, childX) };
+                            if (distances.TryGetValue(child, out float currVal))
+                            {
+                                if (childDistance < currVal)
+                                {
+                                    distances[child] = childDistance;
+                                    parents[child] = curr;
+                                    priorityQueue.Add(child);
+                                }
+                            }
+                            else
+                            {
+                                distances[child] = childDistance;
+                                parents[child] = curr;
+                                priorityQueue.Add(child);
+                            }
+                        }
+                    }
+                }
+
+            }
+            return null;
+        }
+
+        
+        /// <summary>
+        /// Generates a road from a point to the roads
+        /// </summary>
+        /// <param name="sZ"></param>
+        /// <param name="sX"></param>
+        /// <param name="acceptableMap">Acceptable Map</param>
+        /// <param name="deltaMap">Delta Map</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="roadMap">Road Map</param>
+        /// <param name="roadQT">Road Quadtree</param>
+        /// <returns></returns>
+        public static List<Vector2Int> PointToRoad(int sZ, int sX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap, DataQuadTree<Vector2Int> roadQT)
+        {
+            System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
+            RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
+            Dictionary<Point, Point> parents = new Dictionary<Point, Point>();
+            Dictionary<Point, float> distances = new Dictionary<Point, float>();
+            MinHeap<Point> priorityQueue = new MinHeap<Point>(new CoordinatesBasedComparer());
+            Vector2Int target = roadQT.NearestNeighbor(new Vector2Int(sZ, sX)).DataNode.Data;
+            
+            Func<int, int, int, int, float> distanceHeuristicFunc
+                = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap); };
+
+            Func<int, int, float> heuristicFunc
+                = (int z, int x) => { return distanceHeuristicFunc(z, x, target.Z, target.X); };
+
+            Point startPoint = new Point { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, target.Z, target.X) };
+
+            parents.Add(startPoint, null);
+            distances.Add(startPoint, 0);
+            priorityQueue.Add(startPoint);
+
+            Point curr, child;
+            int childZ, childX;
+            float childDistance, currDistance;
+            while (!priorityQueue.IsEmpty())
+            {
+                curr = priorityQueue.ExtractDominating();
+
+                if (curr.RealPoint.Z == target.Z && curr.RealPoint.X == target.X)
+                {
+                    // We found goal
+                    List<Vector2Int> road = new List<Vector2Int>();
+                    while (curr != null)
+                    {
+                        // Add Point to Road
+                        road.Add(curr.RealPoint);
+                        curr = parents[curr];
+                    }
+                    PaintRoad(road, acceptableMap, waterMap, roadMap);
+                    return road;
+                }
+
+                currDistance = distances[curr];
+
+                for (int dz = -1; dz <= 1; dz++)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        childZ = curr.RealPoint.Z + dz;
+                        childX = curr.RealPoint.X + dx;
+                        // Target of the child position is the nearest point of the road to the child
+                        target = roadQT.NearestNeighbor(new Vector2Int(childZ, childX)).DataNode.Data;
+
+                        if (rectCover.IsInside(childZ, childX))
+                        {
+                            
                             childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
                             child = new Point { RealPoint = new Vector2Int(childZ, childX), Distance = heuristicFunc(childZ, childX) };
                             if (distances.TryGetValue(child, out float currVal))

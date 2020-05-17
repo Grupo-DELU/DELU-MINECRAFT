@@ -9,7 +9,7 @@ using DeluMc.MCEdit;
 using DeluMc.Buildings;
 using DeluMc.MCEdit.Block;
 using DeluMc.Buildings.Palettes;
-
+using Utils.SpatialTrees.QuadTrees;
 namespace DeluMc
 {
     class Program
@@ -133,7 +133,12 @@ namespace DeluMc
 
                     Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
                 }
+                
+                int[][] main = new int[zSize][];
+                for (int i = 0; i < zSize; ++i)
+                    main[i] = new int[xSize];
 
+                DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
                 List<VillageMarker> villages = new List<VillageMarker>();
                 {
                     Random rand = new Random();
@@ -156,17 +161,31 @@ namespace DeluMc
                         }
                         --numberOfTries;
                     }
-
                     if (villages.Count > 1)
                     {
-                        for (int i = 0; i < villages.Count - 1; i++)
+                        List<Vector2Int> road = RoadGenerator.FirstRoad(
+                            villages[0].Seed.Z, villages[0].Seed.X,
+                            villages[1].Seed.Z, villages[1].Seed.X,
+                            acceptableMap, deltaMap, waterMap, roadMap
+                        );            
+                        foreach (Vector2Int roadPoint in road)
                         {
-                            RoadGenerator.FirstRoad(
-                                villages[i].Seed.Z, villages[i].Seed.X,
-                                villages[i + 1].Seed.Z, villages[i + 1].Seed.X,
-                                acceptableMap, deltaMap, waterMap, roadMap
-                            );
-                        }
+                            roadQT.Insert(roadPoint, roadPoint);   
+                            main[roadPoint.Z][roadPoint.X] = 1; 
+                        }             
+                    }
+                    for (int i = 2; i < villages.Count; ++i)
+                    {
+                        Console.WriteLine($"Connecting village: {i} to roads");
+                        List<Vector2Int> road = RoadGenerator.PointToRoad(
+                            villages[i].Seed.Z, villages[i].Seed.X,
+                            acceptableMap, deltaMap, waterMap, roadMap,
+                            roadQT
+                        );
+                        foreach (Vector2Int roadPoint in road)
+                        {
+                            roadQT.Insert(roadPoint, roadPoint);    
+                        }    
                     }
                 }
 
@@ -306,6 +325,17 @@ namespace DeluMc
                                 else if (roadMap[z][x] == 2)
                                 {
                                     return Color.Brown;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "mainRoadMap",
+                            colorWork = (int z, int x) => {
+                                if (main[z][x] == 1)
+                                {
+                                    return Color.PaleVioletRed;
                                 }
                                 return Color.Transparent;
                                 },
