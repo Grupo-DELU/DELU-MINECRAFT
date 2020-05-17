@@ -46,6 +46,19 @@ namespace DeluMc.Masks
 
 
         /// <summary>
+        /// Checks if there is a tree leaf in coordinate (z, x)
+        /// </summary>
+        /// <param name="z">Coordinate Z to check</param>
+        /// <param name="x">Coordinate X to check</param>
+        /// <param name="treeMap">Tree map</param>
+        /// <returns>True if there is a tree leaf/False otherwise</returns>
+        public static bool IsLeaf(int z, int x, in int[][] treeMap)
+        {
+            return treeMap[z][x] == 1;
+        }
+
+
+        /// <summary>
         /// Checks if there is a tree trunk in coordinate (z, x)
         /// </summary>
         /// <param name="z">Coordinate Z to check</param>
