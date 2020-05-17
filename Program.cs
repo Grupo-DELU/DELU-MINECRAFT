@@ -165,7 +165,7 @@ namespace DeluMc
                         List<Vector2Int> road = RoadGenerator.FirstRoad(
                             villages[0].Seed.Z, villages[0].Seed.X,
                             villages[1].Seed.Z, villages[1].Seed.X,
-                            acceptableMap, deltaMap, waterMap, roadMap
+                            acceptableMap, deltaMap, waterMap, roadMap, treeMap
                         );
                         foreach (Vector2Int roadPoint in road)
                         {
@@ -178,7 +178,7 @@ namespace DeluMc
                         Console.WriteLine($"Connecting village: {i} to roads");
                         List<Vector2Int> road = RoadGenerator.PointToRoad(
                             villages[i].Seed.Z, villages[i].Seed.X,
-                            acceptableMap, deltaMap, waterMap, roadMap,
+                            acceptableMap, deltaMap, waterMap, roadMap, treeMap,
                             roadQT
                         );
                         foreach (Vector2Int roadPoint in road)
