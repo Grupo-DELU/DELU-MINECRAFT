@@ -109,8 +109,8 @@ namespace DeluMc
                         0,
                         new Vector2Int(), 
                         new Vector2Int(zSize-1,xSize-1),
-                        null,
-                        null,
+                        roadMap,
+                        houseMap,
                         blocks,
                         Orientation.South,
                         PremadePalettes.forestPalette), BuildType.House);
@@ -176,6 +176,17 @@ namespace DeluMc
                     }
                 }
 
+                HousePlacer.RequestHouseArea(
+                    new HousePlacer.HouseAreaInput(
+                        0,
+                        new Vector2Int(), 
+                        new Vector2Int(zSize-1,xSize-1),
+                        roadMap,
+                        houseMap,
+                        blocks,
+                        Orientation.South,
+                        PremadePalettes.forestPalette), BuildType.House);
+                        
                 // Write Data Back to Python
                 for (int y = 0; y < ySize; y++)
                 {
