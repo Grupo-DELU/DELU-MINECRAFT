@@ -374,25 +374,25 @@ namespace DeluMc.Buildings
                                 origZ = z - house.size[1]/2 * mod;
                                 origX = x - house.size[2]/2 * mod;
                                 map[y + i][origZ + k][origX + j] = (block != null ? block : map[y + i][origZ + k][origX + j]);
-                                PaintMaps(i, k, j, origZ + k, origX + j, houseMap, null, house);
+                                PaintMaps(i, k, j, origZ + k, origX + j, houseMap, roadMap, house);
                                 break;
                             case Orientation.East:
                                 origZ = z - house.size[2]/2 * mod;
                                 origX = x + house.size[1]/2 * mod;
                                 map[y + i][origZ + j][origX - k] = (block != null ? block : map[y + i][origZ + j][origX - k]);
-                                PaintMaps(i, k, j, origZ + j, origX - k, houseMap, null, house);
+                                PaintMaps(i, k, j, origZ + j, origX - k, houseMap, roadMap, house);
                                 break;  
                             case Orientation.South:
                                 origZ = z + house.size[1]/2 * mod; // Must check if ModZ is needed or not
                                 origX = x + house.size[2]/2 * mod;
                                 map[y + i][origZ - k][origX - j] = (block != null ? block : map[y + i][origZ - k][origX - j]);
-                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, null, house);
+                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, roadMap, house);
                                 break;
                             case Orientation.West:
                                 origZ = z + house.size[2]/2 * mod; // Must check if ModZ/X is needed or not 
                                 origX = x - house.size[1]/2 * mod; // Must check if ModZ/X is needed or not
                                 map[y + i][origZ - j][origX + k] = (block != null ? block : map[y + i][origZ - j][origX + k]);
-                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, null, house);
+                                PaintMaps(i, k, j, origZ - k, origX - j, houseMap, roadMap, house);
                                 break;
                         }
                     }

@@ -104,16 +104,6 @@ namespace DeluMc
                     }
                 }
 
-                HousePlacer.RequestHouseArea(
-                    new HousePlacer.HouseAreaInput(
-                        0,
-                        new Vector2Int(), 
-                        new Vector2Int(zSize-1,xSize-1),
-                        roadMap,
-                        houseMap,
-                        blocks,
-                        Orientation.South,
-                        PremadePalettes.forestPalette), BuildType.House);
                 {
                     Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
