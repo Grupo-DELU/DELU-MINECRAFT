@@ -129,6 +129,11 @@ namespace DeluMc.Utils
             return new Vector2Int(a.Z - b.Z, a.X - b.X);
         }
 
+        public static Vector2Int operator /(in Vector2Int a, in float b)
+        {
+            return new Vector2Int( (int)(a.Z / b), (int)(a.X / b));
+        }
+
         /// <summary>
         /// Component Wise Min of two vectors
         /// </summary>
@@ -149,6 +154,11 @@ namespace DeluMc.Utils
         public static Vector2Int Max(in Vector2Int a, in Vector2Int b)
         {
             return new Vector2Int(Math.Max(a.Z, b.Z), Math.Max(a.X, b.X));
+        }
+
+        public static int Manhattan(in Vector2Int a, in Vector2Int b)
+        {
+            return Math.Abs(a.Z - b.Z) + Math.Abs(a.X - b.X);
         }
     }
 }
