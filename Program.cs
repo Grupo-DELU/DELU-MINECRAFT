@@ -339,7 +339,7 @@ namespace DeluMc
                             colorWork = (int z, int x) => {
                                 if (mainRoadMap[z][x] == 1)
                                 {
-                                    return Color.IndianRed;
+                                    return Color.Turquoise;
                                 }
                                 return Color.Transparent;
                                 },
