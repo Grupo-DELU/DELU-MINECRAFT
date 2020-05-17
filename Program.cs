@@ -167,6 +167,7 @@ namespace DeluMc
                             villages[1].Seed.Z, villages[1].Seed.X,
                             acceptableMap, deltaMap, waterMap, roadMap, treeMap
                         );
+                        Console.WriteLine("Main Road lenght: " + road.Count);
                         foreach (Vector2Int roadPoint in road)
                         {
                             roadQT.Insert(roadPoint, roadPoint);
