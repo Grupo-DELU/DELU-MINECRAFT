@@ -44,5 +44,17 @@ namespace DeluMc.Masks
             return treeMap[z][x] >= 1;
         }
 
+        /// <summary>
+        /// Checks if there is a expanded tree in coordinate (z, x)
+        /// </summary>
+        /// <param name="z">Coordinate Z to check</param>
+        /// <param name="x">Coordinate X to check</param>
+        /// <param name="treeMap">Tree map</param>
+        /// <returns>True if there is a expanded tree/False otherwise</returns>
+        public static bool IsExpanded(int z, int x, in int[][] treeMap)
+        {
+            return treeMap[z][x] == 2;
+        }
+
     }
 }
