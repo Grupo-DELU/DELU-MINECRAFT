@@ -278,6 +278,10 @@ namespace DeluMc
                                 }
                                 else if (treeMap[z][x] == 2)
                                 {
+                                    return Color.Brown;
+                                }
+                                else if (treeMap[z][x] == 3)
+                                {
                                     return Color.DarkSeaGreen;
                                 }
                                 return Color.Transparent;

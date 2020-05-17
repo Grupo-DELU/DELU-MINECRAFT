@@ -26,11 +26,11 @@ namespace DeluMc.Masks
                     if (x + dx < 0 || dx + x >= treeMap[0].Length)
                         continue;
                     if (treeMap[z + dz][x + dx] == 0)
-                        treeMap[z + dz][x + dx] = 2;
+                        treeMap[z + dz][x + dx] = 3;
                 }
             }
         }
-
+        
         
         /// <summary>
         /// Checks if there is a tree in coordinate (z, x)
@@ -44,6 +44,20 @@ namespace DeluMc.Masks
             return treeMap[z][x] >= 1;
         }
 
+
+        /// <summary>
+        /// Checks if there is a tree trunk in coordinate (z, x)
+        /// </summary>
+        /// <param name="z">Coordinate Z to check</param>
+        /// <param name="x">Coordinate X to check</param>
+        /// <param name="treeMap">Tree map</param>
+        /// <returns>True if there is a tree trunk/False otherwise</returns>
+        public static bool IsTrunk(int z, int x, in int[][] treeMap)
+        {
+            return treeMap[z][x] == 2;
+        }
+
+
         /// <summary>
         /// Checks if there is a expanded tree in coordinate (z, x)
         /// </summary>
@@ -53,8 +67,7 @@ namespace DeluMc.Masks
         /// <returns>True if there is a expanded tree/False otherwise</returns>
         public static bool IsExpanded(int z, int x, in int[][] treeMap)
         {
-            return treeMap[z][x] == 2;
+            return treeMap[z][x] == 3;
         }
-
     }
 }

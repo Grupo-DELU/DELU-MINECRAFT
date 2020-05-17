@@ -50,7 +50,7 @@ namespace DeluMc.Masks
                         if (block.ID == leavesID || block.ID == woodRootID)
                         {
                             treeMap[i][j] = 1;
-                            heightmap[i][j] = FindGroundHeight(box, heightmap, i, j);
+                            heightmap[i][j] = FindGroundHeight(box, heightmap, treeMap, i, j);
                         }
                         else
                         {
@@ -75,7 +75,7 @@ namespace DeluMc.Masks
         /// <param name="heightMap">HeightMap</param>
         /// <param name="z">Z pos to check</param>
         /// <param name="x">X pos to check</param>
-        public static int FindGroundHeight(Material[][][] box, int[][] heightMap, int z, int x)
+        public static int FindGroundHeight(Material[][][] box, int[][] heightMap, int[][] treeMap, int z, int x)
         {
             int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
             int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
@@ -92,6 +92,8 @@ namespace DeluMc.Masks
             // Replace for a IsTree function
             while ((block.ID == leavesID || block.ID == woodRootID || block.ID == airID) && y > -1)
             {
+                if (block.ID == woodRootID && treeMap[z][x] != 2)
+                    treeMap[z][x] = 2;
                 // Maybe we must be carefull with what is considered ground in this case.
                 y -= 1;
                 if (y != -1)
