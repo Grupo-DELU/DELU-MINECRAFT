@@ -318,15 +318,19 @@ namespace DeluMc
                         new Mapper.SaveMapInfo{
                             zSize = zSize, xSize = xSize, name = "roadMap",
                             colorWork = (int z, int x) => {
-                                if (roadMap[z][x] == 1)
+                                switch (roadMap[z][x])
                                 {
-                                    return Color.Purple;
+                                    case RoadGenerator.MainRoadMarker:
+                                        return Color.PaleVioletRed;
+                                    case RoadGenerator.RoadMarker:
+                                        return Color.Purple;
+                                    case RoadGenerator.BridgeMarker:
+                                        return Color.Brown;
+                                    case RoadGenerator.MainBridgeMarker:
+                                        return Color.BurlyWood;
+                                    default:
+                                        return Color.Transparent;
                                 }
-                                else if (roadMap[z][x] == 2)
-                                {
-                                    return Color.Brown;
-                                }
-                                return Color.Transparent;
                                 },
                             specialColors = null
                         },
@@ -335,7 +339,7 @@ namespace DeluMc
                             colorWork = (int z, int x) => {
                                 if (mainRoadMap[z][x] == 1)
                                 {
-                                    return Color.PaleVioletRed;
+                                    return Color.IndianRed;
                                 }
                                 return Color.Transparent;
                                 },
