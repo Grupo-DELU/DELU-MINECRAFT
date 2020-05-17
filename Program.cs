@@ -117,7 +117,7 @@ namespace DeluMc
                 {
                     // Delta Map
                     Tasker.WorkBlock[] workBlocks = {
-                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x); 
+                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);}
                     };
 
