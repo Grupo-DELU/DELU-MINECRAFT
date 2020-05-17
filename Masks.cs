@@ -92,9 +92,7 @@ namespace DeluMc.Masks
             // Replace for a IsTree function
             while ((block.ID == leavesID || block.ID == woodRootID || block.ID == airID) && y > -1)
             {
-                // Temp
                 // Maybe we must be carefull with what is considered ground in this case.
-                box[y][z][x] = AlphaMaterials.Air_0_0;
                 y -= 1;
                 if (y != -1)
                 {
