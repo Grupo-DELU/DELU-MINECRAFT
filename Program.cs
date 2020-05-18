@@ -155,8 +155,13 @@ namespace DeluMc
                             if (village.Points.Length >= expectedVillageSize / 2)
                             {
                                 --villageCount;
+                                villages.Add(village);
                             }
-                            villages.Add(village);
+                            else
+                            {
+                                VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
+                            }
+                            
                         }
                         --numberOfTries;
                     }
