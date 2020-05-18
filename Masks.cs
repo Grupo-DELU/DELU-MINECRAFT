@@ -16,7 +16,7 @@ namespace DeluMc.Masks
         /// <returns>If the block position is considered acceptable</returns>
         public static bool IsAcceptableTreeMapBlock(in int[][] treeMap, int z, int x)
         {
-            return 0 <= z && z < treeMap.Length && 0 <= x && x < treeMap[0].Length && treeMap[z][x] != 2;
+            return 0 <= z && z < treeMap.Length && 0 <= x && x < treeMap[0].Length && treeMap[z][x] == 0;
         }
 
         /// <summary>

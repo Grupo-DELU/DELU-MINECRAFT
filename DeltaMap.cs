@@ -23,7 +23,7 @@ namespace DeluMc.Masks
         /// <summary>
         /// Maximum acceptable delta
         /// </summary>
-        public const float kMaxDelta = 1.0f;
+        public const float kMaxDelta = 0.35f;
 
         /// <summary>
         /// Calculate Delta Map in a Position
