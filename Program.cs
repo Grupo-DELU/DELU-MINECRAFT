@@ -153,11 +153,12 @@ namespace DeluMc
 
                 DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
                 List<VillageMarker> villages = new List<VillageMarker>();
+                List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
                 {
                     Random rand = new Random();
                     int numberOfTries = 10000;
-                    int expectedVillageSize = 100;
-                    int radius = 4;
+                    int expectedVillageSize = 300;
+                    int radius = 2;
                     int villageCount = 4;
                     while (villageCount != 0 && numberOfTries != 0)
                     {
@@ -169,8 +170,13 @@ namespace DeluMc
                             if (village.Points.Length >= expectedVillageSize / 2)
                             {
                                 --villageCount;
+                                villages.Add(village);
                             }
-                            villages.Add(village);
+                            else
+                            {
+                                VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
+                            }
+
                         }
                         --numberOfTries;
                     }
@@ -182,6 +188,7 @@ namespace DeluMc
                             acceptableMap, deltaMap, waterMap, roadMap, treeMap
                         );
                         Console.WriteLine("Main Road lenght: " + road.Count);
+                        roads.Add(road);
                         foreach (Vector2Int roadPoint in road)
                         {
                             roadQT.Insert(roadPoint, roadPoint);
@@ -196,11 +203,14 @@ namespace DeluMc
                             acceptableMap, deltaMap, waterMap, roadMap, treeMap,
                             roadQT
                         );
+                        roads.Add(road);
                         foreach (Vector2Int roadPoint in road)
                         {
                             roadQT.Insert(roadPoint, roadPoint);
                         }
                     }
+
+                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, biomes, blocks);
                 }
 
                 HousePlacer.RequestHouseArea(
