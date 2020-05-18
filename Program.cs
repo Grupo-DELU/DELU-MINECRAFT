@@ -139,6 +139,7 @@ namespace DeluMc
 
                 DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
                 List<VillageMarker> villages = new List<VillageMarker>();
+                List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
                 {
                     Random rand = new Random();
                     int numberOfTries = 10000;
@@ -161,7 +162,7 @@ namespace DeluMc
                             {
                                 VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
                             }
-                            
+
                         }
                         --numberOfTries;
                     }
@@ -173,6 +174,7 @@ namespace DeluMc
                             acceptableMap, deltaMap, waterMap, roadMap, treeMap
                         );
                         Console.WriteLine("Main Road lenght: " + road.Count);
+                        roads.Add(road);
                         foreach (Vector2Int roadPoint in road)
                         {
                             roadQT.Insert(roadPoint, roadPoint);
@@ -187,11 +189,14 @@ namespace DeluMc
                             acceptableMap, deltaMap, waterMap, roadMap, treeMap,
                             roadQT
                         );
+                        roads.Add(road);
                         foreach (Vector2Int roadPoint in road)
                         {
                             roadQT.Insert(roadPoint, roadPoint);
                         }
                     }
+
+                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, biomes, blocks);
                 }
 
                 HousePlacer.RequestHouseArea(

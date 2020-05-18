@@ -7,6 +7,9 @@ using DeluMc.Masks;
 
 namespace DeluMc
 {
+    /// <summary>
+    /// Road Generation (Not Placing) Class
+    /// </summary>
     public static class RoadGenerator
     {
         /// <summary>
