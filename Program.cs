@@ -132,19 +132,25 @@ namespace DeluMc
                     // Acceptable Map & Lava map
                     Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
                     {
-                        int y = heightMap[z][x];
+                        int y1 = heightMap[z][x]; //Actual lava block
+                        int y2; //if the lava is under a tree
+
                         acceptableMap[z][x] = DeltaMap.IsAcceptableBlock(deltaMap, z, x) && HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x) && waterMap[z][x] != 1;
-                        
-                        if (y < 0)
+
+                        y2 = y1;
+                        if (y1 < 0)
                         { //Ground surface below the selected volume
-                            y = 0;
+                            y1 = y2 = 0;
                         }
-                        else if ( y + 1 < blocks.Length) 
+                        else if ( y1 + 1 < blocks.Length) 
                         { //upper block within the selected volume
-                            y += 1;
+                            y1 += 1;  
                         }
 
-                        lavaMap[z][x] = LavaMap.isLava(blocks[y][z][x]) ? 1 : 0;
+                        if(LavaMap.isLava(blocks[y1][z][x]) || LavaMap.isLava(blocks[y2][z][x]))
+                        {
+                            lavaMap[z][x] = 1;
+                        }
                     }
                     };
 
