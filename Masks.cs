@@ -104,4 +104,20 @@ namespace DeluMc.Masks
             return y;
         }
     }
+
+    public static class LavaMap
+    {
+        /// <summary>
+        ///  Checks if a given material is some kind of lava
+        /// </summary>
+        /// <param name="m"> material to check </param>
+        public static bool isLava(Material m)
+        {
+            int lavaId1 = 10;
+            int lavaId2 = 11;
+
+            return m.ID == lavaId1 || m.ID == lavaId2;
+        }
+
+    }
 }

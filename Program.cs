@@ -84,6 +84,7 @@ namespace DeluMc
                 int[][] houseMap = new int[zSize][];
                 int[][] roadMap = new int[zSize][];
                 int[][] mainRoadMap = new int[zSize][];
+                int[][] lavaMap = new int[zSize][];
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -97,6 +98,7 @@ namespace DeluMc
                     houseMap[z] = new int[xSize];
                     roadMap[z] = new int[xSize];
                     mainRoadMap[z] = new int[xSize];
+                    lavaMap[z] = new int[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -127,10 +129,22 @@ namespace DeluMc
                 }
 
                 {
-                    // Acceptable Map
+                    // Acceptable Map & Lava map
                     Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
                     {
+                        int y = heightMap[z][x];
                         acceptableMap[z][x] = DeltaMap.IsAcceptableBlock(deltaMap, z, x) && HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x) && waterMap[z][x] != 1;
+                        
+                        if (y < 0)
+                        { //Ground surface below the selected volume
+                            y = 0;
+                        }
+                        else if ( y + 1 < blocks.Length) 
+                        { //upper block within the selected volume
+                            y += 1;
+                        }
+
+                        lavaMap[z][x] = LavaMap.isLava(blocks[y][z][x]) ? 1 : 0;
                     }
                     };
 
@@ -353,6 +367,18 @@ namespace DeluMc
                                 },
                             specialColors = null
                         },
+                        new Mapper.SaveMapInfo{
+                            zSize = zSize, xSize = xSize, name = "lavaMap",
+                            colorWork = (int z, int x) => {
+                                if (lavaMap[z][x] == 1)
+                                {
+                                    return Color.DarkRed;
+                                }
+                                return Color.Transparent;
+                                },
+                            specialColors = null
+                        }
+                        
                     };
 
                     Mapper.SaveMaps(saveMapInfos);
