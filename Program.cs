@@ -142,9 +142,9 @@ namespace DeluMc
                 {
                     Random rand = new Random();
                     int numberOfTries = 10000;
-                    int expectedVillageSize = 100;
+                    int expectedVillageSize = 300;
                     int radius = 2;
-                    int villageCount = 6;
+                    int villageCount = 4;
                     while (villageCount != 0 && numberOfTries != 0)
                     {
                         int z = rand.Next(0, zSize);
