@@ -84,7 +84,7 @@ namespace DeluMc
                 int[][] houseMap = new int[zSize][];
                 int[][] roadMap = new int[zSize][];
                 int[][] mainRoadMap = new int[zSize][];
-                int[][] lavaMap = new int[zSize][];
+                bool[][] lavaMap = new bool[zSize][];
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -98,7 +98,7 @@ namespace DeluMc
                     houseMap[z] = new int[xSize];
                     roadMap[z] = new int[xSize];
                     mainRoadMap[z] = new int[xSize];
-                    lavaMap[z] = new int[xSize];
+                    lavaMap[z] = new bool[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
                         biomes[z][x] = (Biomes)reader.ReadInt32();
@@ -124,7 +124,7 @@ namespace DeluMc
                         {
                         DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);
-                        lavaMap[z][x] = LavaMap.isAcceptableLavaMapBlock(heightMap, blocks, z,x) ? 1 : 0;
+                        lavaMap[z][x] = LavaMap.isAcceptableLavaMapBlock(heightMap, blocks, z,x);
                         }
                     };
 
@@ -138,7 +138,7 @@ namespace DeluMc
                         acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          && 
                                                 HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   && 
                                                 waterMap[z][x] != 1                                 && 
-                                                lavaMap[z][x] != 1;
+                                                lavaMap[z][x];
                     }
                     };
 
@@ -374,7 +374,7 @@ namespace DeluMc
                         new Mapper.SaveMapInfo{
                             zSize = zSize, xSize = xSize, name = "lavaMap",
                             colorWork = (int z, int x) => {
-                                if (lavaMap[z][x] == 1)
+                                if ( lavaMap[z][x] )
                                 {
                                     return Color.DarkRed;
                                 }
