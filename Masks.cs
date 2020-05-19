@@ -65,7 +65,6 @@ namespace DeluMc.Masks
             }
         }
 
-
         /// <summary>
         /// Updates heightMap[z][x] with the real highest ground position.
         /// It is usefull when the heightMap indicates a leaves block instead
@@ -117,6 +116,32 @@ namespace DeluMc.Masks
             int lavaId2 = 11;
 
             return m.ID == lavaId1 || m.ID == lavaId2;
+        }
+
+        /// <summary>
+        /// Checks if the given position contains a lava block
+        /// </summary>
+        /// <param name="heightMap">HeightMap</param>
+        /// <param name="blocks">Blocks in the world</param>
+        /// <param name="z">Z pos to check</param>
+        /// <param name="x">X pos to check</param>
+        /// <returns>If the position contains a lava block</returns>
+        public static bool isAcceptableLavaMapBlock(in int[][] heightMap, in Material[][][] blocks, int z, int x)
+        {
+            int y1 = heightMap[z][x]; //Actual lava block
+            int y2; //if the lava is under a tree
+
+            y2 = y1;
+            if (y1 < 0)
+            { //Ground surface below the selected volume
+                y1 = y2 = 0;
+            }
+            else if ( y1 + 1 < blocks.Length) 
+            { //upper block within the selected volume
+                y1 += 1;  
+            }
+
+            return LavaMap.isLava(blocks[y1][z][x]) || LavaMap.isLava(blocks[y2][z][x]);
         }
 
     }

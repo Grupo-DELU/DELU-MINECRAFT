@@ -119,38 +119,26 @@ namespace DeluMc
                 }
 
                 {
-                    // Delta Map
-                    Tasker.WorkBlock[] workBlocks = {
-                        (int z, int x) => {DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
-                        TreeMap.ExpandTreeBlock(z, x, treeMap);}
+                    // Delta Map & Lava Map
+                    Tasker.WorkBlock[] workBlocks = { (int z, int x) => 
+                        {
+                        DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
+                        TreeMap.ExpandTreeBlock(z, x, treeMap);
+                        lavaMap[z][x] = LavaMap.isAcceptableLavaMapBlock(heightMap, blocks, z,x) ? 1 : 0;
+                        }
                     };
 
                     Tasker.Run2DTasks(zSize, xSize, null, workBlocks);
                 }
 
                 {
-                    // Acceptable Map & Lava map
+                    // Acceptable Map
                     Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
                     {
-                        int y1 = heightMap[z][x]; //Actual lava block
-                        int y2; //if the lava is under a tree
-
-                        acceptableMap[z][x] = DeltaMap.IsAcceptableBlock(deltaMap, z, x) && HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x) && waterMap[z][x] != 1;
-
-                        y2 = y1;
-                        if (y1 < 0)
-                        { //Ground surface below the selected volume
-                            y1 = y2 = 0;
-                        }
-                        else if ( y1 + 1 < blocks.Length) 
-                        { //upper block within the selected volume
-                            y1 += 1;  
-                        }
-
-                        if(LavaMap.isLava(blocks[y1][z][x]) || LavaMap.isLava(blocks[y2][z][x]))
-                        {
-                            lavaMap[z][x] = 1;
-                        }
+                        acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          && 
+                                                HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   && 
+                                                waterMap[z][x] != 1                                 && 
+                                                lavaMap[z][x] != 1;
                     }
                     };
 
