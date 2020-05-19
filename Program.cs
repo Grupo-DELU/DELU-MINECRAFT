@@ -138,7 +138,7 @@ namespace DeluMc
                         acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          && 
                                                 HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   && 
                                                 waterMap[z][x] != 1                                 && 
-                                                lavaMap[z][x];
+                                                !lavaMap[z][x];
                     }
                     };
 
