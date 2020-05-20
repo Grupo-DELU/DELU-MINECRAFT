@@ -52,12 +52,17 @@ namespace DeluMc
             }
         }
 
+        private static void PlaceRoad()
+        {
+
+        }
+
         public static void RoadsPlacer(
             List<List<Vector2Int>> roads, int[][] roadMap, int[][] heightMap, Biomes[][] biomes,
             Material[][][] world)
         {
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(roadMap.Length - 1, roadMap[0].Length - 1));
-            HashSet<Point> bridge = new HashSet<Point>();
+            HashSet<Point> bridges = new HashSet<Point>();
 
             List<Vector2Int> road;
             int nz, nx, count;
@@ -76,6 +81,8 @@ namespace DeluMc
                 {
                     if (roadMap[road[i].Z][road[i].X] == RoadGenerator.MainRoadMarker)
                     {
+                        // Normal Road
+                        #region ROAD_PLACEMENT
                         count = 0;
                         averageHeight = 0;
 
@@ -106,7 +113,6 @@ namespace DeluMc
                         }
                         averageHeight /= count;
 
-                        // Normal Road
                         for (int dz = -1; dz <= 1; dz++)
                         {
                             for (int dx = -1; dx <= 1; dx++)
@@ -118,6 +124,7 @@ namespace DeluMc
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
                                     world[averageHeight][nz][nx] = AlphaMaterials.Stone_1_0;
+                                    // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
                                         world[averageHeight + dy][nz][nx] = AlphaMaterials.Air_0_0;
@@ -125,11 +132,95 @@ namespace DeluMc
                                 }
                             }
                         }
-
+                        #endregion // ROAD_PLACEMENT
                     }
                     else
                     {
                         // Bridge
+                        #region BRIDGE_PLACEMENT
+
+                        Point curr = new Point { RealPoint = road[i] };
+                        Point temp;
+
+                        if (bridges.Contains(curr))
+                        {
+                            // Already processed
+                            continue;
+                        }
+                        Stack<Point> bridgePoints = new Stack<Point>(); // DFS of bridges
+                        List<Vector2Int> pivots = new List<Vector2Int>(); // Bridge land connections
+                        List<Vector2Int> bridgeParts = new List<Vector2Int>(); // All parts of the bridge
+                        HashSet<Point> currBridge = new HashSet<Point>(); // Avoid parts repetitions
+                        bridgePoints.Push(curr);
+                        averageHeight = 0;
+
+                        while (bridgePoints.Count != 0)
+                        {
+                            curr = bridgePoints.Pop();
+
+                            for (int dz = -1; dz <= 1; dz++)
+                            {
+                                for (int dx = -1; dx <= 1; dx++)
+                                {
+                                    nz = curr.RealPoint.Z + dz;
+                                    nx = curr.RealPoint.X + dx;
+                                    temp = new Point { RealPoint = new Vector2Int(nz, nx) };
+                                    if (rectCover.IsInside(nz, nx) && !currBridge.Contains(temp))
+                                    {
+                                        if (roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
+                                        {
+                                            averageHeight += heightMap[nz][nx];
+                                            pivots.Add(new Vector2Int(nz, nx));
+                                            currBridge.Add(temp);
+                                        }
+                                        else if (roadMap[nz][nx] == RoadGenerator.MainBridgeMarker)
+                                        {
+                                            bridges.Add(temp);
+                                            bridgeParts.Add(temp.RealPoint);
+                                            bridgePoints.Push(temp);
+                                            currBridge.Add(temp);
+                                        }
+                                        else if (roadMap[nz][nx] == RoadGenerator.BridgeMarker)
+                                        {
+                                            bridgeParts.Add(new Vector2Int(nz, nx));
+                                            currBridge.Add(temp);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Get Bridge Average Height, add 1 to put it above water
+                        averageHeight /= pivots.Count;
+                        averageHeight += 1;
+
+                        Parallel.ForEach(bridgeParts,
+                            (Vector2Int point) => 
+                            {
+                                float height = 1.0f * Math.Max(heightMap[point.Z][point.X] + 1, averageHeight);
+                                float factor = 1.0f;
+                                float temp;
+                                for (int k = 0; k < pivots.Count; k++)
+                                {
+                                    temp = 1.0f / (float) Vector2Int.Manhattan(point, pivots[k]);
+                                    factor += temp;
+                                    height += temp * heightMap[pivots[k].Z][pivots[k].X];
+                                }
+                                height /= factor;
+                                int finalHeight = (int)height;
+                                world[finalHeight][point.Z][point.X] = AlphaMaterials.WoodenDoubleSlab_Seamed_43_2;
+                                for (int dy = 1; dy <= 2; dy++)
+                                {
+                                    world[finalHeight + dy][point.Z][point.X] = AlphaMaterials.Air_0_0;
+                                }
+                                if (roadMap[point.Z][point.X] == RoadGenerator.BridgeMarker)
+                                {
+                                     world[finalHeight + 1][point.Z][point.X] = AlphaMaterials.AcaciaFence_192_0;
+                                }
+                            }
+                        );
+
+                        #endregion
                     }
                 }
             }
