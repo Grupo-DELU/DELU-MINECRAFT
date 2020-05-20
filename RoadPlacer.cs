@@ -58,7 +58,7 @@ namespace DeluMc
         }
 
         public static void RoadsPlacer(
-            List<List<Vector2Int>> roads, int[][] roadMap, int[][] heightMap, Biomes[][] biomes,
+            List<List<Vector2Int>> roads, int[][] roadMap, int[][] heightMap, int[][] waterMap, Biomes[][] biomes,
             Material[][][] world)
         {
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(roadMap.Length - 1, roadMap[0].Length - 1));
@@ -192,17 +192,17 @@ namespace DeluMc
 
                         // Get Bridge Average Height, add 1 to put it above water
                         averageHeight /= pivots.Count;
-                        averageHeight += 1;
+                        averageHeight += 3;
 
                         Parallel.ForEach(bridgeParts,
-                            (Vector2Int point) => 
+                            (Vector2Int point) =>
                             {
                                 float height = 1.0f * Math.Max(heightMap[point.Z][point.X] + 1, averageHeight);
                                 float factor = 1.0f;
                                 float temp;
                                 for (int k = 0; k < pivots.Count; k++)
                                 {
-                                    temp = 1.0f / (float) Vector2Int.Manhattan(point, pivots[k]);
+                                    temp = 1.0f / (float)Vector2Int.Manhattan(point, pivots[k]);
                                     factor += temp;
                                     height += temp * heightMap[pivots[k].Z][pivots[k].X];
                                 }
@@ -215,7 +215,15 @@ namespace DeluMc
                                 }
                                 if (roadMap[point.Z][point.X] == RoadGenerator.BridgeMarker)
                                 {
-                                     world[finalHeight + 1][point.Z][point.X] = AlphaMaterials.AcaciaFence_192_0;
+                                    if (
+                                        (rectCover.IsInside(point.Z + 1, point.X + 0) && waterMap[point.Z + 1][point.X + 0] == 1 && roadMap[point.Z + 1][point.X + 0] == 0)
+                                        || (rectCover.IsInside(point.Z + 0, point.X + 1) && waterMap[point.Z + 0][point.X + 1] == 1 && roadMap[point.Z + 0][point.X + 1]  == 0)
+                                        || (rectCover.IsInside(point.Z - 1, point.X + 0) && waterMap[point.Z - 1][point.X + 0] == 1 && roadMap[point.Z - 1][point.X + 0]  == 0)
+                                        || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1]  == 0)
+                                        )
+                                    {
+                                        world[finalHeight + 1][point.Z][point.X] = AlphaMaterials.AcaciaFence_192_0;
+                                    }
                                 }
                             }
                         );

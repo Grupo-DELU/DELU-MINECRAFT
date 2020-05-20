@@ -120,7 +120,7 @@ namespace DeluMc
 
                 {
                     // Delta Map & Lava Map
-                    Tasker.WorkBlock[] workBlocks = { (int z, int x) => 
+                    Tasker.WorkBlock[] workBlocks = { (int z, int x) =>
                         {
                         DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);
@@ -135,9 +135,9 @@ namespace DeluMc
                     // Acceptable Map
                     Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
                     {
-                        acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          && 
-                                                HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   && 
-                                                waterMap[z][x] != 1                                 && 
+                        acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          &&
+                                                HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   &&
+                                                waterMap[z][x] != 1                                 &&
                                                 !lavaMap[z][x];
                     }
                     };
@@ -204,7 +204,7 @@ namespace DeluMc
                         }
                     }
 
-                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, biomes, blocks);
+                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, blocks);
                 }
 
                 HousePlacer.RequestHouseArea(
@@ -382,7 +382,7 @@ namespace DeluMc
                                 },
                             specialColors = null
                         }
-                        
+
                     };
 
                     Mapper.SaveMaps(saveMapInfos);
