@@ -11,6 +11,9 @@ using DeluMc.MCEdit.Block;
 
 namespace DeluMc
 {
+    /// <summary>
+    /// Utility in charge of placing blocks in the marked roads and bridges
+    /// </summary>
     public class RoadPlacer
     {
         // <summary>
@@ -52,11 +55,15 @@ namespace DeluMc
             }
         }
 
-        private static void PlaceRoad()
-        {
-
-        }
-
+        /// <summary>
+        /// Place the blocks in the marked roads and bridges
+        /// </summary>
+        /// <param name="roads">Roads to place</param>
+        /// <param name="roadMap">Road Map</param>
+        /// <param name="heightMap">Height Map</param>
+        /// <param name="waterMap">Water Map</param>
+        /// <param name="biomes">Biomes</param>
+        /// <param name="world">Worlds</param>
         public static void RoadsPlacer(
             List<List<Vector2Int>> roads, int[][] roadMap, int[][] heightMap, int[][] waterMap, Biomes[][] biomes,
             Material[][][] world)
@@ -67,7 +74,7 @@ namespace DeluMc
             List<Vector2Int> road;
             int nz, nx, count;
             int averageHeight;
-
+            // Ugly code but dumb fast
             for (int j = 0; j < roads.Count; j++)
             {
                 road = roads[j];
