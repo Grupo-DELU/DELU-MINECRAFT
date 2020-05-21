@@ -153,6 +153,23 @@ namespace DeluMc.Utils
             Console.WriteLine("=========================================\n\n");
         }
 
+        public static void PrintAllTime(bool s = false, bool ms = false, bool ns = false)
+        {
+            if (!s && !ms && !ns)
+            {
+                Console.WriteLine("Use at least one time print option!");
+                return;
+            }
+            if (watches.Count == 0)
+            {
+                Console.WriteLine("There aren't watches!");
+                return;
+            }
+
+            foreach (string name in watches.Keys)
+                PrintTime(name, s, ms, ns);
+        }
+
 
         static Clocker()
         {
