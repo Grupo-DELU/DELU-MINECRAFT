@@ -151,7 +151,7 @@ namespace DeluMc
                 {
                     Random rand = new Random();
                     int numberOfTries = 10000;
-                    int expectedVillageSize = 300;
+                    int expectedVillageSize = 600;
                     int radius = 2;
                     int villageCount = 4;
                     while (villageCount != 0 && numberOfTries != 0)
@@ -161,7 +161,7 @@ namespace DeluMc
                         if (acceptableMap[z][x] && villageMap[z][x] <= 0)
                         {
                             VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius);
-                            if (village.Points.Length >= expectedVillageSize / 2)
+                            if (village.Points.Length >= expectedVillageSize * 0.75f)
                             {
                                 --villageCount;
                                 villages.Add(village);
@@ -203,7 +203,15 @@ namespace DeluMc
                             roadQT.Insert(roadPoint, roadPoint);
                         }
                     }
-
+#if DEBUG
+                    foreach (VillageMarker village in villages)
+                    {
+                        foreach (Vector2Int point in village.Points)
+                        {
+                            blocks[heightMap[point.Z][point.X]][point.Z][point.X] = AlphaMaterials.YellowWool_35_4;
+                        }
+                    }
+#endif
                     RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, blocks);
                 }
 
