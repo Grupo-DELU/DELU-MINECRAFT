@@ -317,6 +317,8 @@ namespace DeluMc
                 // Nothing to Paint
                 return;
             }
+            
+            // Note this is horrible but dumb fast
 
             int roadZ, roadX, centerType;
 
