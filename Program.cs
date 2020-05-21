@@ -42,13 +42,14 @@ namespace DeluMc
         {
             // Launch Debugger
             Debugger();
+            Clocker.AddAndStartClock("StartClock");
 
             if (args.Length != 1)
             {
                 Console.WriteLine("Pipe requires only one argument");
                 return;
             }
-
+            
             PipeClient pipeClient = new PipeClient(args[0]);
             pipeClient.Init();
 
@@ -226,6 +227,16 @@ namespace DeluMc
 
                 RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
             }
+
+#if DEBUG
+            foreach (VillageMarker village in villages)
+            {
+                foreach (Vector2Int point in village.Points)
+                {
+                    differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.YellowWool_35_4);
+                }
+            }
+#endif
 
             HousePlacer.RequestHouseArea(
                 new HousePlacer.HouseAreaInput(
@@ -409,6 +420,7 @@ namespace DeluMc
 
                 Mapper.SaveMaps(saveMapInfos);
             }
+            Clocker.RemoveClock("StartClock", true, true, true);
         }
     }
 }
