@@ -123,7 +123,7 @@ namespace DeluMc
                                     rectCover.IsInside(nz, nx)
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
-                                    world[averageHeight][nz][nx] = AlphaMaterials.Stone_1_0;
+                                    world[averageHeight][nz][nx] = AlphaMaterials.Cobblestone_4_0;
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
@@ -147,16 +147,16 @@ namespace DeluMc
                             // Already processed
                             continue;
                         }
-                        Stack<Point> bridgePoints = new Stack<Point>(); // DFS of bridges
+                        Stack<Point> bridgeStack = new Stack<Point>(); // DFS of bridges
                         List<Vector2Int> pivots = new List<Vector2Int>(); // Bridge land connections
                         List<Vector2Int> bridgeParts = new List<Vector2Int>(); // All parts of the bridge
                         HashSet<Point> currBridge = new HashSet<Point>(); // Avoid parts repetitions
-                        bridgePoints.Push(curr);
+                        bridgeStack.Push(curr);
                         averageHeight = 0;
 
-                        while (bridgePoints.Count != 0)
+                        while (bridgeStack.Count != 0)
                         {
-                            curr = bridgePoints.Pop();
+                            curr = bridgeStack.Pop();
 
                             for (int dz = -1; dz <= 1; dz++)
                             {
@@ -177,12 +177,13 @@ namespace DeluMc
                                         {
                                             bridges.Add(temp);
                                             bridgeParts.Add(temp.RealPoint);
-                                            bridgePoints.Push(temp);
+                                            bridgeStack.Push(temp);
                                             currBridge.Add(temp);
                                         }
                                         else if (roadMap[nz][nx] == RoadGenerator.BridgeMarker)
                                         {
                                             bridgeParts.Add(new Vector2Int(nz, nx));
+                                            bridgeStack.Push(temp);
                                             currBridge.Add(temp);
                                         }
                                     }
@@ -217,9 +218,9 @@ namespace DeluMc
                                 {
                                     if (
                                         (rectCover.IsInside(point.Z + 1, point.X + 0) && waterMap[point.Z + 1][point.X + 0] == 1 && roadMap[point.Z + 1][point.X + 0] == 0)
-                                        || (rectCover.IsInside(point.Z + 0, point.X + 1) && waterMap[point.Z + 0][point.X + 1] == 1 && roadMap[point.Z + 0][point.X + 1]  == 0)
-                                        || (rectCover.IsInside(point.Z - 1, point.X + 0) && waterMap[point.Z - 1][point.X + 0] == 1 && roadMap[point.Z - 1][point.X + 0]  == 0)
-                                        || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1]  == 0)
+                                        || (rectCover.IsInside(point.Z + 0, point.X + 1) && waterMap[point.Z + 0][point.X + 1] == 1 && roadMap[point.Z + 0][point.X + 1] == 0)
+                                        || (rectCover.IsInside(point.Z - 1, point.X + 0) && waterMap[point.Z - 1][point.X + 0] == 1 && roadMap[point.Z - 1][point.X + 0] == 0)
+                                        || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1] == 0)
                                         )
                                     {
                                         world[finalHeight + 1][point.Z][point.X] = AlphaMaterials.AcaciaFence_192_0;
