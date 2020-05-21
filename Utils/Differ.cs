@@ -96,9 +96,21 @@ namespace DeluMc.Utils
             mChanges.Add(new Point {Y=Y, Z=Z, X=X});
         }
 
+        /// <summary>
+        /// Serialize Changes to a binary Writer
+        /// </summary>
+        /// <param name="writer">Binary Writer to use</param>
         public void SerializeChanges(BinaryWriter writer)
         {
             writer.Write(mChanges.Count);
+            foreach (Point p in mChanges)
+            {
+                writer.Write(p.Y);
+                writer.Write(p.Z);
+                writer.Write(p.X);
+                writer.Write(World[p.Y][p.Z][p.X].ID);
+                writer.Write(World[p.Y][p.Z][p.X].Data);
+            }
         }
     }
 }

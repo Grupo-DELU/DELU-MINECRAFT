@@ -63,10 +63,10 @@ namespace DeluMc
         /// <param name="heightMap">Height Map</param>
         /// <param name="waterMap">Water Map</param>
         /// <param name="biomes">Biomes</param>
-        /// <param name="world">Worlds</param>
+        /// <param name="world">World</param>
         public static void RoadsPlacer(
             List<List<Vector2Int>> roads, int[][] roadMap, int[][] heightMap, int[][] waterMap, Biomes[][] biomes,
-            Material[][][] world)
+            Differ world)
         {
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(roadMap.Length - 1, roadMap[0].Length - 1));
             HashSet<Point> bridges = new HashSet<Point>();
@@ -130,11 +130,11 @@ namespace DeluMc
                                     rectCover.IsInside(nz, nx)
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
-                                    world[averageHeight][nz][nx] = AlphaMaterials.Cobblestone_4_0;
+                                    world.ChangeBlock(averageHeight, nz, nx, AlphaMaterials.Cobblestone_4_0);
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
-                                        world[averageHeight + dy][nz][nx] = AlphaMaterials.Air_0_0;
+                                        world.ChangeBlock(averageHeight + dy, nz, nx, AlphaMaterials.Air_0_0);
                                     }
                                 }
                             }
@@ -216,11 +216,13 @@ namespace DeluMc
                                 }
                                 height /= factor;
                                 int finalHeight = (int)height;
-                                world[finalHeight][point.Z][point.X] = AlphaMaterials.WoodenDoubleSlab_Seamed_43_2;
+                                world.ChangeBlock(finalHeight, point.Z, point.X, AlphaMaterials.WoodenDoubleSlab_Seamed_43_2);
+                                // Clear top
                                 for (int dy = 1; dy <= 2; dy++)
                                 {
-                                    world[finalHeight + dy][point.Z][point.X] = AlphaMaterials.Air_0_0;
+                                    world.ChangeBlock(finalHeight + dy, point.Z, point.X, AlphaMaterials.Air_0_0);
                                 }
+
                                 if (roadMap[point.Z][point.X] == RoadGenerator.BridgeMarker)
                                 {
                                     if (
@@ -230,7 +232,7 @@ namespace DeluMc
                                         || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1] == 0)
                                         )
                                     {
-                                        world[finalHeight + 1][point.Z][point.X] = AlphaMaterials.AcaciaFence_192_0;
+                                        world.ChangeBlock(finalHeight + 1, point.Z, point.X, AlphaMaterials.AcaciaFence_192_0);
                                     }
                                 }
                             }

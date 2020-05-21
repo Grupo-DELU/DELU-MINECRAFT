@@ -55,7 +55,7 @@ namespace DeluMc
             int ySize;
             int zSize;
             int xSize;
-            Material[][][] blocks;
+            Differ differ;
 
             // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
             Biomes[][] biomes;
@@ -72,7 +72,7 @@ namespace DeluMc
 
             using (BinaryReader reader = pipeClient.ReadMemoryBlock())
             {
-
+                Material[][][] blocks;
                 ySize = reader.ReadInt32();
                 zSize = reader.ReadInt32();
                 xSize = reader.ReadInt32();
@@ -90,6 +90,7 @@ namespace DeluMc
                         }
                     }
                 }
+                differ = new Differ(blocks);
 
                 // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
                 biomes = new Biomes[zSize][];
@@ -131,7 +132,7 @@ namespace DeluMc
             {
                 Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
-                            {HeightMap.FixBoxHeights(blocks, heightMap, treeMap, zStart, xStart, zEnd, xEnd);}
+                            {HeightMap.FixBoxHeights(differ.World, heightMap, treeMap, zStart, xStart, zEnd, xEnd);}
                     };
 
                 Tasker.Run2DTasks(zSize, xSize, workChunks, null);
@@ -143,7 +144,7 @@ namespace DeluMc
                         {
                         DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);
-                        lavaMap[z][x] = LavaMap.isAcceptableLavaMapBlock(heightMap, blocks, z,x);
+                        lavaMap[z][x] = LavaMap.isAcceptableLavaMapBlock(heightMap, differ.World, z,x);
                         }
                     };
 
@@ -223,7 +224,7 @@ namespace DeluMc
                     }
                 }
 
-                RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, blocks);
+                RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
             }
 
             HousePlacer.RequestHouseArea(
@@ -233,23 +234,24 @@ namespace DeluMc
                     new Vector2Int(zSize - 1, xSize - 1),
                     roadMap,
                     houseMap,
-                    blocks,
+                    differ.World,
                     Orientation.South,
                     PremadePalettes.forestPalette), BuildType.House);
 
             // Write Data Back to Python
-            BinaryWriter write = new BinaryWriter(new MemoryStream());
-            for (int y = 0; y < ySize; y++)
             {
-                for (int z = 0; z < zSize; z++)
+                using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))
                 {
-                    for (int x = 0; x < xSize; x++)
-                    {
-                        write.Write(blocks[y][z][x].ID);
-                        write.Write(blocks[y][z][x].Data);
-                    }
+                    differ.SerializeChanges(writer);
+
+                    // Return data To Python
+                    Console.WriteLine(writer.BaseStream.Length);
+                    pipeClient.WriteMemoryBlock((MemoryStream)writer.BaseStream);
                 }
             }
+
+            // Close Pipe
+            pipeClient.DeInit();
 
             {
                 // Drawing
@@ -407,12 +409,6 @@ namespace DeluMc
 
                 Mapper.SaveMaps(saveMapInfos);
             }
-
-            // Return data To Python
-            Console.WriteLine(write.BaseStream.Length);
-            pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
-
-            pipeClient.DeInit();
         }
     }
 }
