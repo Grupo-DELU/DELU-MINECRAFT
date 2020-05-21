@@ -51,15 +51,33 @@ namespace DeluMc
 
             PipeClient pipeClient = new PipeClient(args[0]);
             pipeClient.Init();
+
+            int ySize;
+            int zSize;
+            int xSize;
+            Material[][][] blocks;
+
+            // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
+            Biomes[][] biomes;
+            int[][] heightMap;
+            int[][] waterMap;
+            int[][] treeMap;
+            float[][] deltaMap;
+            bool[][] acceptableMap;
+            int[][] villageMap;
+            int[][] houseMap;
+            int[][] roadMap;
+            int[][] mainRoadMap;
+            bool[][] lavaMap;
+
             using (BinaryReader reader = pipeClient.ReadMemoryBlock())
             {
-                BinaryWriter write = new BinaryWriter(new MemoryStream());
 
-                int ySize = reader.ReadInt32();
-                int zSize = reader.ReadInt32();
-                int xSize = reader.ReadInt32();
+                ySize = reader.ReadInt32();
+                zSize = reader.ReadInt32();
+                xSize = reader.ReadInt32();
                 Console.WriteLine($"Y: {ySize} Z: {zSize} X: {xSize}");
-                Material[][][] blocks = new Material[ySize][][];
+                blocks = new Material[ySize][][];
                 for (int y = 0; y < ySize; y++)
                 {
                     blocks[y] = new Material[zSize][];
@@ -71,20 +89,20 @@ namespace DeluMc
                             blocks[y][z][x] = AlphaMaterials.Set.GetMaterial(reader.ReadInt32(), reader.ReadInt32());
                         }
                     }
-
                 }
+
                 // Biome, HeightMap, WaterMask and TreeMask arrays/bitmap
-                Biomes[][] biomes = new Biomes[zSize][];
-                int[][] heightMap = new int[zSize][];
-                int[][] waterMap = new int[zSize][];
-                int[][] treeMap = new int[zSize][];
-                float[][] deltaMap = new float[zSize][];
-                bool[][] acceptableMap = new bool[zSize][];
-                int[][] villageMap = new int[zSize][];
-                int[][] houseMap = new int[zSize][];
-                int[][] roadMap = new int[zSize][];
-                int[][] mainRoadMap = new int[zSize][];
-                bool[][] lavaMap = new bool[zSize][];
+                biomes = new Biomes[zSize][];
+                heightMap = new int[zSize][];
+                waterMap = new int[zSize][];
+                treeMap = new int[zSize][];
+                deltaMap = new float[zSize][];
+                acceptableMap = new bool[zSize][];
+                villageMap = new int[zSize][];
+                houseMap = new int[zSize][];
+                roadMap = new int[zSize][];
+                mainRoadMap = new int[zSize][];
+                lavaMap = new bool[zSize][];
 
                 for (int z = 0; z < zSize; z++)
                 {
@@ -108,19 +126,20 @@ namespace DeluMc
                         deltaMap[z][x] = 0;
                     }
                 }
+            }
 
-                {
-                    Tasker.WorkChunk[] workChunks = {
+            {
+                Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
                             {HeightMap.FixBoxHeights(blocks, heightMap, treeMap, zStart, xStart, zEnd, xEnd);}
                     };
 
-                    Tasker.Run2DTasks(zSize, xSize, workChunks, null);
-                }
+                Tasker.Run2DTasks(zSize, xSize, workChunks, null);
+            }
 
-                {
-                    // Delta Map & Lava Map
-                    Tasker.WorkBlock[] workBlocks = { (int z, int x) =>
+            {
+                // Delta Map & Lava Map
+                Tasker.WorkBlock[] workBlocks = { (int z, int x) =>
                         {
                         DeltaMap.CalculateDeltaMap(heightMap, waterMap, deltaMap, z, x);
                         TreeMap.ExpandTreeBlock(z, x, treeMap);
@@ -128,12 +147,12 @@ namespace DeluMc
                         }
                     };
 
-                    Tasker.Run2DTasks(zSize, xSize, null, workBlocks);
-                }
+                Tasker.Run2DTasks(zSize, xSize, null, workBlocks);
+            }
 
-                {
-                    // Acceptable Map
-                    Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
+            {
+                // Acceptable Map
+                Tasker.WorkBlock[] isAcceptable = {(int z, int x) =>
                     {
                         acceptableMap[z][x] =   DeltaMap.IsAcceptableBlock(deltaMap, z, x)          &&
                                                 HeightMap.IsAcceptableTreeMapBlock(treeMap, z, x)   &&
@@ -142,107 +161,100 @@ namespace DeluMc
                     }
                     };
 
-                    Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
-                }
+                Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
+            }
 
-                DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
-                List<VillageMarker> villages = new List<VillageMarker>();
-                List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
+            DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
+            List<VillageMarker> villages = new List<VillageMarker>();
+            List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
+            {
+                Random rand = new Random();
+                int numberOfTries = 10000;
+                int expectedVillageSize = 300;
+                int radius = 2;
+                int villageCount = 4;
+                while (villageCount != 0 && numberOfTries != 0)
                 {
-                    Random rand = new Random();
-                    int numberOfTries = 10000;
-                    int expectedVillageSize = 600;
-                    int radius = 2;
-                    int villageCount = 4;
-                    while (villageCount != 0 && numberOfTries != 0)
+                    int z = rand.Next(0, zSize);
+                    int x = rand.Next(0, xSize);
+                    if (acceptableMap[z][x] && villageMap[z][x] <= 0)
                     {
-                        int z = rand.Next(0, zSize);
-                        int x = rand.Next(0, xSize);
-                        if (acceptableMap[z][x] && villageMap[z][x] <= 0)
+                        VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius);
+                        if (village.Points.Length >= expectedVillageSize / 2)
                         {
-                            VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius);
-                            if (village.Points.Length >= expectedVillageSize * 0.75f)
-                            {
-                                --villageCount;
-                                villages.Add(village);
-                            }
-                            else
-                            {
-                                VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
-                            }
+                            --villageCount;
+                            villages.Add(village);
+                        }
+                        else
+                        {
+                            VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
+                        }
 
-                        }
-                        --numberOfTries;
                     }
-                    if (villages.Count > 1)
-                    {
-                        List<Vector2Int> road = RoadGenerator.FirstRoad(
-                            villages[0].Seed.Z, villages[0].Seed.X,
-                            villages[1].Seed.Z, villages[1].Seed.X,
-                            acceptableMap, deltaMap, waterMap, roadMap, treeMap
-                        );
-                        Console.WriteLine("Main Road lenght: " + road.Count);
-                        roads.Add(road);
-                        foreach (Vector2Int roadPoint in road)
-                        {
-                            roadQT.Insert(roadPoint, roadPoint);
-                            mainRoadMap[roadPoint.Z][roadPoint.X] = 1;
-                        }
-                    }
-                    for (int i = 2; i < villages.Count; ++i)
-                    {
-                        Console.WriteLine($"Connecting village: {i} to roads");
-                        List<Vector2Int> road = RoadGenerator.PointToRoad(
-                            villages[i].Seed.Z, villages[i].Seed.X,
-                            acceptableMap, deltaMap, waterMap, roadMap, treeMap,
-                            roadQT
-                        );
-                        roads.Add(road);
-                        foreach (Vector2Int roadPoint in road)
-                        {
-                            roadQT.Insert(roadPoint, roadPoint);
-                        }
-                    }
-#if DEBUG
-                    foreach (VillageMarker village in villages)
-                    {
-                        foreach (Vector2Int point in village.Points)
-                        {
-                            blocks[heightMap[point.Z][point.X]][point.Z][point.X] = AlphaMaterials.YellowWool_35_4;
-                        }
-                    }
-#endif
-                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, blocks);
+                    --numberOfTries;
                 }
-
-                HousePlacer.RequestHouseArea(
-                    new HousePlacer.HouseAreaInput(
-                        0,
-                        new Vector2Int(),
-                        new Vector2Int(zSize - 1, xSize - 1),
-                        roadMap,
-                        houseMap,
-                        blocks,
-                        Orientation.South,
-                        PremadePalettes.forestPalette), BuildType.House);
-
-                // Write Data Back to Python
-                for (int y = 0; y < ySize; y++)
+                if (villages.Count > 1)
                 {
-                    for (int z = 0; z < zSize; z++)
+                    List<Vector2Int> road = RoadGenerator.FirstRoad(
+                        villages[0].Seed.Z, villages[0].Seed.X,
+                        villages[1].Seed.Z, villages[1].Seed.X,
+                        acceptableMap, deltaMap, waterMap, roadMap, treeMap
+                    );
+                    Console.WriteLine("Main Road lenght: " + road.Count);
+                    roads.Add(road);
+                    foreach (Vector2Int roadPoint in road)
                     {
-                        for (int x = 0; x < xSize; x++)
-                        {
-                            write.Write(blocks[y][z][x].ID);
-                            write.Write(blocks[y][z][x].Data);
-                        }
+                        roadQT.Insert(roadPoint, roadPoint);
+                        mainRoadMap[roadPoint.Z][roadPoint.X] = 1;
+                    }
+                }
+                for (int i = 2; i < villages.Count; ++i)
+                {
+                    Console.WriteLine($"Connecting village: {i} to roads");
+                    List<Vector2Int> road = RoadGenerator.PointToRoad(
+                        villages[i].Seed.Z, villages[i].Seed.X,
+                        acceptableMap, deltaMap, waterMap, roadMap, treeMap,
+                        roadQT
+                    );
+                    roads.Add(road);
+                    foreach (Vector2Int roadPoint in road)
+                    {
+                        roadQT.Insert(roadPoint, roadPoint);
                     }
                 }
 
+                RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, blocks);
+            }
+
+            HousePlacer.RequestHouseArea(
+                new HousePlacer.HouseAreaInput(
+                    0,
+                    new Vector2Int(),
+                    new Vector2Int(zSize - 1, xSize - 1),
+                    roadMap,
+                    houseMap,
+                    blocks,
+                    Orientation.South,
+                    PremadePalettes.forestPalette), BuildType.House);
+
+            // Write Data Back to Python
+            BinaryWriter write = new BinaryWriter(new MemoryStream());
+            for (int y = 0; y < ySize; y++)
+            {
+                for (int z = 0; z < zSize; z++)
                 {
-                    // Drawing
-                    Mapper.SaveMapInfo[] saveMapInfos =
+                    for (int x = 0; x < xSize; x++)
                     {
+                        write.Write(blocks[y][z][x].ID);
+                        write.Write(blocks[y][z][x].Data);
+                    }
+                }
+            }
+
+            {
+                // Drawing
+                Mapper.SaveMapInfo[] saveMapInfos =
+                {
                         new Mapper.SaveMapInfo{
                             zSize = zSize, xSize = xSize, name = "villagemap",
                             colorWork = (int z, int x) => {
@@ -393,13 +405,13 @@ namespace DeluMc
 
                     };
 
-                    Mapper.SaveMaps(saveMapInfos);
-                }
-
-                // Return data To Python
-                Console.WriteLine(write.BaseStream.Length);
-                pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
+                Mapper.SaveMaps(saveMapInfos);
             }
+
+            // Return data To Python
+            Console.WriteLine(write.BaseStream.Length);
+            pipeClient.WriteMemoryBlock((MemoryStream)write.BaseStream);
+
             pipeClient.DeInit();
         }
     }
