@@ -14,7 +14,7 @@ namespace DeluMc
     /// <summary>
     /// Utility in charge of placing blocks in the marked roads and bridges
     /// </summary>
-    public class RoadPlacer
+    public static class RoadPlacer
     {
         // <summary>
         /// Point with ZCurve for Hashing
