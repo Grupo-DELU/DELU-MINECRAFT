@@ -166,6 +166,23 @@ namespace DeluMc
                 Tasker.Run2DTasks(zSize, xSize, null, isAcceptable);
             }
 
+            WaterAnalyzer.WaterAnalysis waterAnalysis;
+            {
+                int minWaterSize = 20;
+                waterAnalysis = WaterAnalyzer.AnalyzeWater(waterMap, minWaterSize);
+                Console.WriteLine($"Found {waterAnalysis.WaterBodies.Count} valid Water Bodies and {waterAnalysis.InvalidWaterBodies.Count} Invalid ones");
+                Console.WriteLine("Valid Water Bodies Sizes");
+                foreach (var waterBody in waterAnalysis.WaterBodies)
+                {
+                    Console.WriteLine($"\tSize {waterBody.Points.Count}");
+                }
+                Console.WriteLine("Invalid Water Bodies Sizes");
+                foreach (var waterBody in waterAnalysis.InvalidWaterBodies)
+                {
+                    Console.WriteLine($"\tSize {waterBody.Points.Count}");
+                }
+            }
+
             DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
             List<VillageMarker> villages = new List<VillageMarker>();
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
