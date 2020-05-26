@@ -92,7 +92,7 @@ namespace DeluMc
         /// Wave Multiplier for Heuristic Function
         /// It is hard to cross water
         /// </summary>
-        public static float WaterMultiplier = 12.0f;
+        public static float WaterMultiplier = 20.0f;
 
         /// <summary>
         /// Wave Multiplier for Heuristic Function
@@ -108,7 +108,7 @@ namespace DeluMc
         /// <summary>
         /// Cost of cutting leaf
         /// </summary>
-        public static float LeafCost = 9.0f;
+        public static float LeafCost = 8.0f;
 
         /// <summary>
         /// Side part of a road
@@ -170,19 +170,18 @@ namespace DeluMc
         public static float Distance(int z, int x, int tZ, int tX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap, int[][] treeMap)
         {
             float distance = Metric(z, x, tZ, tX, acceptableMap, waterMap);
+            float noRoad = roadMap[z][x] <= 0 ? 1.0f : 0.0f;
 
             if (acceptableMap[z][x])
             {
-                float noRoad = roadMap[z][x] <= 0 ? 1.0f : 0.0f;
                 return distance * (1.0f + deltaMap[z][x] * SlopeMultiplier + NotRoadMultiplier * noRoad);
             }
             else if (waterMap[z][x] == 1)
             {
-                return distance * (1.0f + WaterMultiplier);
+                return distance * (1.0f + WaterMultiplier + NotRoadMultiplier * noRoad);
             }
             else if (TreeMap.IsLeaf(z, x, treeMap) || TreeMap.IsExpanded(z, x, treeMap))
             {
-                float noRoad = roadMap[z][x] <= 0 ? 1.0f : 0.0f;
                 return distance * (1.0f + deltaMap[z][x] * SlopeMultiplier + NotRoadMultiplier * noRoad + LeafCost);
             }
             return float.PositiveInfinity;
