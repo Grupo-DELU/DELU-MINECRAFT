@@ -49,7 +49,7 @@ namespace DeluMc
                 Console.WriteLine("Pipe requires only one argument");
                 return;
             }
-            
+
             PipeClient pipeClient = new PipeClient(args[0]);
             pipeClient.Init();
 
@@ -250,7 +250,14 @@ namespace DeluMc
             {
                 foreach (Vector2Int point in village.Points)
                 {
-                    differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.YellowWool_35_4);
+                    if (roadMap[point.Z][point.X] > 0)
+                    {
+                        differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.Sponge_19_0);
+                    }
+                    else
+                    {
+                        differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.YellowWool_35_4);
+                    }
                 }
             }
 #endif
