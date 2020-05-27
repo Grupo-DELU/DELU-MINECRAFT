@@ -13,53 +13,20 @@ namespace DeluMc
     public static class RoadGenerator
     {
         /// <summary>
-        /// Point with ZCurve for Hashing
+        /// For Distance Comparisons
         /// </summary>
-        private class Point
+        private class PointExt : ZPoint2D
         {
             /// <summary>
-            /// This exists because C# doesn't like inheritance for structs
+            /// Distance to Target
             /// </summary>
-            public Vector2Int RealPoint { get; set; }
-
-            /// <summary>
-            /// Distance to target
-            /// </summary>
-            public float Distance { get; set; }
-
-            /// <summary>
-            /// C# Object Equality
-            /// </summary>
-            /// <param name="obj">Other Object</param>
-            /// <returns>If other object is equals</returns>
-            public override bool Equals(Object obj)
-            {
-                //Check for null and compare run-time types.
-                if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-                {
-                    return false;
-                }
-                else
-                {
-                    Point p = (Point)obj;
-                    return this.RealPoint.Equals(p.RealPoint);
-                }
-            }
-
-            /// <summary>
-            /// Hashing for dictionary using ZCurves
-            /// </summary>
-            public override int GetHashCode()
-            {
-                System.Diagnostics.Debug.Assert(RealPoint.Z >= 0 && RealPoint.X >= 0);
-                return (int)ZCurve.Pos2D((uint)RealPoint.Z, (uint)RealPoint.X);
-            }
+            public float Distance { get; set; } = 0.0f;
         }
 
         /// <summary>
         /// Comparers for Points based on distance to target
         /// </summary>
-        private class CoordinatesBasedComparer : Comparer<Point>
+        private class CoordinatesBasedComparer : Comparer<PointExt>
         {
             /// <summary>
             /// Compare two points by distance to target
@@ -67,7 +34,7 @@ namespace DeluMc
             /// <param name="lhs">Left Point</param>
             /// <param name="rhs">Right Point</param>
             /// <returns></returns>
-            public override int Compare(Point lhs, Point rhs)
+            public override int Compare(PointExt lhs, PointExt rhs)
             {
                 if (lhs.Distance == rhs.Distance)
                 {
@@ -316,7 +283,7 @@ namespace DeluMc
                 // Nothing to Paint
                 return;
             }
-            
+
             // Note this is horrible but dumb fast
 
             int roadZ, roadX, centerType;
@@ -541,9 +508,9 @@ namespace DeluMc
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
-            Dictionary<Point, Point> parents = new Dictionary<Point, Point>();
-            Dictionary<Point, float> distances = new Dictionary<Point, float>();
-            MinHeap<Point> priorityQueue = new MinHeap<Point>(new CoordinatesBasedComparer());
+            Dictionary<PointExt, PointExt> parents = new Dictionary<PointExt, PointExt>();
+            Dictionary<PointExt, float> distances = new Dictionary<PointExt, float>();
+            MinHeap<PointExt> priorityQueue = new MinHeap<PointExt>(new CoordinatesBasedComparer());
 
             Func<int, int, int, int, float> distanceHeuristicFunc
                 = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap, treeMap); };
@@ -551,13 +518,13 @@ namespace DeluMc
             Func<int, int, float> heuristicFunc
                 = (int z, int x) => { return distanceHeuristicFunc(z, x, tZ, tX); };
 
-            Point startPoint = new Point { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, tZ, tX) };
+            PointExt startPoint = new PointExt { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, tZ, tX) };
 
             parents.Add(startPoint, null);
             distances.Add(startPoint, 0);
             priorityQueue.Add(startPoint);
 
-            Point curr, child;
+            PointExt curr, child;
             int childZ, childX;
             float childDistance, currDistance;
 
@@ -595,7 +562,7 @@ namespace DeluMc
                         if (rectCover.IsInside(childZ, childX))
                         {
                             childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
-                            child = new Point { RealPoint = new Vector2Int(childZ, childX), Distance = heuristicFunc(childZ, childX) };
+                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = heuristicFunc(childZ, childX) };
                             if (distances.TryGetValue(child, out float currVal))
                             {
                                 if (childDistance < currVal)
@@ -640,21 +607,21 @@ namespace DeluMc
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
-            Dictionary<Point, Point> parents = new Dictionary<Point, Point>();
-            Dictionary<Point, float> distances = new Dictionary<Point, float>();
-            MinHeap<Point> priorityQueue = new MinHeap<Point>(new CoordinatesBasedComparer());
+            Dictionary<PointExt, PointExt> parents = new Dictionary<PointExt, PointExt>();
+            Dictionary<PointExt, float> distances = new Dictionary<PointExt, float>();
+            MinHeap<PointExt> priorityQueue = new MinHeap<PointExt>(new CoordinatesBasedComparer());
 
             Func<int, int, int, int, float> distanceHeuristicFunc
                 = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap, treeMap); };
 
             Vector2Int target = roadQT.NearestNeighbor(new Vector2Int(sZ, sX)).DataNode.Data;
-            Point startPoint = new Point { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, target.Z, target.X) };
+            PointExt startPoint = new PointExt { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, target.Z, target.X) };
 
             parents.Add(startPoint, null);
             distances.Add(startPoint, 0);
             priorityQueue.Add(startPoint);
 
-            Point curr, child;
+            PointExt curr, child;
             int childZ, childX;
             float childDistance, currDistance;
             while (!priorityQueue.IsEmpty())
@@ -696,7 +663,7 @@ namespace DeluMc
                             target = roadQT.NearestNeighbor(new Vector2Int(childZ, childX)).DataNode.Data;
 
                             childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
-                            child = new Point { RealPoint = new Vector2Int(childZ, childX), Distance = distanceHeuristicFunc(childZ, childX, target.Z, target.X) };
+                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = distanceHeuristicFunc(childZ, childX, target.Z, target.X) };
                             if (distances.TryGetValue(child, out float currVal))
                             {
                                 if (childDistance < currVal)

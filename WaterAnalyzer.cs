@@ -16,45 +16,6 @@ namespace DeluMc
     /// </summary>
     public static class WaterAnalyzer
     {
-        // <summary>
-        /// Point with ZCurve for Hashing
-        /// </summary>
-        public class Point
-        {
-            /// <summary>
-            /// This exists because C# doesn't like inheritance for structs
-            /// </summary>
-            public Vector2Int RealPoint { get; internal set; }
-
-            /// <summary>
-            /// C# Object Equality
-            /// </summary>
-            /// <param name="obj">Other Object</param>
-            /// <returns>If other object is equals</returns>
-            public override bool Equals(Object obj)
-            {
-                //Check for null and compare run-time types.
-                if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-                {
-                    return false;
-                }
-                else
-                {
-                    Point p = (Point)obj;
-                    return this.RealPoint.Equals(p.RealPoint);
-                }
-            }
-
-            /// <summary>
-            /// Hashing for dictionary using ZCurves
-            /// </summary>
-            public override int GetHashCode()
-            {
-                System.Diagnostics.Debug.Assert(RealPoint.Z >= 0 && RealPoint.X >= 0);
-                return (int)ZCurve.Pos2D((uint)RealPoint.Z, (uint)RealPoint.X);
-            }
-        }
-
         /// <summary>
         /// Water Body
         /// </summary>
@@ -63,12 +24,12 @@ namespace DeluMc
             /// <summary>
             /// Points Belonging to the Water Body
             /// </summary>
-            public HashSet<Point> Points { get; internal set; }
+            public HashSet<ZPoint2D> Points { get; internal set; }
 
             /// <summary>
             /// Quadtree of Points in the Body of Water
             /// </summary>
-            public DataQuadTree<Point> PointsQT { get; internal set; }
+            public DataQuadTree<ZPoint2D> PointsQT { get; internal set; }
 
         }
 
@@ -96,7 +57,7 @@ namespace DeluMc
             /// <summary>
             /// Water Bodies Considered to be invalid
             /// </summary>
-            public HashSet<Point> InvalidWaterBodiesSet { get; internal set; }
+            public HashSet<ZPoint2D> InvalidWaterBodiesSet { get; internal set; }
 
             /// <summary>
             /// Valid Water Bodies Found
@@ -110,7 +71,7 @@ namespace DeluMc
             {
                 WaterBodies = new List<WaterBody>();
                 InvalidWaterBodies = new List<WaterBody>();
-                InvalidWaterBodiesSet = new HashSet<Point>();
+                InvalidWaterBodiesSet = new HashSet<ZPoint2D>();
             }
         }
 
@@ -128,17 +89,17 @@ namespace DeluMc
 
             RectInt mapCover = new RectInt { Min = Vector2Int.Zero, Max = new Vector2Int(waterMap.Length - 1, waterMap[0].Length - 1) };
 
-            HashSet<Point> visited = new HashSet<Point>();
-            List<Point> currBodyOfWater = new List<Point>();
+            HashSet<ZPoint2D> visited = new HashSet<ZPoint2D>();
+            List<ZPoint2D> currBodyOfWater = new List<ZPoint2D>();
 
-            Point curr, child;
+            ZPoint2D curr, child;
             int currPos, nz, nx;
 
             for (int z = 0; z < waterMap.Length; z++)
             {
                 for (int x = 0; x < waterMap[0].Length; x++)
                 {
-                    curr = new Point { RealPoint = new Vector2Int(z, x) };
+                    curr = new ZPoint2D { RealPoint = new Vector2Int(z, x) };
                     if (waterMap[z][x] == 1 && !visited.Contains(curr))
                     {
                         // New Body of Water
@@ -156,7 +117,7 @@ namespace DeluMc
                                 {
                                     nz = curr.RealPoint.Z + dz;
                                     nx = curr.RealPoint.X + dx;
-                                    child = new Point { RealPoint = new Vector2Int(nz, nx) };
+                                    child = new ZPoint2D { RealPoint = new Vector2Int(nz, nx) };
                                     if (mapCover.IsInside(child.RealPoint) && waterMap[nz][nx] == 1 && !visited.Contains(child))
                                     {
                                         visited.Add(child);
@@ -168,8 +129,8 @@ namespace DeluMc
                         }
 
                         WaterBody body = new WaterBody();
-                        body.PointsQT = new DataQuadTree<Point>(mapCover.Min, mapCover.Max);
-                        body.Points = new HashSet<Point>(currBodyOfWater.Count);
+                        body.PointsQT = new DataQuadTree<ZPoint2D>(mapCover.Min, mapCover.Max);
+                        body.Points = new HashSet<ZPoint2D>(currBodyOfWater.Count);
                         for (int i = 0; i < currBodyOfWater.Count; i++)
                         {
                             body.PointsQT.Insert(currBodyOfWater[i].RealPoint, currBodyOfWater[i]);

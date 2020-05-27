@@ -16,45 +16,6 @@ namespace DeluMc
     /// </summary>
     public static class RoadPlacer
     {
-        // <summary>
-        /// Point with ZCurve for Hashing
-        /// </summary>
-        private class Point
-        {
-            /// <summary>
-            /// This exists because C# doesn't like inheritance for structs
-            /// </summary>
-            public Vector2Int RealPoint { get; set; }
-
-            /// <summary>
-            /// C# Object Equality
-            /// </summary>
-            /// <param name="obj">Other Object</param>
-            /// <returns>If other object is equals</returns>
-            public override bool Equals(Object obj)
-            {
-                //Check for null and compare run-time types.
-                if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-                {
-                    return false;
-                }
-                else
-                {
-                    Point p = (Point)obj;
-                    return this.RealPoint.Equals(p.RealPoint);
-                }
-            }
-
-            /// <summary>
-            /// Hashing for dictionary using ZCurves
-            /// </summary>
-            public override int GetHashCode()
-            {
-                System.Diagnostics.Debug.Assert(RealPoint.Z >= 0 && RealPoint.X >= 0);
-                return (int)ZCurve.Pos2D((uint)RealPoint.Z, (uint)RealPoint.X);
-            }
-        }
-
         /// <summary>
         /// Place the blocks in the marked roads and bridges
         /// </summary>
@@ -69,7 +30,7 @@ namespace DeluMc
             Differ world)
         {
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(roadMap.Length - 1, roadMap[0].Length - 1));
-            HashSet<Point> bridges = new HashSet<Point>();
+            HashSet<ZPoint2D> bridges = new HashSet<ZPoint2D>();
 
             List<Vector2Int> road;
             int nz, nx, count;
@@ -146,18 +107,18 @@ namespace DeluMc
                         // Bridge
                         #region BRIDGE_PLACEMENT
 
-                        Point curr = new Point { RealPoint = road[i] };
-                        Point temp;
+                        ZPoint2D curr = new ZPoint2D { RealPoint = road[i] };
+                        ZPoint2D temp;
 
                         if (bridges.Contains(curr))
                         {
                             // Already processed
                             continue;
                         }
-                        Stack<Point> bridgeStack = new Stack<Point>(); // DFS of bridges
+                        Stack<ZPoint2D> bridgeStack = new Stack<ZPoint2D>(); // DFS of bridges
                         List<Vector2Int> pivots = new List<Vector2Int>(); // Bridge land connections
                         List<Vector2Int> bridgeParts = new List<Vector2Int>(); // All parts of the bridge
-                        HashSet<Point> currBridge = new HashSet<Point>(); // Avoid parts repetitions
+                        HashSet<ZPoint2D> currBridge = new HashSet<ZPoint2D>(); // Avoid parts repetitions
                         bridgeStack.Push(curr);
                         averageHeight = 0;
 
@@ -171,7 +132,7 @@ namespace DeluMc
                                 {
                                     nz = curr.RealPoint.Z + dz;
                                     nx = curr.RealPoint.X + dx;
-                                    temp = new Point { RealPoint = new Vector2Int(nz, nx) };
+                                    temp = new ZPoint2D { RealPoint = new Vector2Int(nz, nx) };
                                     if (rectCover.IsInside(nz, nx) && !currBridge.Contains(temp))
                                     {
                                         if (roadMap[nz][nx] == RoadGenerator.MainRoadMarker)

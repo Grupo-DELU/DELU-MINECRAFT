@@ -17,22 +17,22 @@ namespace DeluMc.Utils
         // <summary>
         /// Point with ZCurve for Hashing
         /// </summary>
-        private class Point
+        private class Point3D
         {
             /// <summary>
             /// Y Coord
             /// </summary>
-            public int Y {get; set;}
+            public int Y { get; set; }
 
             /// <summary>
             /// Z Coord
             /// </summary>
-            public int Z {get; set;}
+            public int Z { get; set; }
 
             /// <summary>
             /// X Coord
             /// </summary>
-            public int X {get; set;}
+            public int X { get; set; }
 
             /// <summary>
             /// C# Object Equality
@@ -48,7 +48,7 @@ namespace DeluMc.Utils
                 }
                 else
                 {
-                    Point p = (Point)obj;
+                    Point3D p = (Point3D)obj;
                     return this.Y == p.Y && this.Z == p.Z && this.X == p.X;
                 }
             }
@@ -66,12 +66,12 @@ namespace DeluMc.Utils
         /// <summary>
         /// Only use this for readonly
         /// </summary>
-        public Material[][][] World {get; private set;}
+        public Material[][][] World { get; private set; }
 
         /// <summary>
         /// Points that have changed
         /// </summary>
-        private HashSet<Point> mChanges;
+        private HashSet<Point3D> mChanges;
 
         /// <summary>
         /// Create a differ for a world
@@ -80,7 +80,7 @@ namespace DeluMc.Utils
         public Differ(Material[][][] world)
         {
             World = world;
-            mChanges = new HashSet<Point>();
+            mChanges = new HashSet<Point3D>();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace DeluMc.Utils
         public void ChangeBlock(int Y, int Z, int X, in Material mat)
         {
             World[Y][Z][X] = mat;
-            mChanges.Add(new Point {Y=Y, Z=Z, X=X});
+            mChanges.Add(new Point3D { Y = Y, Z = Z, X = X });
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace DeluMc.Utils
         public void SerializeChanges(BinaryWriter writer)
         {
             writer.Write(mChanges.Count);
-            foreach (Point p in mChanges)
+            foreach (Point3D p in mChanges)
             {
                 writer.Write(p.Y);
                 writer.Write(p.Z);

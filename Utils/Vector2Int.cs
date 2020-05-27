@@ -131,7 +131,7 @@ namespace DeluMc.Utils
 
         public static Vector2Int operator /(in Vector2Int a, in float b)
         {
-            return new Vector2Int( (int)(a.Z / b), (int)(a.X / b));
+            return new Vector2Int((int)(a.Z / b), (int)(a.X / b));
         }
 
         /// <summary>
@@ -159,6 +159,45 @@ namespace DeluMc.Utils
         public static int Manhattan(in Vector2Int a, in Vector2Int b)
         {
             return Math.Abs(a.Z - b.Z) + Math.Abs(a.X - b.X);
+        }
+    }
+
+    /// <summary>
+    /// Point with ZCurve for Hashing
+    /// </summary>
+    public class ZPoint2D
+    {
+        /// <summary>
+        /// This exists because C# doesn't like inheritance for structs
+        /// </summary>
+        public Vector2Int RealPoint { get; set; }
+
+        /// <summary>
+        /// C# Object Equality
+        /// </summary>
+        /// <param name="obj">Other Object</param>
+        /// <returns>If other object is equals</returns>
+        public override bool Equals(Object obj)
+        {
+            //Check for null and compare run-time types.
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                ZPoint2D p = (ZPoint2D)obj;
+                return this.RealPoint.Equals(p.RealPoint);
+            }
+        }
+
+        /// <summary>
+        /// Hashing for dictionary using ZCurves
+        /// </summary>
+        public override int GetHashCode()
+        {
+            System.Diagnostics.Debug.Assert(RealPoint.Z >= 0 && RealPoint.X >= 0);
+            return (int)ZCurve.Pos2D((uint)RealPoint.Z, (uint)RealPoint.X);
         }
     }
 }
