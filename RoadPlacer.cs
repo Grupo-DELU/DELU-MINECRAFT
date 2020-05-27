@@ -163,8 +163,8 @@ namespace DeluMc
                         averageHeight /= pivots.Count;
                         averageHeight += 3;
 
-                        Parallel.ForEach(bridgeParts,
-                            (Vector2Int point) =>
+                        Parallel.ForEach(bridgeParts, () => world.CreateCollector(),
+                            (Vector2Int point, ParallelLoopState _, Differ.ChangeCollector collector) =>
                             {
                                 float height = 1.0f * Math.Max(heightMap[point.Z][point.X] + 1, averageHeight);
                                 float factor = 1.0f;
@@ -177,11 +177,11 @@ namespace DeluMc
                                 }
                                 height /= factor;
                                 int finalHeight = (int)height;
-                                world.ChangeBlock(finalHeight, point.Z, point.X, AlphaMaterials.WoodenDoubleSlab_Seamed_43_2);
+                                collector.ChangeBlock(finalHeight, point.Z, point.X, AlphaMaterials.WoodenDoubleSlab_Seamed_43_2);
                                 // Clear top
                                 for (int dy = 1; dy <= 2; dy++)
                                 {
-                                    world.ChangeBlock(finalHeight + dy, point.Z, point.X, AlphaMaterials.Air_0_0);
+                                    collector.ChangeBlock(finalHeight + dy, point.Z, point.X, AlphaMaterials.Air_0_0);
                                 }
 
                                 if (roadMap[point.Z][point.X] == RoadGenerator.BridgeMarker)
@@ -193,10 +193,12 @@ namespace DeluMc
                                         || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1] == 0)
                                         )
                                     {
-                                        world.ChangeBlock(finalHeight + 1, point.Z, point.X, AlphaMaterials.AcaciaFence_192_0);
+                                        collector.ChangeBlock(finalHeight + 1, point.Z, point.X, AlphaMaterials.AcaciaFence_192_0);
                                     }
                                 }
-                            }
+                                return collector;
+                            },
+                            (Differ.ChangeCollector collector) => { world.ApplyChangeCollector(collector); }
                         );
 
                         #endregion

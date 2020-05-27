@@ -17,7 +17,7 @@ namespace DeluMc.Utils
         // <summary>
         /// Point with ZCurve for Hashing
         /// </summary>
-        private class Point3D
+        internal class ZPoint3D
         {
             /// <summary>
             /// Y Coord
@@ -48,7 +48,7 @@ namespace DeluMc.Utils
                 }
                 else
                 {
-                    Point3D p = (Point3D)obj;
+                    ZPoint3D p = (ZPoint3D)obj;
                     return this.Y == p.Y && this.Z == p.Z && this.X == p.X;
                 }
             }
@@ -64,6 +64,37 @@ namespace DeluMc.Utils
         }
 
         /// <summary>
+        /// Collect Changes to Apply
+        /// </summary>
+        public class ChangeCollector
+        {
+            /// <summary>
+            /// Collected Changes
+            /// </summary>
+            internal Dictionary<ZPoint3D, Material> mCollectedChanges;
+
+            /// <summary>
+            /// Create a new Change Collector
+            /// </summary>
+            internal ChangeCollector()
+            {
+                mCollectedChanges = new Dictionary<ZPoint3D, Material>();
+            }
+
+            /// <summary>
+            /// Change a Block in the World (Note that changes are only visible after the collector is applied)
+            /// </summary>
+            /// <param name="Y">Y Coord</param>
+            /// <param name="Z">Z Coord</param>
+            /// <param name="X">X Coord</param>
+            /// <param name="mat">New Material</param>
+            public void ChangeBlock(int Y, int Z, int X, in Material mat)
+            {
+                mCollectedChanges[new ZPoint3D { Y = Y, Z = Z, X = X }] = mat;
+            }
+        }
+
+        /// <summary>
         /// Only use this for readonly
         /// </summary>
         public Material[][][] World { get; private set; }
@@ -71,7 +102,7 @@ namespace DeluMc.Utils
         /// <summary>
         /// Points that have changed
         /// </summary>
-        private HashSet<Point3D> mChanges;
+        private HashSet<ZPoint3D> mChanges;
 
         /// <summary>
         /// Create a differ for a world
@@ -80,7 +111,7 @@ namespace DeluMc.Utils
         public Differ(Material[][][] world)
         {
             World = world;
-            mChanges = new HashSet<Point3D>();
+            mChanges = new HashSet<ZPoint3D>();
         }
 
         /// <summary>
@@ -93,7 +124,32 @@ namespace DeluMc.Utils
         public void ChangeBlock(int Y, int Z, int X, in Material mat)
         {
             World[Y][Z][X] = mat;
-            mChanges.Add(new Point3D { Y = Y, Z = Z, X = X });
+            mChanges.Add(new ZPoint3D { Y = Y, Z = Z, X = X });
+        }
+
+        /// <summary>
+        /// Create a Change Collector for multithreaded collection
+        /// </summary>
+        /// <returns>Change Collector</returns>
+        public ChangeCollector CreateCollector()
+        {
+            return new ChangeCollector();
+        }
+
+        /// <summary>
+        /// Apply Changes From a Collector for multithreaded collection
+        /// </summary>
+        /// <param name="coll">Change Collector to apply</param>
+        public void ApplyChangeCollector(ChangeCollector coll)
+        {
+            lock (this)
+            {
+                foreach (KeyValuePair<ZPoint3D, Material> change in coll.mCollectedChanges)
+                {
+                    World[change.Key.Y][change.Key.Z][change.Key.X] = change.Value;
+                    mChanges.Add(change.Key);
+                }
+            }
         }
 
         /// <summary>
@@ -103,7 +159,7 @@ namespace DeluMc.Utils
         public void SerializeChanges(BinaryWriter writer)
         {
             writer.Write(mChanges.Count);
-            foreach (Point3D p in mChanges)
+            foreach (ZPoint3D p in mChanges)
             {
                 writer.Write(p.Y);
                 writer.Write(p.Z);
