@@ -170,6 +170,7 @@ namespace DeluMc
             {
                 int minWaterSize = 20;
                 waterAnalysis = WaterAnalyzer.AnalyzeWater(waterMap, minWaterSize);
+                Console.WriteLine($"Min Water Body Size {minWaterSize}");
                 Console.WriteLine($"Found {waterAnalysis.WaterBodies.Count} valid Water Bodies and {waterAnalysis.InvalidWaterBodies.Count} Invalid ones");
                 Console.WriteLine("Valid Water Bodies Sizes");
                 foreach (var waterBody in waterAnalysis.WaterBodies)
@@ -184,34 +185,17 @@ namespace DeluMc
             }
 
             DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
-            List<VillageMarker> villages = new List<VillageMarker>();
+            List<VillageMarker> villages;
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
             {
-                Random rand = new Random();
                 int numberOfTries = 10000;
                 int expectedVillageSize = 300;
                 int radius = 2;
                 int villageCount = 4;
-                while (villageCount != 0 && numberOfTries != 0)
-                {
-                    int z = rand.Next(0, zSize);
-                    int x = rand.Next(0, xSize);
-                    if (acceptableMap[z][x] && villageMap[z][x] <= 0)
-                    {
-                        VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius);
-                        if (village.Points.Length >= expectedVillageSize / 2)
-                        {
-                            --villageCount;
-                            villages.Add(village);
-                        }
-                        else
-                        {
-                            VillageMarkerPlacer.EliminateVillageMarker(village, villageMap);
-                        }
-
-                    }
-                    --numberOfTries;
-                }
+                villages = VillageDistributor.DistributeVillageMarkers(
+                    acceptableMap, villageMap, waterAnalysis, 
+                    villageCount, numberOfTries, radius, expectedVillageSize
+                );
                 if (villages.Count > 1)
                 {
                     List<Vector2Int> road = RoadGenerator.FirstRoad(

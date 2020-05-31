@@ -49,6 +49,17 @@ namespace DeluMc
         /// </summary>
         public class WaterAnalysis
         {
+
+            /// <summary>
+            /// Minimum Valid size for a Body of Water
+            /// </summary>
+            public int MinValidWaterSize { get; internal set; }
+
+            /// <summary>
+            /// Water Bodies Considered to be valid
+            /// </summary>
+            public HashSet<ZPoint2D> ValidWaterBodiesSet { get; internal set; }
+
             /// <summary>
             /// Valid Water Bodies Found
             /// </summary>
@@ -69,6 +80,7 @@ namespace DeluMc
             /// </summary>
             public WaterAnalysis()
             {
+                ValidWaterBodiesSet = new HashSet<ZPoint2D>();
                 WaterBodies = new List<WaterBody>();
                 InvalidWaterBodies = new List<WaterBody>();
                 InvalidWaterBodiesSet = new HashSet<ZPoint2D>();
@@ -86,6 +98,7 @@ namespace DeluMc
             System.Diagnostics.Debug.Assert(waterMap.Length > 0 && waterMap[0].Length > 0);
 
             WaterAnalysis analysis = new WaterAnalysis();
+            analysis.MinValidWaterSize = minValidWaterSize;
 
             RectInt mapCover = new RectInt { Min = Vector2Int.Zero, Max = new Vector2Int(waterMap.Length - 1, waterMap[0].Length - 1) };
 
@@ -139,6 +152,10 @@ namespace DeluMc
 
                         if (currBodyOfWater.Count >= minValidWaterSize)
                         {
+                            for (int i = 0; i < currBodyOfWater.Count; i++)
+                            {
+                                analysis.ValidWaterBodiesSet.Add(currBodyOfWater[i]);
+                            }
                             analysis.WaterBodies.Add(body);
                         }
                         else
