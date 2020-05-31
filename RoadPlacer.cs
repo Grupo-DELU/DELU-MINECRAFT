@@ -32,8 +32,10 @@ namespace DeluMc
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(roadMap.Length - 1, roadMap[0].Length - 1));
             HashSet<ZPoint2D> bridges = new HashSet<ZPoint2D>();
 
+            int maxY = world.World.Length;
+
             List<Vector2Int> road;
-            int nz, nx, count;
+            int nz, nx, ny, count;
             int averageHeight;
             // Ugly code but dumb fast
             for (int j = 0; j < roads.Count; j++)
@@ -95,7 +97,11 @@ namespace DeluMc
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
-                                        world.ChangeBlock(averageHeight + dy, nz, nx, AlphaMaterials.Air_0_0);
+                                        ny = averageHeight + dy;
+                                        if (ny < maxY)
+                                        {
+                                            world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
+                                        }
                                     }
                                 }
                             }
@@ -181,7 +187,11 @@ namespace DeluMc
                                 // Clear top
                                 for (int dy = 1; dy <= 2; dy++)
                                 {
-                                    collector.ChangeBlock(finalHeight + dy, point.Z, point.X, AlphaMaterials.Air_0_0);
+                                    ny = finalHeight + dy;
+                                    if (ny < maxY)
+                                    {
+                                        collector.ChangeBlock(ny, point.Z, point.X, AlphaMaterials.Air_0_0);
+                                    }
                                 }
 
                                 if (roadMap[point.Z][point.X] == RoadGenerator.BridgeMarker)
