@@ -562,7 +562,7 @@ namespace DeluMc
                         if (rectCover.IsInside(childZ, childX))
                         {
                             childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
-                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = heuristicFunc(childZ, childX) };
+                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = childDistance + heuristicFunc(childZ, childX) };
                             if (distances.TryGetValue(child, out float currVal))
                             {
                                 if (childDistance < currVal)
@@ -663,7 +663,7 @@ namespace DeluMc
                             target = roadQT.NearestNeighbor(new Vector2Int(childZ, childX)).DataNode.Data;
 
                             childDistance = currDistance + distanceHeuristicFunc(curr.RealPoint.Z, curr.RealPoint.X, childZ, childX);
-                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = distanceHeuristicFunc(childZ, childX, target.Z, target.X) };
+                            child = new PointExt { RealPoint = new Vector2Int(childZ, childX), Distance = childDistance + distanceHeuristicFunc(childZ, childX, target.Z, target.X) };
                             if (distances.TryGetValue(child, out float currVal))
                             {
                                 if (childDistance < currVal)
