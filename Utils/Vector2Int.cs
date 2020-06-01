@@ -106,6 +106,10 @@ namespace DeluMc.Utils
             return (X << 2) ^ Z;
         }
 
+        public override string ToString()
+        {
+            return $"({Z}, {X})";
+        }
 
         /// <summary>
         /// Add two Vector2 Int component wise

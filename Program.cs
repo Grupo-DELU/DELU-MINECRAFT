@@ -32,7 +32,7 @@ namespace DeluMc
             }
 #else
             Console.WriteLine("Sleeping Thread to Launch Debugger!");
-            const int kMillisecondsToSleep = 15000; // 20 Seconds
+            const int kMillisecondsToSleep = 0; // 20 Seconds
             System.Threading.Thread.Sleep(kMillisecondsToSleep);
             Console.WriteLine("You should've launched the Debugger!");
 #endif
@@ -229,11 +229,12 @@ namespace DeluMc
                 RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
             }
 
-#if DEBUG
             foreach (VillageMarker village in villages)
             {
+                //village.VillageFiller(villageMap, acceptableMap);
                 foreach (Vector2Int point in village.Points)
                 {
+                    //Console.WriteLine($"Punto: {point} con altura: {heightMap[point.Z][point.X]}");
                     if (roadMap[point.Z][point.X] > 0)
                     {
                         differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.Sponge_19_0);
@@ -244,8 +245,7 @@ namespace DeluMc
                     }
                 }
             }
-#endif
-
+            Console.WriteLine("Chaito!");
             HousePlacer.RequestHouseArea(
                 new HousePlacer.HouseAreaInput(
                     0,
@@ -279,7 +279,7 @@ namespace DeluMc
                         new Mapper.SaveMapInfo{
                             zSize = zSize, xSize = xSize, name = "villagemap",
                             colorWork = (int z, int x) => {
-                                if (villageMap[z][x] == 1)
+                                if (villageMap[z][x] >= 1)
                                 {
                                     return Color.Yellow;
                                 }

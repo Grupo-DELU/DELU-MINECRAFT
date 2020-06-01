@@ -29,7 +29,128 @@ namespace DeluMc
         /// <summary>
         /// Points belonging to the village
         /// </summary>
-        public Vector2Int[] Points { get; private set; }
+        public List<Vector2Int> Points { get; private set; }
+
+        public int ID;
+
+        public void VillageFiller(in int[][] villagemap, in bool[][] acceptablemap)
+        {
+            int[][] extmap = new int[villagemap.Length][];
+            for (int i = 0; i < villagemap.Length; ++i)
+                extmap[i] = new int[villagemap[0].Length];
+            
+
+            for (int i = 0; i < villagemap.Length; ++i)
+            {
+                Vector2Int leftZ = Rect.Min + new Vector2Int(i, 0);
+                Vector2Int rightZ = Rect.Min + new Vector2Int(i, villagemap[0].Length - 1);
+                
+                //Console.WriteLine("(" + i + ",0)");
+                //Console.WriteLine($"({i},{villagemap[0].Length - 1})");
+                if (extmap[i][0] != 1 && villagemap[i][0] <= 0)
+                    ExternalBFSFiller(villagemap, extmap, leftZ);
+                if (extmap[i][villagemap[0].Length - 1] != 1 && villagemap[i][villagemap[0].Length - 1] <= 0)
+                    ExternalBFSFiller(villagemap, extmap, rightZ);
+            }
+            for (int i = 1; i < villagemap[0].Length - 1; ++i)
+            {
+                Vector2Int bottomZ = Rect.Min + new Vector2Int(0, i);
+                Vector2Int topZ = Rect.Min + new Vector2Int(villagemap.Length - 1, i);
+                if (extmap[0][i] != 1 && villagemap[0][i] <= 0)
+                    ExternalBFSFiller(villagemap, extmap, bottomZ);
+                if (extmap[villagemap.Length - 1][i] != 1 && villagemap[villagemap.Length - 1][i] <= 0)
+                    ExternalBFSFiller(villagemap, extmap, topZ);
+            }
+
+            for (int i = 0; i < villagemap.Length; ++i)
+            {
+                for (int j = 0; j < villagemap[0].Length; ++j)
+                {
+                    Vector2Int point = new Vector2Int(i,j);
+                    if (extmap[point.Z][point.X] == 0 && villagemap[point.Z][point.X] <= 0 && acceptablemap[point.Z][point.X])
+                    {
+                        InternalBFSFiller(villagemap, extmap, acceptablemap, point);
+                    }
+                }
+            }
+            //Console.WriteLine("Salimos!");
+        }
+
+        private void ExternalBFSFiller(in int[][] villagemap, int[][] extmap, in Vector2Int start)
+        {
+            //Console.WriteLine("External");
+            //Console.WriteLine($"ExternMap en: ({start.Z},{start.X})");
+            Queue<Vector2Int> open = new Queue<Vector2Int>();
+            HashSet<Vector2Int> closed = new HashSet<Vector2Int>();
+            open.Enqueue(start);
+
+            while (open.Count > 0)
+            {
+                Vector2Int current = open.Dequeue();
+                closed.Add(current);
+                LinkedList<Vector2Int> neighboors = ExtNeighboors(villagemap, current);
+                //Console.WriteLine($"Current local: ({current.Z - Rect.Min.Z},{current.X - Rect.Min.X})");
+                extmap[current.Z - Rect.Min.Z][current.X - Rect.Min.X] = 1;
+                //Points.Add(current);
+                foreach (Vector2Int n in neighboors)
+                {
+                    if (villagemap[n.Z][n.X] <= 0 && extmap[n.Z - Rect.Min.Z][n.X - Rect.Min.X] == 0)
+                    {
+                        open.Enqueue(n);
+                    }
+                }
+            }
+        }
+
+
+        private void InternalBFSFiller(in int[][] villagemap, in int[][] extmap, in bool[][] acceptablemap, in Vector2Int start)
+        {
+            //Console.WriteLine("Internal");
+            Queue<Vector2Int> open = new Queue<Vector2Int>();
+            HashSet<Vector2Int> closed = new HashSet<Vector2Int>();
+            open.Enqueue(start);
+
+            while (open.Count > 0)
+            {
+                Vector2Int current = open.Dequeue();
+                closed.Add(current);
+                LinkedList<Vector2Int> neighboors = ExtNeighboors(villagemap, current);
+                villagemap[current.Z][current.X] = ID;
+                Points.Add(current);
+                foreach (Vector2Int n in neighboors)
+                {
+                    if (villagemap[n.Z][n.X] <= 0 && acceptablemap[n.Z][n.X] && extmap[n.Z - Rect.Min.Z][n.X - Rect.Min.X] == 0)
+                    {
+                        open.Enqueue(n);
+                    }
+                }
+            }
+        }
+        
+        private LinkedList<Vector2Int> ExtNeighboors(in int[][] villagemap, in Vector2Int point)
+        {
+            //Console.WriteLine($"Min: ({this.Rect.Min.Z},{this.Rect.Min.X})");
+            //Console.WriteLine($"Max: ({this.Rect.Max.Z},{this.Rect.Max.X})");
+            LinkedList<Vector2Int> neighboors = new LinkedList<Vector2Int>();
+            for (int i = -1; i <= 1; ++i)
+            {
+                for (int j = -1; j <= 1; ++j)
+                {
+                    Vector2Int n = new Vector2Int(point.Z + i, point.X + j);
+                    //Console.WriteLine($"Vecino: ({n.Z},{n.X})");
+                    if (n == point)
+                        continue;
+
+                    if (Rect.IsInside(n))
+                    {
+                        neighboors.AddLast(n);
+                    }
+                }
+            }
+            //Console.WriteLine("nro vecinos: " + neighboors.Count);
+            return neighboors;
+        }
+
 
         /// <summary>
         /// Creates a Village Marker
@@ -38,12 +159,13 @@ namespace DeluMc
         /// <param name="pValue">Probability of Success Value</param>
         /// <param name="rect">Rect that covers the village</param>
         /// <param name="points">Points Belonging to the village</param>
-        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, Vector2Int[] points)
+        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, List<Vector2Int> points, int id)
         {
             this.Seed = seed;
             this.PValue = pValue;
             this.Rect = rect;
             this.Points = points;
+            this.ID = id;
         }
     }
 
@@ -79,7 +201,7 @@ namespace DeluMc
         /// <param name="maxNumNodes">Maximum Number of Nodes expected to be part of the village (there might be more or less)</param>
         /// <param name="radius">Radius for Circle Generation and Collection</param>
         /// <returns>Village Marker</returns>
-        public static VillageMarker CreateVillage(bool[][] acceptableMap, int[][] villageMap, int z, int x, int maxNumNodes, int radius)
+        public static VillageMarker CreateVillage(bool[][] acceptableMap, int[][] villageMap, int z, int x, int maxNumNodes, int radius, int id)
         {
             Vector2Int seed = new Vector2Int { Z = z, X = x };
             List<Vector2Int> openCircles = new List<Vector2Int>(kExpectedCircles);
@@ -101,10 +223,11 @@ namespace DeluMc
                 }
 
                 prevSelectedNodesCount = selectedNodes.Count;
-                pValue += GetValidNodes(acceptableMap, villageMap, radius, seed, openCircles, coverRect, selectedNodes);
+                pValue += GetValidNodes(acceptableMap, villageMap, radius, seed, openCircles, ref coverRect, selectedNodes, id);
             }
-
-            return new VillageMarker(seed, pValue, coverRect, selectedNodes.ToArray());
+            //Console.WriteLine($"Cover Min: ({coverRect.Min.Z},{coverRect.Min.X})");
+            //Console.WriteLine($"Cover Max: ({coverRect.Max.Z},{coverRect.Max.X})");
+            return new VillageMarker(seed, pValue, coverRect, selectedNodes, id);
         }
 
         /// <summary>
@@ -209,7 +332,7 @@ namespace DeluMc
         /// <returns>PValue of added nodes to Village</returns>
         private static int GetValidNodes(
             bool[][] acceptableMap, int[][] villageMap, int radius, in Vector2Int seed, List<Vector2Int> openCircles,
-            in RectInt coverRect, List<Vector2Int> selectedNodes)
+            ref RectInt coverRect, List<Vector2Int> selectedNodes, int id)
         {
             System.Diagnostics.Debug.Assert(openCircles.Count != 0);
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
@@ -291,7 +414,7 @@ namespace DeluMc
                                             --villageMap[z][x];
                                             if (-kMinCircleInterceptions == villageMap[z][x])
                                             {
-                                                villageMap[z][x] = 1;
+                                                villageMap[z][x] = id;
                                                 newSelected.Add(new Vector2Int(z, x));
                                                 break;
                                             }
@@ -330,7 +453,7 @@ namespace DeluMc
         /// <param name="villageMap">Current Village Map</param>
         public static void EliminateVillageMarker(VillageMarker village, int[][] villageMap)
         {
-            Parallel.For(0, village.Points.Length,
+            Parallel.For(0, village.Points.Count,
                 index =>
                 {
                     villageMap[village.Points[index].Z][village.Points[index].X] = 0;

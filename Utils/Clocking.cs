@@ -5,12 +5,22 @@ using System.Collections.Generic;
 
 namespace DeluMc.Utils
 {
+
+    /// <summary>
+    /// Class for managing multiple clocks/stopwatchs
+    /// </summary>
     public static class Clocker
     {
         private static Dictionary<string, Stopwatch> watches;
         private static readonly long nanosecPerTick;
 
 
+        /// <summary>
+        /// Checks if a clock with a name already exists
+        /// </summary>
+        /// <param name="name">Clock name</param>
+        /// <param name="msg">Clock status message enabled</param>
+        /// <returns>True if the clock exists/False otherwise</returns>
         public static bool ContainsClock(string name, bool msg = false)
         {
             if (!watches.ContainsKey(name))
@@ -19,9 +29,16 @@ namespace DeluMc.Utils
                     Console.WriteLine($"Watch {name} doesn't exist!");
                 return false;
             }
+            if (msg)
+                Console.WriteLine($"Watch {name} exists!");
             return true;
         }    
 
+
+        /// <summary>
+        /// Adds a clock to the class if it doesn't exists already
+        /// </summary>
+        /// <param name="name">Name of the clock</param>
         public static void AddClock(string name)
         {
             if (ContainsClock(name))
@@ -33,6 +50,10 @@ namespace DeluMc.Utils
         }
 
 
+        /// <summary>
+        /// Adds a clock to the class and starts it
+        /// </summary>
+        /// <param name="name">Name of the clock</param>
         public static void AddAndStartClock(string name)
         {
             if (ContainsClock(name))
