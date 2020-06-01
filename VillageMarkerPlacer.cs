@@ -31,6 +31,9 @@ namespace DeluMc
         /// </summary>
         public List<Vector2Int> Points { get; private set; }
 
+        /// <summary>
+        /// Village Id
+        /// </summary>
         public int ID;
 
         public void VillageFiller(in int[][] villagemap, in bool[][] acceptablemap)
@@ -159,6 +162,7 @@ namespace DeluMc
         /// <param name="pValue">Probability of Success Value</param>
         /// <param name="rect">Rect that covers the village</param>
         /// <param name="points">Points Belonging to the village</param>
+        /// <param name="id">Village Id</param>
         public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, List<Vector2Int> points, int id)
         {
             this.Seed = seed;
@@ -200,6 +204,7 @@ namespace DeluMc
         /// <param name="x">X Coordinate of Village</param>
         /// <param name="maxNumNodes">Maximum Number of Nodes expected to be part of the village (there might be more or less)</param>
         /// <param name="radius">Radius for Circle Generation and Collection</param>
+        /// <param name="id">Village Id</param>
         /// <returns>Village Marker</returns>
         public static VillageMarker CreateVillage(bool[][] acceptableMap, int[][] villageMap, int z, int x, int maxNumNodes, int radius, int id)
         {
@@ -225,8 +230,6 @@ namespace DeluMc
                 prevSelectedNodesCount = selectedNodes.Count;
                 pValue += GetValidNodes(acceptableMap, villageMap, radius, seed, openCircles, ref coverRect, selectedNodes, id);
             }
-            //Console.WriteLine($"Cover Min: ({coverRect.Min.Z},{coverRect.Min.X})");
-            //Console.WriteLine($"Cover Max: ({coverRect.Max.Z},{coverRect.Max.X})");
             return new VillageMarker(seed, pValue, coverRect, selectedNodes, id);
         }
 
@@ -257,7 +260,7 @@ namespace DeluMc
                     int maxDist = 0;
                     int curDist;
 
-                    /// TODO: This is the naive way to do it. A better way would be like peeling an onion, do tat later
+                    /// TODO: This is the naive way to do it. A better way would be like peeling an onion, do that later
                     for (int z = zStart; z < zEnd; z++)
                     {
                         for (int x = xStart; x < xEnd; x++)
