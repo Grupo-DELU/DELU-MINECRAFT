@@ -192,9 +192,10 @@ namespace DeluMc
                 int expectedVillageSize = 300;
                 int radius = 2;
                 int villageCount = 4;
+                int maxVillageCount = 6;
                 villages = VillageDistributor.DistributeVillageMarkers(
                     acceptableMap, villageMap, waterAnalysis, 
-                    villageCount, numberOfTries, radius, expectedVillageSize
+                    villageCount, maxVillageCount, numberOfTries, radius, expectedVillageSize
                 );
                 if (villages.Count > 1)
                 {

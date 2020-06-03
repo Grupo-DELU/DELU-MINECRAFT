@@ -196,13 +196,14 @@ namespace DeluMc
         /// <param name="villageMap">Village Map</param>
         /// <param name="waterAnalysis">Water Analysis to place villages near water</param>
         /// <param name="minVillageCount">Minimum Village Amount expected</param>
+        /// <param name="maxVillageCount">Maximum Village Amount expected</param>
         /// <param name="numberOfTries">Number of Tries to place a new village</param>
         /// <param name="radius">Village Radius for placement</param>
         /// <param name="expectedVillageSize">Expected Village Size</param>
         /// <returns>Village Markers Placed</returns>
         public static List<VillageMarker> DistributeVillageMarkers(
             bool[][] acceptableMap, int[][] villageMap, WaterAnalyzer.WaterAnalysis waterAnalysis,
-            int minVillageCount, int numberOfTries, int radius, int expectedVillageSize)
+            int minVillageCount, int maxVillateCount, int numberOfTries, int radius, int expectedVillageSize)
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
             int possibleVillageCount = 0;
@@ -221,6 +222,7 @@ namespace DeluMc
                 // Not enough Water for villages. Put random
                 return BackUpPlacement(acceptableMap, villageMap, radius, expectedVillageSize, minVillageCount, numberOfTries);
             }
+            possibleVillageCount = Math.Min(possibleVillageCount, maxVillateCount);
             System.Diagnostics.Debug.Assert(waterAnalysis.WaterBodies.Count > 0);
             int minDistance = (int)((float)expectedVillageSize * kVillageSeparationPercentage);
 
