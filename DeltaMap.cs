@@ -1,4 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+
+using DeluMc.Utils;
 
 namespace DeluMc.Masks
 {
@@ -38,6 +42,7 @@ namespace DeluMc.Masks
             if (heightMap[z][x] < 0 || waterMap[z][x] == 1)
             {
                 deltaMap[z][x] = -1;
+
                 return;
             }
 
@@ -65,9 +70,55 @@ namespace DeluMc.Masks
                     }
                 }
             }
-
             deltaMap[z][x] /= (float)count;
+        }
 
+
+        /// <summary>
+        /// Creates an array with DeltaPair structs, sorted by
+        /// delta map value from lowest to highest (with absolute value)
+        /// </summary>
+        /// <param name="deltaMap">DeltaMap to sort</param>
+        /// <returns>Array with DeltaPairs sorted by delta map value</returns>
+        public static DeltaPair[] SortDeltaMap(in float[][] deltaMap)
+        {
+            DeltaPair[] ordered = new DeltaPair[deltaMap.Length * deltaMap[0].Length];
+            for (int i = 0; i < deltaMap.Length; ++i)
+            {
+                for (int j = 0; j < deltaMap[0].Length; ++j)
+                    ordered[j * i + j] = new DeltaPair(deltaMap[i][j], new Vector2Int(i,j));        
+            }
+            Array.Sort(ordered, new DeltaPairComparer());
+            return ordered;
+        }
+
+
+        /// <summary>
+        /// Struct that represents a coordinate and it associated deltamap
+        /// value
+        /// </summary>
+        public struct DeltaPair
+        {
+            public float delta;
+            public Vector2Int coordinates;
+
+            public DeltaPair(float delta, Vector2Int coordinates)
+            {
+                this.delta = delta;
+                this.coordinates = coordinates;
+            }
+        }
+
+
+        /// <summary>
+        /// Used to compare Delta Pairs by delta amount from min to max 
+        /// </summary>
+        private class DeltaPairComparer : IComparer<DeltaPair>
+        {
+            public int Compare(DeltaPair a, DeltaPair b)
+            {
+                return Math.Abs(a.delta).CompareTo(Math.Abs(b.delta));
+            }
         }
     }
 }

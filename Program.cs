@@ -232,7 +232,7 @@ namespace DeluMc
 
             foreach (VillageMarker village in villages)
             {
-                //village.VillageFiller(villageMap, acceptableMap);
+                village.VillageFiller(villageMap, acceptableMap);
                 foreach (Vector2Int point in village.Points)
                 {
                     //Console.WriteLine($"Punto: {point} con altura: {heightMap[point.Z][point.X]}");
@@ -246,7 +246,8 @@ namespace DeluMc
                     }
                 }
             }
-            Console.WriteLine("Chaito!");
+            HouseDistributor.Test(deltaMap);
+            
             HousePlacer.RequestHouseArea(
                 new HousePlacer.HouseAreaInput(
                     0,
