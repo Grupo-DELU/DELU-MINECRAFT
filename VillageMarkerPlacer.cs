@@ -51,6 +51,24 @@ namespace DeluMc
             this.Rect = rect;
             this.Points = points;
             this.ID = id;
+
+#if DEBUG
+            HashSet<ZPoint2D> duplicates = new HashSet<ZPoint2D>(points.Count);
+            int duplicatesNum = 0;
+            for (int i = 0; i < points.Count; i++)
+            {
+                if (!duplicates.Add(new ZPoint2D { RealPoint = points[i] }))
+                {
+                    ++duplicatesNum;
+                }
+            }
+            if (duplicatesNum > 0)
+            {
+                Console.WriteLine($"Duplicates {duplicatesNum}");
+
+            }
+            System.Diagnostics.Debug.Assert(duplicatesNum == 0);
+#endif
         }
 
         public void VillageFiller(in int[][] villagemap, in bool[][] acceptablemap)
@@ -269,7 +287,7 @@ namespace DeluMc
                 }
 
                 prevSelectedNodesCount = selectedNodes.Count;
-                pValue += GetValidNodes(acceptableMap, villageMap,seed, circlesTestCovers, circleTestCover, ref coverRect, selectedNodes, id);
+                pValue += GetValidNodes(acceptableMap, villageMap, seed, circlesTestCovers, circleTestCover, ref coverRect, selectedNodes, id);
             }
             return new VillageMarker(seed, pValue, coverRect, selectedNodes, id);
         }
@@ -333,7 +351,7 @@ namespace DeluMc
                         {
                             accumulator.Add(maxNodes[i]);
                         }
-                        
+
                         return accumulator;
 
                     }
@@ -346,7 +364,7 @@ namespace DeluMc
                     {
                         foreach (ZPoint2D point in accumulator)
                         {
-                            newCirclesSet.Add(point);   
+                            newCirclesSet.Add(point);
                         }
                     }
                     finally
@@ -362,7 +380,7 @@ namespace DeluMc
             {
                 newCircles.Add(point);
             }
-            
+
             return newCircles;
         }
 
