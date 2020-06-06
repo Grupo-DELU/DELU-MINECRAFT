@@ -478,7 +478,7 @@ namespace Utils.SpatialTrees.QuadTrees
         private MinHeap<DistanceToNode> closestNodeHeap = null;
 
         /// <summary>
-        /// Init Closese Node Heap if necesary
+        /// Init Closest Node Heap if necessary
         /// </summary>
         /// <param name="node">Initial node to search</param>
         /// <param name="point">Point to search for</param>
@@ -672,6 +672,7 @@ namespace Utils.SpatialTrees.QuadTrees
             }
             if (nearestDataPoints.GetTop().DataNode == null)
             {
+                nearestDataPoints.ExtractDominating();
                 return nearestDataPoints.Count - 1; // Maximum Dominating DataPoint still inside, meaning less than k neighbors
             }
             else
