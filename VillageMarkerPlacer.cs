@@ -36,18 +36,35 @@ namespace DeluMc
         /// </summary>
         public int ID;
 
+        /// <summary>
+        /// Creates a Village Marker
+        /// </summary>
+        /// <param name="seed">Seed of Vialle</param>
+        /// <param name="pValue">Probability of Success Value</param>
+        /// <param name="rect">Rect that covers the village</param>
+        /// <param name="points">Points Belonging to the village</param>
+        /// <param name="id">Village Id</param>
+        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, List<Vector2Int> points, int id)
+        {
+            this.Seed = seed;
+            this.PValue = pValue;
+            this.Rect = rect;
+            this.Points = points;
+            this.ID = id;
+        }
+
         public void VillageFiller(in int[][] villagemap, in bool[][] acceptablemap)
         {
             int[][] extmap = new int[villagemap.Length][];
             for (int i = 0; i < villagemap.Length; ++i)
                 extmap[i] = new int[villagemap[0].Length];
-            
+
 
             for (int i = 0; i < villagemap.Length; ++i)
             {
                 Vector2Int leftZ = Rect.Min + new Vector2Int(i, 0);
                 Vector2Int rightZ = Rect.Min + new Vector2Int(i, villagemap[0].Length - 1);
-                
+
                 //Console.WriteLine("(" + i + ",0)");
                 //Console.WriteLine($"({i},{villagemap[0].Length - 1})");
                 if (extmap[i][0] != 1 && villagemap[i][0] <= 0)
@@ -69,7 +86,7 @@ namespace DeluMc
             {
                 for (int j = 0; j < villagemap[0].Length; ++j)
                 {
-                    Vector2Int point = new Vector2Int(i,j);
+                    Vector2Int point = new Vector2Int(i, j);
                     if (extmap[point.Z][point.X] == 0 && villagemap[point.Z][point.X] <= 0 && acceptablemap[point.Z][point.X])
                     {
                         InternalBFSFiller(villagemap, extmap, acceptablemap, point);
@@ -129,7 +146,7 @@ namespace DeluMc
                 }
             }
         }
-        
+
         private LinkedList<Vector2Int> ExtNeighboors(in int[][] villagemap, in Vector2Int point)
         {
             //Console.WriteLine($"Min: ({this.Rect.Min.Z},{this.Rect.Min.X})");
@@ -152,24 +169,6 @@ namespace DeluMc
             }
             //Console.WriteLine("nro vecinos: " + neighboors.Count);
             return neighboors;
-        }
-
-
-        /// <summary>
-        /// Creates a Village Marker
-        /// </summary>
-        /// <param name="seed">Seed of Vialle</param>
-        /// <param name="pValue">Probability of Success Value</param>
-        /// <param name="rect">Rect that covers the village</param>
-        /// <param name="points">Points Belonging to the village</param>
-        /// <param name="id">Village Id</param>
-        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, List<Vector2Int> points, int id)
-        {
-            this.Seed = seed;
-            this.PValue = pValue;
-            this.Rect = rect;
-            this.Points = points;
-            this.ID = id;
         }
     }
 
@@ -204,24 +203,38 @@ namespace DeluMc
         /// <param name="x">X Coordinate of Village</param>
         /// <param name="maxNumNodes">Maximum Number of Nodes expected to be part of the village (there might be more or less)</param>
         /// <param name="radius">Radius for Circle Generation and Collection</param>
-        /// <param name="id">Village Id</param>
+        /// <param name="id">Village Id, Must be greater than 0</param>
         /// <returns>Village Marker</returns>
         public static VillageMarker CreateVillage(bool[][] acceptableMap, int[][] villageMap, int z, int x, int maxNumNodes, int radius, int id)
         {
+            System.Diagnostics.Debug.Assert(id > 0);
             Vector2Int seed = new Vector2Int { Z = z, X = x };
-            List<Vector2Int> openCircles = new List<Vector2Int>(kExpectedCircles);
-            openCircles.Add(seed);
+            List<ZPoint2D> openCircles = new List<ZPoint2D>(kExpectedCircles);
+            HashSet<ZPoint2D> openCirclesSet = new HashSet<ZPoint2D>(kExpectedCircles);
+            List<ZPoint2D> newCircles = new List<ZPoint2D>(kExpectedCircles);
+            newCircles.Add(new ZPoint2D { RealPoint = seed });
             List<Vector2Int> selectedNodes = new List<Vector2Int>(maxNumNodes);
             int pValue = 0;
             int prevSelectedNodesCount = -1;
+            int addedCircles;
 
             RectInt coverRect = new RectInt(seed, seed);
 
             while (selectedNodes.Count < maxNumNodes && prevSelectedNodesCount != selectedNodes.Count)
             {
-                openCircles = OpenNewCircles(acceptableMap, villageMap, openCircles, radius);
+                newCircles = OpenNewCircles(acceptableMap, villageMap, newCircles, radius);
 
-                if (openCircles.Count == 0)
+                addedCircles = 0;
+                for (int i = 0; i < newCircles.Count; i++)
+                {
+                    if (openCirclesSet.Add(newCircles[i]))
+                    {
+                        openCircles.Add(newCircles[i]);
+                        ++addedCircles;
+                    }
+                }
+
+                if (addedCircles == 0)
                 {
                     // Nothing to Add
                     break;
@@ -241,23 +254,23 @@ namespace DeluMc
         /// <param name="openCircles">Currently open circles</param>
         /// <param name="radius">Circles Radius</param>
         /// <returns>Newly opened circles</returns>
-        private static List<Vector2Int> OpenNewCircles(bool[][] acceptableMap, int[][] villageMap, List<Vector2Int> openCircles, int radius)
+        private static List<ZPoint2D> OpenNewCircles(bool[][] acceptableMap, int[][] villageMap, List<ZPoint2D> openCircles, int radius)
         {
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
             Mutex mut = new Mutex();
-            List<Vector2Int> newCircles = new List<Vector2Int>();
+            HashSet<ZPoint2D> newCirclesSet = new HashSet<ZPoint2D>();
 
-            Parallel.For<List<Vector2Int>>(0, openCircles.Count, 
-                () => new List<Vector2Int>(),
-                (int index, ParallelLoopState loop, List<Vector2Int> accumulator) =>
+            Parallel.For<HashSet<ZPoint2D>>(0, openCircles.Count,
+                () => new HashSet<ZPoint2D>(),
+                (int index, ParallelLoopState loop, HashSet<ZPoint2D> accumulator) =>
                 {
-                    Vector2Int center = openCircles[index];
-                    int zStart = Math.Max(0, center.Z - radius);
-                    int zEnd = Math.Min(acceptableMap.Length - 1, center.Z + radius);
-                    int xStart = Math.Max(0, center.X - radius);
-                    int xEnd = Math.Min(acceptableMap[0].Length - 1, center.X + radius);
+                    ZPoint2D center = openCircles[index];
+                    int zStart = Math.Max(0, center.RealPoint.Z - radius);
+                    int zEnd = Math.Min(acceptableMap.Length - 1, center.RealPoint.Z + radius);
+                    int xStart = Math.Max(0, center.RealPoint.X - radius);
+                    int xEnd = Math.Min(acceptableMap[0].Length - 1, center.RealPoint.X + radius);
 
-                    List<Vector2Int> maxNodes = new List<Vector2Int>();
+                    List<ZPoint2D> maxNodes = new List<ZPoint2D>(4);
                     int maxDist = 0;
                     int curDist;
 
@@ -268,19 +281,19 @@ namespace DeluMc
                         {
                             if (acceptableMap[z][x] && villageMap[z][x] <= 0)
                             {
-                                curDist = ChebyshevDistance(center, z, x);
+                                curDist = ChebyshevDistance(center.RealPoint, z, x);
                                 if (maxDist < curDist)
                                 {
                                     if (maxNodes.Count > 0)
                                     {
-                                        maxNodes.RemoveRange(0, maxNodes.Count);
+                                        maxNodes.Clear();
                                     }
                                     maxDist = curDist;
-                                    maxNodes.Add(new Vector2Int(z, x));
+                                    maxNodes.Add(new ZPoint2D { RealPoint = new Vector2Int(z, x) });
                                 }
                                 else if (maxDist == curDist)
                                 {
-                                    maxNodes.Add(new Vector2Int(z, x));
+                                    maxNodes.Add(new ZPoint2D { RealPoint = new Vector2Int(z, x) });
                                 }
                             }
                         }
@@ -288,18 +301,25 @@ namespace DeluMc
 
                     if (maxNodes.Count > 0 && maxDist > 0)
                     {
-                        accumulator.AddRange(maxNodes);
-                        return accumulator;
+                        for (int i = 0; i < maxNodes.Count; i++)
+                        {
+                            accumulator.Add(maxNodes[i]);
+                        }
                         
+                        return accumulator;
+
                     }
                     return accumulator;
                 },
-                (List<Vector2Int> accumulator) =>
+                (HashSet<ZPoint2D> accumulator) =>
                 {
                     mut.WaitOne();
                     try
                     {
-                        newCircles.AddRange(accumulator);
+                        foreach (ZPoint2D point in accumulator)
+                        {
+                            newCirclesSet.Add(point);   
+                        }
                     }
                     finally
                     {
@@ -308,6 +328,13 @@ namespace DeluMc
                 });
 
             mut.Dispose();
+
+            List<ZPoint2D> newCircles = new List<ZPoint2D>(newCirclesSet.Count);
+            foreach (ZPoint2D point in newCirclesSet)
+            {
+                newCircles.Add(point);
+            }
+            
             return newCircles;
         }
 
@@ -340,18 +367,20 @@ namespace DeluMc
         /// <param name="openCircles">Currently open circles</param>
         /// <param name="coverRect">Cover Rect for the village being generated</param>
         /// <param name="selectedNodes">Selected Nodes for the village</param>
+        /// <param name="id">Village ID, must be greater than 0</param>
         /// <returns>PValue of added nodes to Village</returns>
         private static int GetValidNodes(
-            bool[][] acceptableMap, int[][] villageMap, int radius, in Vector2Int seed, List<Vector2Int> openCircles,
+            bool[][] acceptableMap, int[][] villageMap, int radius, in Vector2Int seed, List<ZPoint2D> openCircles,
             ref RectInt coverRect, List<Vector2Int> selectedNodes, int id)
         {
+            System.Diagnostics.Debug.Assert(id > 0);
             System.Diagnostics.Debug.Assert(openCircles.Count != 0);
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
 
             /// <summary>
             /// Cover Rect for Current Open Circles
             /// </summary>
-            RectInt testCover = new RectInt(openCircles[0]);
+            RectInt testCover = new RectInt(openCircles[0].RealPoint);
             List<RectInt> circlesBoxes = new List<RectInt>(openCircles.Count);
 
             {
@@ -363,11 +392,11 @@ namespace DeluMc
                 int xEnd;
                 for (int i = 0; i < openCircles.Count; i++)
                 {
-                    Vector2Int center = openCircles[i];
-                    zStart = Math.Max(0, center.Z - radius);
-                    zEnd = Math.Min(acceptableMap.Length - 1, center.Z + radius);
-                    xStart = Math.Max(0, center.X - radius);
-                    xEnd = Math.Min(acceptableMap[0].Length - 1, center.X + radius);
+                    ZPoint2D center = openCircles[i];
+                    zStart = Math.Max(0, center.RealPoint.Z - radius);
+                    zEnd = Math.Min(acceptableMap.Length - 1, center.RealPoint.Z + radius);
+                    xStart = Math.Max(0, center.RealPoint.X - radius);
+                    xEnd = Math.Min(acceptableMap[0].Length - 1, center.RealPoint.X + radius);
                     circlesBoxes.Add(new RectInt(new Vector2Int(zStart, xStart), new Vector2Int(zEnd, xEnd)));
                     testCover.Include(circlesBoxes[circlesBoxes.Count - 1]);
                 }
