@@ -188,51 +188,79 @@ namespace DeluMc
             List<VillageMarker> villages;
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
             {
-                int numberOfTries = 10000;
-                int expectedVillageSize = 300;
+                int numberOfTries = 1000;
+                int expectedVillageSize = 500;
                 int radius = 2;
                 int villageCount = 4;
                 int maxVillageCount = 6;
                 villages = VillageDistributor.DistributeVillageMarkers(
-                    acceptableMap, villageMap, waterAnalysis, 
+                    acceptableMap, villageMap, waterAnalysis,
                     villageCount, maxVillageCount, numberOfTries, radius, expectedVillageSize
                 );
+
+                bool mainRoadPlaced = false;
+                int mainRoadVillageStart = -1, mainRoadVillageEnd = -1;
                 if (villages.Count > 1)
                 {
-                    List<Vector2Int> road = RoadGenerator.FirstRoad(
-                        villages[0].Seed.Z, villages[0].Seed.X,
-                        villages[1].Seed.Z, villages[1].Seed.X,
-                        acceptableMap, deltaMap, waterMap, roadMap, treeMap
-                    );
-                    Console.WriteLine("Main Road lenght: " + road.Count);
-                    roads.Add(road);
-                    foreach (Vector2Int roadPoint in road)
+                    for (int i = 0; i < villages.Count - 1; i++)
                     {
-                        roadQT.Insert(roadPoint, roadPoint);
-                        mainRoadMap[roadPoint.Z][roadPoint.X] = 1;
-                    }
-                }
-                for (int i = 2; i < villages.Count; ++i)
-                {
-                    Console.WriteLine($"Connecting village: {i} to roads");
-                    List<Vector2Int> road = RoadGenerator.PointToRoad(
-                        villages[i].Seed.Z, villages[i].Seed.X,
-                        acceptableMap, deltaMap, waterMap, roadMap, treeMap,
-                        roadQT
-                    );
-                    roads.Add(road);
-                    foreach (Vector2Int roadPoint in road)
-                    {
-                        roadQT.Insert(roadPoint, roadPoint);
+                        for (int j = i + 1; j < villages.Count; j++)
+                        {
+
+                            List<Vector2Int> road = RoadGenerator.FirstRoad(
+                                villages[i].Seed.Z, villages[i].Seed.X,
+                                villages[j].Seed.Z, villages[j].Seed.X,
+                                acceptableMap, deltaMap, waterMap, roadMap, treeMap
+                            );
+                            if (road.Count > 0)
+                            {
+                                mainRoadPlaced = true;
+                                mainRoadVillageStart = i;
+                                mainRoadVillageEnd = j;
+                                Console.WriteLine("Main Road length: " + road.Count);
+                                roads.Add(road);
+                                foreach (Vector2Int roadPoint in road)
+                                {
+                                    roadQT.Insert(roadPoint, roadPoint);
+                                    mainRoadMap[roadPoint.Z][roadPoint.X] = 1;
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
 
-                RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
+                if (mainRoadPlaced)
+                {
+                    for (int i = 0; i < villages.Count; ++i)
+                    {
+                        if (i != mainRoadVillageStart && i != mainRoadVillageEnd)
+                        {
+                            Console.WriteLine($"Connecting village: {i} to roads");
+                            List<Vector2Int> road = RoadGenerator.PointToRoad(
+                                villages[i].Seed.Z, villages[i].Seed.X,
+                                acceptableMap, deltaMap, waterMap, roadMap, treeMap,
+                                roadQT
+                            );
+                            roads.Add(road);
+                            foreach (Vector2Int roadPoint in road)
+                            {
+                                roadQT.Insert(roadPoint, roadPoint);
+                            }
+                        }
+                    }
+
+                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
+                }
+                else
+                {
+                    Console.WriteLine("Failed to Place all the roads");
+                }
             }
 
             foreach (VillageMarker village in villages)
             {
-                village.VillageFiller(villageMap, acceptableMap);
+                //village.VillageFiller(villageMap, acceptableMap);
                 foreach (Vector2Int point in village.Points)
                 {
                     //Console.WriteLine($"Punto: {point} con altura: {heightMap[point.Z][point.X]}");
@@ -246,8 +274,9 @@ namespace DeluMc
                     }
                 }
             }
-            HouseDistributor.Test(deltaMap);
-            
+            //HouseDistributor.Test(deltaMap);
+
+            /*
             HousePlacer.RequestHouseArea(
                 new HousePlacer.HouseAreaInput(
                     0,
@@ -257,7 +286,7 @@ namespace DeluMc
                     houseMap,
                     differ.World,
                     Orientation.South,
-                    PremadePalettes.forestPalette), BuildType.House);
+                    PremadePalettes.forestPalette), BuildType.House);*/
 
             // Write Data Back to Python
             {

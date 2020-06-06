@@ -18,6 +18,11 @@ namespace DeluMc
         private const float kVillageSeparationPercentage = 0.1f;
 
         /// <summary>
+        /// Village Size Percentage
+        /// </summary>
+        private const float kVillageSizePercentage = 0.7f;
+
+        /// <summary>
         /// Backup Algorithm to place Villages
         /// </summary>
         /// <param name="acceptableMap">Acceptable Map</param>
@@ -58,7 +63,7 @@ namespace DeluMc
                 )
                 {
                     VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius, id);
-                    if (village.Points.Count >= expectedVillageSize / 2)
+                    if (village.Points.Count >= expectedVillageSize * kVillageSizePercentage)
                     {
                         ++id;
                         --villageCount;
@@ -292,7 +297,7 @@ namespace DeluMc
                 if (possibleSeed != null)
                 {
                     VillageMarker village = VillageMarkerPlacer.CreateVillage(acceptableMap, villageMap, z, x, expectedVillageSize, radius, id);
-                    if (village.Points.Count >= expectedVillageSize / 2)
+                    if (village.Points.Count >= expectedVillageSize * kVillageSizePercentage)
                     {
                         --possibleVillageCount;
                         villages.Add(village);
