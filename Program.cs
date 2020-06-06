@@ -227,6 +227,10 @@ namespace DeluMc
                                 break;
                             }
                         }
+                        if (mainRoadPlaced)
+                        {
+                            break;
+                        }
                     }
                 }
 
