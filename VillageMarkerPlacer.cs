@@ -247,8 +247,9 @@ namespace DeluMc
             Mutex mut = new Mutex();
             List<Vector2Int> newCircles = new List<Vector2Int>();
 
-            Parallel.For(0, openCircles.Count,
-                index =>
+            Parallel.For<List<Vector2Int>>(0, openCircles.Count, 
+                () => new List<Vector2Int>(),
+                (int index, ParallelLoopState loop, List<Vector2Int> accumulator) =>
                 {
                     Vector2Int center = openCircles[index];
                     int zStart = Math.Max(0, center.Z - radius);
@@ -287,15 +288,22 @@ namespace DeluMc
 
                     if (maxNodes.Count > 0 && maxDist > 0)
                     {
-                        mut.WaitOne();
-                        try
-                        {
-                            newCircles.AddRange(maxNodes);
-                        }
-                        finally
-                        {
-                            mut.ReleaseMutex();
-                        }
+                        accumulator.AddRange(maxNodes);
+                        return accumulator;
+                        
+                    }
+                    return accumulator;
+                },
+                (List<Vector2Int> accumulator) =>
+                {
+                    mut.WaitOne();
+                    try
+                    {
+                        newCircles.AddRange(accumulator);
+                    }
+                    finally
+                    {
+                        mut.ReleaseMutex();
                     }
                 });
 
