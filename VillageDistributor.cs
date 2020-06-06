@@ -49,7 +49,7 @@ namespace DeluMc
             int x;
             Vector2Int currPoint = new Vector2Int();
             DataQuadTree<VillageMarker>.DistanceToDataPoint closest;
-            int id = 0;
+            int id = 1;
             while (villageCount != 0 && numberOfTries != 0)
             {
                 z = rand.Next(0, zSize);
@@ -234,7 +234,7 @@ namespace DeluMc
             int zSize = acceptableMap.Length;
             int xSize = acceptableMap[0].Length;
 
-            int id = 0;
+            int id = 1;
             List<VillageMarker> villages = new List<VillageMarker>(possibleVillageCount);
             DataQuadTree<VillageMarker> placedVillages
                 = new DataQuadTree<VillageMarker>(Vector2Int.Zero, new Vector2Int(zSize, xSize));
