@@ -220,6 +220,18 @@ namespace DeluMc
 
             RectInt coverRect = new RectInt(seed, seed);
 
+            /// <summary>
+            /// Cover Rect for Current Open Circles
+            /// </summary>
+            RectInt circleTestCover = new RectInt();
+            bool coverInit = false;
+            List<RectInt> circlesTestCovers = new List<RectInt>(openCircles.Count);
+            int zStartCover;
+            int zEndCover;
+            int xStartCover;
+            int xEndCover;
+            ZPoint2D circleCenter;
+
             while (selectedNodes.Count < maxNumNodes && prevSelectedNodesCount != selectedNodes.Count)
             {
                 newCircles = OpenNewCircles(acceptableMap, villageMap, newCircles, radius);
@@ -229,6 +241,22 @@ namespace DeluMc
                 {
                     if (openCirclesSet.Add(newCircles[i]))
                     {
+                        circleCenter = newCircles[i];
+                        zStartCover = Math.Max(0, circleCenter.RealPoint.Z - radius);
+                        zEndCover = Math.Min(acceptableMap.Length - 1, circleCenter.RealPoint.Z + radius);
+                        xStartCover = Math.Max(0, circleCenter.RealPoint.X - radius);
+                        xEndCover = Math.Min(acceptableMap[0].Length - 1, circleCenter.RealPoint.X + radius);
+                        circlesTestCovers.Add(new RectInt(new Vector2Int(zStartCover, xStartCover), new Vector2Int(zEndCover, xEndCover)));
+                        if (coverInit)
+                        {
+                            circleTestCover.Include(circlesTestCovers[circlesTestCovers.Count - 1]);
+                        }
+                        else
+                        {
+                            circleTestCover = circlesTestCovers[circlesTestCovers.Count - 1];
+                            coverInit = true;
+                        }
+
                         openCircles.Add(newCircles[i]);
                         ++addedCircles;
                     }
@@ -241,7 +269,7 @@ namespace DeluMc
                 }
 
                 prevSelectedNodesCount = selectedNodes.Count;
-                pValue += GetValidNodes(acceptableMap, villageMap, radius, seed, openCircles, ref coverRect, selectedNodes, id);
+                pValue += GetValidNodes(acceptableMap, villageMap,seed, circlesTestCovers, circleTestCover, ref coverRect, selectedNodes, id);
             }
             return new VillageMarker(seed, pValue, coverRect, selectedNodes, id);
         }
@@ -362,51 +390,26 @@ namespace DeluMc
         /// </summary>
         /// <param name="acceptableMap">Acceptable Nodes map</param>
         /// <param name="villageMap">Villages Map</param>
-        /// <param name="radius">Circles Radius</param>
-        /// <param name="seed">Seed of Village</param>
-        /// <param name="openCircles">Currently open circles</param>
+        /// <param name="seed">Village's Seed</param>
+        /// <param name="circlesCovers">Covers of currently open circles</param>
+        /// <param name="testCover">Cover of all open circles</param>
         /// <param name="coverRect">Cover Rect for the village being generated</param>
         /// <param name="selectedNodes">Selected Nodes for the village</param>
         /// <param name="id">Village ID, must be greater than 0</param>
         /// <returns>PValue of added nodes to Village</returns>
         private static int GetValidNodes(
-            bool[][] acceptableMap, int[][] villageMap, int radius, in Vector2Int seed, List<ZPoint2D> openCircles,
+            bool[][] acceptableMap, int[][] villageMap, in Vector2Int seed, List<RectInt> circlesCovers, RectInt testCover,
             ref RectInt coverRect, List<Vector2Int> selectedNodes, int id)
         {
             System.Diagnostics.Debug.Assert(id > 0);
-            System.Diagnostics.Debug.Assert(openCircles.Count != 0);
+            System.Diagnostics.Debug.Assert(circlesCovers.Count != 0);
             System.Diagnostics.Debug.Assert(acceptableMap.Length != 0 && acceptableMap[0].Length != 0);
 
-            /// <summary>
-            /// Cover Rect for Current Open Circles
-            /// </summary>
-            RectInt testCover = new RectInt(openCircles[0].RealPoint);
-            List<RectInt> circlesBoxes = new List<RectInt>(openCircles.Count);
-
-            {
-                // Create circle boxes for intersections
-                // Fill testCover to iterate over it
-                int zStart;
-                int zEnd;
-                int xStart;
-                int xEnd;
-                for (int i = 0; i < openCircles.Count; i++)
-                {
-                    ZPoint2D center = openCircles[i];
-                    zStart = Math.Max(0, center.RealPoint.Z - radius);
-                    zEnd = Math.Min(acceptableMap.Length - 1, center.RealPoint.Z + radius);
-                    xStart = Math.Max(0, center.RealPoint.X - radius);
-                    xEnd = Math.Min(acceptableMap[0].Length - 1, center.RealPoint.X + radius);
-                    circlesBoxes.Add(new RectInt(new Vector2Int(zStart, xStart), new Vector2Int(zEnd, xEnd)));
-                    testCover.Include(circlesBoxes[circlesBoxes.Count - 1]);
-                }
-            }
 
             /// <summary>
             /// Size of Cover Rect for Current Open Circles
             /// </summary>
             Vector2Int testCoverSize = testCover.Size;
-
             {
                 // Clean Village Map of unused places
                 Tasker.WorkBlock[] cleanVillageMap = {
@@ -447,9 +450,9 @@ namespace DeluMc
                             {
                                 if (acceptableMap[z][x] && villageMap[z][x] <= 0)
                                 {
-                                    for (int i = 0; i < circlesBoxes.Count; i++)
+                                    for (int i = 0; i < circlesCovers.Count; i++)
                                     {
-                                        if (circlesBoxes[i].IsInside(z, x))
+                                        if (circlesCovers[i].IsInside(z, x))
                                         {
                                             --villageMap[z][x];
                                             if (-kMinCircleInterceptions == villageMap[z][x])
