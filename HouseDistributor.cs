@@ -12,8 +12,7 @@ namespace DeluMc
     public static class HouseDistributor
     {
         private const int MIN_HOUSE_SEPARATION = 5;
-        private const int TERRAFORMING_TRESHOLD = 20;
-        private const float TRIES_PERCENTAGE = 0.75f;
+        private const int TERRAFORMING_TRESHOLD = 10;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
                                 int[][] houseMap, int[][] roadMap, in int[][] villageMap, VillageMarker village,
@@ -51,7 +50,7 @@ namespace DeluMc
                         if (!IsSeparated(point, rect, rectTree))
                             continue;
 
-                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[rect.Min.Z][rect.Min.X], rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
+                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[rect.Min.Z][rect.Min.X] + 1, rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
 
                         if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
                         {
@@ -119,21 +118,21 @@ namespace DeluMc
             }
             if (maxB.Z < heightMap.Length && maxB.X < heightMap[0].Length && minB.Z >= 0 && minB.X >= 0)
             {
-                if (true || CalculateTerraformation(minB, maxB, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
+                if (CalculateTerraformation(minB, maxB, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
                 {
                     rects.Add(new RectInt(minB, maxB));
                 }
             }
             if (maxC.Z < heightMap.Length && maxC.X < heightMap[0].Length && minC.Z >= 0 && minC.X >= 0)
             {
-                if (true || CalculateTerraformation(minC, maxC, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
+                if (CalculateTerraformation(minC, maxC, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
                 {
                     rects.Add(new RectInt(minC, maxC));
                 }
             }
             if (maxD.Z < heightMap.Length && maxD.X < heightMap[0].Length && minD.Z >= 0 && minD.X >= 0)
             {
-                if (true || CalculateTerraformation(minD, maxD, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
+                if (CalculateTerraformation(minD, maxD, heightMap[point.Z][point.X] + 1, world, heightMap) < TERRAFORMING_TRESHOLD)
                 {
                     rects.Add(new RectInt(minD, maxD));
                 }
@@ -196,33 +195,39 @@ namespace DeluMc
         public static int CalculateTerraformation(in Vector2Int min, in Vector2Int max, int y, in Material[][][] world, in int[][] heightMap)
         {
             // se pued salir, limitar rects arriba
-            int c = 0;
+            // Esto asegura y-1 >= 0 y que la casa no este flotando?
+            // aunque no deberia pasar por como funcionan los algoritmos
+            if (y == 0)
+                return int.MaxValue;
 
+            int c = 0;
+            // deberia ser inclusivo?
             for (int i = min.Z; i < max.Z; ++i)
             {
                 for (int j = min.X; j < max.X; ++j)
                 {
-                    if (heightMap[i][j] < 0)
+                    //if (heightMap[i][j] < 0)
+                    //{
+                    //    Console.WriteLine("a");
+                    //    return int.MaxValue;
+                    //}
+                    if (world[y][i][j] != AlphaMaterials.Air_0_0)
                     {
-                        return int.MaxValue;
-                    }
-                    else if (world[y][i][j] != AlphaMaterials.Air_0_0)
-                    {
-                        // Por si es grama
-                        if (y - 1 >= 0)
-                        {
-                            if (heightMap[i][j] == y - 1)
-                                continue;
-                        }
+                        // En caso de que sea grama o flores
+                        if (heightMap[i][j] == y - 1)
+                            continue;
                         c += Math.Abs(heightMap[i][j] - y) + 1;
                     }
-                    else if (y - 2 > 0)
+                    else
                     {
-                        if (world[y - 2][i][j] == AlphaMaterials.Air_0_0)
-                            return int.MaxValue;
-                    }
-                    else if (y - 1 > 0)
-                    {
+                        if (y - 2 >= 0)
+                        {
+                            if (world[y - 2][i][j] == AlphaMaterials.Air_0_0)
+                            {
+                                Console.WriteLine("b");
+                                return int.MaxValue;
+                            }
+                        }
                         if (world[y - 1][i][j] == AlphaMaterials.Air_0_0)
                             ++c;
                     }
