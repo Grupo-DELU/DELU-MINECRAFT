@@ -672,8 +672,9 @@ namespace Utils.SpatialTrees.QuadTrees
             }
             if (nearestDataPoints.GetTop().DataNode == null)
             {
+                // Maximum Dominating DataPoint still inside, meaning less than k neighbors
                 nearestDataPoints.ExtractDominating();
-                return nearestDataPoints.Count - 1; // Maximum Dominating DataPoint still inside, meaning less than k neighbors
+                return nearestDataPoints.Count; 
             }
             else
             {
