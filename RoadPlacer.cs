@@ -165,6 +165,12 @@ namespace DeluMc
                             }
                         }
 
+                        if (pivots.Count == 0)
+                        {
+                            // Bad Bridge
+                            continue;
+                        }
+
                         // Get Bridge Average Height, add 1 to put it above water
                         averageHeight /= pivots.Count;
                         averageHeight += 3;
