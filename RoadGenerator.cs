@@ -227,7 +227,7 @@ namespace DeluMc
             bool[][] acceptableMap, int[][] waterMap, int[][] roadMap, int[][] treeMap, int[][] houseMap
         )
         {
-            if (rectCover.IsInside(Z, X) && houseMap[Z][X] != 0)
+            if (rectCover.IsInside(Z, X) && houseMap[Z][X] == 0)
             {
                 if (center)
                 {
