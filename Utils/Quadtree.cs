@@ -420,7 +420,7 @@ namespace Utils.SpatialTrees.QuadTrees
         public class DistanceToDataPoint
         {
             /// <summary>
-            /// Squared Distance to a point
+            /// Manhattan Distance to a point
             /// </summary>
             public float ManClosestDistance { get; private set; }
 
