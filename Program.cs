@@ -209,7 +209,7 @@ namespace DeluMc
                             List<Vector2Int> road = RoadGenerator.FirstRoad(
                                 villages[i].Seed.Z, villages[i].Seed.X,
                                 villages[j].Seed.Z, villages[j].Seed.X,
-                                acceptableMap, deltaMap, waterMap, roadMap, treeMap
+                                acceptableMap, deltaMap, waterMap, roadMap, treeMap, houseMap
                             );
                             if (road.Count > 0)
                             {
@@ -242,7 +242,7 @@ namespace DeluMc
                             Console.WriteLine($"Connecting village: {i} to roads");
                             List<Vector2Int> road = RoadGenerator.PointToRoad(
                                 villages[i].Seed.Z, villages[i].Seed.X,
-                                acceptableMap, deltaMap, waterMap, roadMap, treeMap,
+                                acceptableMap, deltaMap, waterMap, roadMap, treeMap, houseMap,
                                 roadQT
                             );
                             roads.Add(road);
