@@ -141,27 +141,78 @@ namespace DeluMc.Buildings
             }
         }      
 
-        
+
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private static Vector2Int CalculateCenterPivotPlacement(in HouseAreaInput request)
+        {
+            Vector2Int placement = new Vector2Int();
+            switch (request.orientation)
+            {
+                case Orientation.North:
+                    placement.Z = (request.max.Z - request.min.Z)/2; 
+                    placement.Z = (request.max.Z - request.min.Z)/2;
+                    break;
+                case Orientation.East:
+                    break;
+                case Orientation.South:
+                    break;
+                case Orientation.West:
+                    break;
+            }
+            return placement;
+        }
+
+
+        private static Vector2Int CalculateLeftBottomPivotPlacement(in HouseAreaInput request)
+        {
+            Vector2Int placement = new Vector2Int();
+            switch (request.orientation)
+            {
+                case Orientation.North:
+                    placement.Z = request.min.Z;
+                    placement.X = request.min.X;
+                    break;
+                case Orientation.East:
+                    placement.Z = request.min.Z;
+                    placement.X = request.max.X;
+                    break;
+                case Orientation.South:
+                    placement.Z = request.max.Z;
+                    placement.X = request.max.X;
+                    break;
+                case Orientation.West:
+                    placement.Z = request.max.Z;
+                    placement.X = request.min.X;
+                    break;
+            }
+            return placement;
+        }
+
+
         /// <summary>
         /// Chooses a point in the area (based on the Bottom Left pivot) where
         /// to build a house based on its orientation.
         /// </summary>
         /// <param name="request">House in area request</param>
-        private static void BuildInArea(in HouseAreaInput request)
+        private static void BuildInArea(in HouseAreaInput request, Differ differ)
         {
             switch (request.orientation)
             {
                 case Orientation.North:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z,request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
                     break;
                 case Orientation.East:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
                     break;
                 case Orientation.South:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
                     break;
                 case Orientation.West:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
                     break;
             }
         }
@@ -173,7 +224,7 @@ namespace DeluMc.Buildings
         /// </summary>
         /// <param name="request">House in area request</param>
         /// <returns>True if a house was built/False otherwise</returns>
-        public static bool RequestHouseArea(HouseAreaInput request, BuildType houseType = BuildType.House)
+        public static bool RequestHouseArea(HouseAreaInput request, BuildType houseType, Differ differ)
         {
             int sizeX = Math.Abs(request.min.X - request.max.X) + 1;
             int sizeZ = Math.Abs(request.min.Z - request.max.Z) + 1;
@@ -192,7 +243,7 @@ namespace DeluMc.Buildings
                     {
                         Console.WriteLine("House chosen: " + i);
                         request.house = house;
-                        BuildInArea(request);
+                        BuildInArea(request, differ);
                         return true;
                     }
                 }
@@ -200,47 +251,6 @@ namespace DeluMc.Buildings
             return false;
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="map"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <param name="x"></param>
-        /// <param name="house"></param>
-        /// <param name="ori"></param>
-        /// <returns></returns>
-        private static bool CheckBottomLeftBound(in Material[][][] map, int y, int z, int x, HouseSchematic house, Orientation ori)
-        {
-            bool status = true;
-
-            switch (ori)
-            {
-                case Orientation.North:
-                    status = status && z + house.size[1] - 1 < map[0].Length;
-                    status = status && x + house.size[2] < map[0][0].Length;
-                    break;
-    
-                case Orientation.East:
-                    status = status && z + house.size[2] - 1 < map[0].Length;
-                    status = status && x - house.size[1] + 1 >= 0; 
-                    break;
-    
-                case Orientation.South:
-                    status = status && z - house.size[1] + 1 >= 0;
-                    status = status && x - house.size[2] + 1 >= 0;
-                    break;
-    
-                case Orientation.West:
-                    status = status && x + house.size[1] - 1 < map[0][0].Length;
-                    status = status && z - house.size[2] + 1 >= 0; 
-                    break;
-            }
-            
-            return status && (y + house.size[0] - 1 < map.Length);
-        } 
-        
 
         /// <summary>
         /// Process a block to place in order to build a house. Generally it returns the same
@@ -350,7 +360,7 @@ namespace DeluMc.Buildings
         /// <param name="house">House to place</param>
         /// <param name="or">House orientation</param>
         /// <param name="pivot">House pivot</param>
-        private static void BuildHouse(Material[][][] map, int[][] houseMap, int[][] roadMap, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot)
+        private static void BuildHouse(Material[][][] map, int[][] houseMap, int[][] roadMap, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot, Differ differ)
         {
             // Orig is the house "left bottom corner" in world position (something like min)
             int origZ, origX; 
@@ -373,64 +383,31 @@ namespace DeluMc.Buildings
                             case Orientation.North:
                                 origZ = z - house.size[1]/2 * mod;
                                 origX = x - house.size[2]/2 * mod;
-                                map[y + i][origZ + k][origX + j] = (block != null ? block : map[y + i][origZ + k][origX + j]);
+                                differ.ChangeBlock(y + i, origZ + k, origX + j, (block != null ? block : map[y + i][origZ + k][origX + j]));
                                 PaintMaps(i, k, j, origZ + k, origX + j, houseMap, roadMap, house);
                                 break;
                             case Orientation.East:
                                 origZ = z - house.size[2]/2 * mod;
                                 origX = x + house.size[1]/2 * mod;
-                                map[y + i][origZ + j][origX - k] = (block != null ? block : map[y + i][origZ + j][origX - k]);
+                                differ.ChangeBlock(y + i, origZ + j, origX - k, (block != null ? block : map[y + i][origZ + j][origX - k]));
                                 PaintMaps(i, k, j, origZ + j, origX - k, houseMap, roadMap, house);
                                 break;  
                             case Orientation.South:
                                 origZ = z + house.size[1]/2 * mod; // Must check if ModZ is needed or not
                                 origX = x + house.size[2]/2 * mod;
-                                map[y + i][origZ - k][origX - j] = (block != null ? block : map[y + i][origZ - k][origX - j]);
+                                differ.ChangeBlock(y + i, origZ - k, origX - j, (block != null ? block : map[y + i][origZ - k][origX - j]));
                                 PaintMaps(i, k, j, origZ - k, origX - j, houseMap, roadMap, house);
                                 break;
                             case Orientation.West:
                                 origZ = z + house.size[2]/2 * mod; // Must check if ModZ/X is needed or not 
                                 origX = x - house.size[1]/2 * mod; // Must check if ModZ/X is needed or not
-                                map[y + i][origZ - j][origX + k] = (block != null ? block : map[y + i][origZ - j][origX + k]);
+                                differ.ChangeBlock(y + i,origZ - j,origX + k, (block != null ? block : map[y + i][origZ - j][origX + k]));
                                 PaintMaps(i, k, j, origZ - k, origX - j, houseMap, roadMap, house);
                                 break;
                         }
                     }
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Places a house with its pivot in (y, z, x)
-        /// </summary>
-        /// <param name="map">Map to place house in</param>
-        /// <param name="y">House pivot y</param>
-        /// <param name="z">House pivot z</param>
-        /// <param name="x">House pivot x</param>
-        /// <param name="path">House path file</param>
-        /// <param name="orientation">House orientation/rotation</param>
-        /// <param name="pivot">House pivot</param>
-        /// <returns></returns>
-        public static bool PlaceHouse(Material[][][] map, int y, int z, int x, in string path, 
-            Orientation orientation, HousePivot pivot = HousePivot.BottomLeft)
-        {
-            HouseSchematic house = houses[BuildType.House][0]; // PlaceHolder
-            bool result = false;
-            switch (pivot)
-            {  
-                case HousePivot.BottomLeft:
-                    result = CheckBottomLeftBound(map, y, z, x, house, orientation);
-                    break;
-                case HousePivot.Center:
-                    result = CheckBottomLeftBound(map, y, z, x, house, orientation);
-                    break;
-            }
-            if (result)
-            {
-                BuildHouse(map, null, null, y, z, x, house, orientation, pivot);
-            }
-            return result;
         }
 
 

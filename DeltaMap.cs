@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-
 using DeluMc.Utils;
 
 namespace DeluMc.Masks
@@ -80,15 +80,29 @@ namespace DeluMc.Masks
         /// </summary>
         /// <param name="deltaMap">DeltaMap to sort</param>
         /// <returns>Array with DeltaPairs sorted by delta map value</returns>
-        public static DeltaPair[] SortDeltaMap(in float[][] deltaMap)
+        public static DeltaPair[] SortRectDelta(float[][] deltaMap, RectInt rect)
         {
-            DeltaPair[] ordered = new DeltaPair[deltaMap.Length * deltaMap[0].Length];
-            for (int i = 0; i < deltaMap.Length; ++i)
+            Console.WriteLine($"{rect.Size.X} x {rect.Size.Z} = {rect.Size.X * rect.Size.Z}");
+            DeltaPair[] ordered = new DeltaPair[rect.Size.X * rect.Size.Z];
+            // Lo de abajo fallaba y estaba preocupado por otras cosas
+            for (int i = 0; i < rect.Size.Z; ++i)
             {
-                for (int j = 0; j < deltaMap[0].Length; ++j)
-                    ordered[j * i + j] = new DeltaPair(deltaMap[i][j], new Vector2Int(i,j));        
+                for (int j = 0; j < rect.Size.X; ++j)
+                {
+                    ordered[i * rect.Size.X + j] = new DeltaPair(deltaMap[rect.Min.Z + i][rect.Min.X + j],
+                                                       new Vector2Int(rect.Min.Z + i, rect.Min.X + j));
+                }
             }
+            //Parallel.For(0, n, pos =>
+            //{
+            //    int i = pos % n;
+            //    int j = pos / n;
+            //    ordered[i + j] = new DeltaPair(deltaMap[rect.Min.Z + i][rect.Min.X + j], 
+            //                                   new Vector2Int(rect.Min.Z + i, rect.Min.X + j));
+            //}
+            //);
             Array.Sort(ordered, new DeltaPairComparer());
+            Console.WriteLine("Nro ordered: " + rect.Size.X * rect.Size.Z);
             return ordered;
         }
 

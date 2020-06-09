@@ -14,7 +14,6 @@ namespace DeluMc
 {
     class Program
     {
-
         /// <summary>
         /// Handle Debugger
         /// </summary>
@@ -32,7 +31,7 @@ namespace DeluMc
             }
 #else
             Console.WriteLine("Sleeping Thread to Launch Debugger!");
-            const int kMillisecondsToSleep = 0; // 20 Seconds
+            const int kMillisecondsToSleep = 10000; // 20 Seconds
             System.Threading.Thread.Sleep(kMillisecondsToSleep);
             Console.WriteLine("You should've launched the Debugger!");
 #endif
@@ -278,9 +277,13 @@ namespace DeluMc
                     }
                 }
             }
-            //HouseDistributor.Test(deltaMap);
-
-            /*
+            DataQuadTree<RectInt> villagesQT = new DataQuadTree<RectInt>(new Vector2Int(0,0), new Vector2Int(zSize, xSize));
+            foreach (VillageMarker village in villages)
+            {
+                HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap,
+                                      village, differ.World, new Vector2Int(7,7), differ, villagesQT);
+            }
+            
             HousePlacer.RequestHouseArea(
                 new HousePlacer.HouseAreaInput(
                     0,
@@ -290,7 +293,9 @@ namespace DeluMc
                     houseMap,
                     differ.World,
                     Orientation.South,
-                    PremadePalettes.forestPalette), BuildType.House);*/
+                    PremadePalettes.forestPalette), 
+                    BuildType.House, 
+                    differ);
 
             // Write Data Back to Python
             {

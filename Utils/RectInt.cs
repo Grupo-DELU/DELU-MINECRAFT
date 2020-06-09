@@ -21,6 +21,8 @@ namespace DeluMc.Utils
         /// <value>Size of the Rectable (It is exclusive)</value>
         public Vector2Int Size { get { return Max - Min + Vector2Int.One; } }
 
+        public Vector2Int Center { get {return Min + new Vector2Int(Size.Z/2, Size.X/2);}}
+
         /// <summary>
         /// Creates a Integer Rect from a point
         /// </summary>
@@ -81,6 +83,32 @@ namespace DeluMc.Utils
         public bool IsInside(int z, int x)
         {
             return Min.Z <= z && z <= Max.Z && Min.X <= x && x <= Max.X;
+        }
+
+        
+        /// <summary>
+        /// Calculates the Manhattan Distance from a RectInt
+        /// to another.
+        /// </summary>
+        /// <param name="a">RectInt a</param>
+        /// <param name="b">RectInt b</param>
+        /// <returns>Manhattan Distance between RectsInt 'a' and 'b'</returns>
+        public static int Distance(RectInt a, RectInt b)
+        {
+            int zDist = 0;
+            int xDist = 0;
+            
+            if (a.Max.Z <= b.Min.Z)
+                zDist = b.Min.Z - a.Max.Z;
+            else if (a.Min.Z >= b.Max.Z)
+                zDist = a.Min.Z - b.Max.Z;
+            
+            if (a.Max.X <= b.Min.X)
+                xDist = b.Min.X - a.Max.X;
+            else if (a.Min.X >= b.Max.X)
+                xDist = a.Min.X - b.Max.X;
+
+            return xDist + zDist;
         }
     }
 }
