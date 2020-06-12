@@ -107,14 +107,15 @@ namespace DeluMc
         /// <param name="tX">Target Point X</param>
         /// <param name="acceptableMap">Acceptable Map</param>
         /// <param name="waterMap">Water Map</param>
+        /// <param name="treeMap">Tree Map</param>
         /// <returns>Distancce to Point</returns>
-        public static float Metric(int z, int x, int tZ, int tX, bool[][] acceptableMap, int[][] waterMap)
+        public static float Metric(int z, int x, int tZ, int tX, bool[][] acceptableMap, int[][] waterMap, int[][] treeMap)
         {
             int dz = tZ - z;
             int dx = tX - x;
             float distance = (float)(Math.Abs(dz) + Math.Abs(dx));
 
-            if (acceptableMap[z][x] || waterMap[z][x] == 1)
+            if (acceptableMap[z][x] || waterMap[z][x] == 1 || TreeMap.IsLeaf(z, x, treeMap) || TreeMap.IsExpanded(z, x, treeMap))
             {
                 return distance;
             }
@@ -137,7 +138,7 @@ namespace DeluMc
         /// <returns>Calculated Heuristic</returns>
         public static float Distance(int z, int x, int tZ, int tX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap, int[][] treeMap, int[][] houseMap)
         {
-            float distance = Metric(z, x, tZ, tX, acceptableMap, waterMap);
+            float distance = Metric(z, x, tZ, tX, acceptableMap, waterMap, treeMap);
             float noRoad = roadMap[z][x] <= 0 ? 1.0f : 0.0f;
 
             if (houseMap[z][x] != 0)
