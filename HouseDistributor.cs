@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using DeluMc.Utils;
@@ -12,12 +13,15 @@ namespace DeluMc
 {
     public static class HouseDistributor
     {
+        private static Orientation[] orientations = (Orientation[])Enum.GetValues(typeof(Orientation));
         private const int MIN_HOUSE_SEPARATION = 10;
         private const int TERRAFORMING_TRESHOLD = 10;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
-                                int[][] houseMap, int[][] roadMap, in int[][] villageMap, VillageMarker village,
-                                Material[][][] world, in Vector2Int size, Differ differ, DataQuadTree<RectInt> rectTree)
+                                int[][] houseMap, int[][] roadMap, in int[][] villageMap, in int[][] waterMap,
+                                in int[][] treeMap, VillageMarker village, Material[][][] world, in Vector2Int size, 
+                                Differ differ, DataQuadTree<RectInt> rectTree, DataQuadTree<Vector2Int> roadQT,
+                                ref List<List<Vector2Int>> roads)
         {
             int count = 0;
             List<RectInt> houseRects = new List<RectInt>();
@@ -45,41 +49,32 @@ namespace DeluMc
 
                     foreach (RectInt rect in possibilities)
                     {
+                        ShuffleOrientations();
                         Console.WriteLine("======================================");
                         Console.WriteLine("Min: " + rect.Min);
                         Console.WriteLine("Max: " + rect.Max);
                         if (!IsSeparated(point, rect, rectTree))
                             continue;
                         
+                        
                         // Lo ponemos en el Y pelado por el cambio al chequeo que el road no este bloqueado
                         HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
                         
-                        if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
+                        foreach (Orientation or in orientations)
                         {
-                            // tratar de poner carretera.
-                            // cuidado con esto por la carretera
-                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
-                            break;
+                            req.orientation = or;
+                            BuildResult result = HousePlacer.RequestHouseArea(req, BuildType.House, differ);
+                            if (result.success)
+                            {
+                                // tratar de poner carretera.
+                                // cuidado con esto por la carretera
+                                PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
+                                roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, deltaMap,
+                                                          waterMap, roadMap, treeMap, houseMap, roadQT));
+                                rectTree.Insert(point, rect);
+                                break;
+                            }
                         }
-                        req.orientation = Orientation.East;
-                        if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
-                        {
-                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
-                            break;
-                        }
-                        req.orientation = Orientation.South;
-                        if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
-                        {
-                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
-                            break;
-                        }
-                        req.orientation = Orientation.West;
-                        if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
-                        {
-                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
-                            break;
-                        }
-                        Console.WriteLine("Fallo oeste");
                     }
                 }
             }
@@ -262,6 +257,18 @@ namespace DeluMc
             }
             return true;
             */
+        }
+
+        private static void ShuffleOrientations()
+        {
+            Random rand = new Random();
+            for (int i = 0; i < 4; ++i)
+            {
+                Orientation temp = orientations[i];
+                int ind = rand.Next(4);
+                orientations[i] = orientations[ind];
+                orientations[ind] = temp;
+            }
         }
     }
 }

@@ -44,6 +44,12 @@ namespace DeluMc.Buildings
         Plaza = 2,
     };
 
+    public struct BuildResult
+    {
+        public bool success;
+        public Vector2Int doorPos;
+    }
+
 
     /// <summary>
     /// Compares houses by area (is inverted to sort in descending order)
@@ -58,9 +64,6 @@ namespace DeluMc.Buildings
         }
     }
 
-    // TODO: Finish comments
-    // TODO: Probably the bound/size check can be unified like the building.
-    // TODO: Also do a request struct for individual placement
     
     /// <summary>
     /// Static class responsible of the placement of houses
@@ -144,11 +147,27 @@ namespace DeluMc.Buildings
         }      
 
 
-        private static bool CheckRoadNotBlocked(in HouseAreaInput request, in HouseSchematic house, in Differ differ)
+        private static bool CheckRoadNotBlocked(in HouseAreaInput request, in HouseSchematic house, 
+                                                ref BuildResult results, in Differ differ)
         {
             Vector2Int roadPos = new Vector2Int(house.roadStartZ, house.roadStartX);
-            roadPos += CalculateLeftBottomPivotPlacement(request);
-
+            Vector2Int pivot = CalculateLeftBottomPivotPlacement(request);
+            Console.WriteLine("Roadpost: " + roadPos);
+            Console.WriteLine("pivot: " + pivot);
+            switch (request.orientation)
+            {
+                case Orientation.North:
+                    roadPos += pivot;
+                    break;
+                case Orientation.South:
+                    break;
+                case Orientation.East:
+                    break;
+                case Orientation.West:
+                    break;
+            }
+            results.doorPos = roadPos;
+            Console.WriteLine("supuesta road pos: " + roadPos);
             return differ.World[request.y + 1][roadPos.Z][roadPos.X] == AlphaMaterials.Air_0_0;
         }
 
@@ -210,11 +229,12 @@ namespace DeluMc.Buildings
         /// </summary>
         /// <param name="request">House in area request</param>
         /// <returns>True if a house was built/False otherwise</returns>
-        public static bool RequestHouseArea(HouseAreaInput request, BuildType houseType, Differ differ)
+        public static BuildResult RequestHouseArea(HouseAreaInput request, BuildType houseType, Differ differ)
         {
             int sizeX = Math.Abs(request.min.X - request.max.X) + 1;
             int sizeZ = Math.Abs(request.min.Z - request.max.Z) + 1;
             int reqArea = sizeX * sizeZ;
+            BuildResult results = new BuildResult();
 
             Console.WriteLine("Area requested: " + reqArea);
             Console.WriteLine("House type requested: " + Enum.GetName(typeof(BuildType), houseType));
@@ -225,16 +245,18 @@ namespace DeluMc.Buildings
                 Console.WriteLine("House area: " + houseArea);
                 if (houseArea <= reqArea)
                 {
-                    if (CheckBoxFit(request, house) && CheckRoadNotBlocked(request, house, differ))
+                    if (CheckBoxFit(request, house) && CheckRoadNotBlocked(request, house, ref results, differ))
                     {
                         Console.WriteLine("House chosen: " + i);
                         request.house = house;
                         BuildInArea(request, differ);
-                        return true;
+                        results.success = true;
+                        return results;
                     }
                 }
             }
-            return false;
+            results.success = false;
+            return results;
         }
 
 
@@ -287,6 +309,7 @@ namespace DeluMc.Buildings
             char blockType = house.blocks[hy][hz][hx];
             if (blockType == 'e')
             {
+                Console.WriteLine("World road block: " + wz + ", " + wx);
                 roadMap[wz][wx] = 1;
             }
             else

@@ -253,7 +253,7 @@ namespace DeluMc
                         }
                     }
 
-                    RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
+                    //RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
                 }
                 else
                 {
@@ -261,30 +261,16 @@ namespace DeluMc
                 }
             }
 
-            foreach (VillageMarker village in villages)
-            {
-                //village.VillageFiller(villageMap, acceptableMap);
-                foreach (Vector2Int point in village.Points)
-                {
-                    //Console.WriteLine($"Punto: {point} con altura: {heightMap[point.Z][point.X]}");
-                    if (roadMap[point.Z][point.X] > 0)
-                    {
-                        differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.Sponge_19_0);
-                    }
-                    else
-                    {
-                        differ.ChangeBlock(heightMap[point.Z][point.X], point.Z, point.X, AlphaMaterials.YellowWool_35_4);
-                    }
-                }
-            }
+
             DataQuadTree<RectInt> villagesQT = new DataQuadTree<RectInt>(new Vector2Int(0,0), new Vector2Int(zSize, xSize));
             foreach (VillageMarker village in villages)
             {
-                HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap,
-                                      village, differ.World, new Vector2Int(7,7), differ, villagesQT);
+                HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap, 
+                                             waterMap, treeMap, village, differ.World, new Vector2Int(7,7), differ, 
+                                             villagesQT, roadQT, ref roads);
             }
             
-            
+            RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
             // Write Data Back to Python
             {
                 using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))
