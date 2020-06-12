@@ -40,6 +40,9 @@ class PipeProcess(object):
 
         if self._process is not None:
             if self._process.poll() is None:
+                print("Waiting Process 5 seconds")
+                time.sleep(5)
+            if self._process.poll() is None:
                 print("Terminating Process")
                 self._process.terminate()
                 time.sleep(0.1)

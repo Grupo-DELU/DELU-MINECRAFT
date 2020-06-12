@@ -1,5 +1,7 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -14,6 +16,11 @@ namespace DeluMc.Utils
         /// Map Folder Name
         /// </summary>
         private const string kMapFolderName = "DeluMC";
+
+        /// <summary>
+        /// Min Image Side Size
+        /// </summary>
+        private const int kMinImageSize = 1024;
 
         /// <summary>
         /// Map Folder Path
@@ -41,6 +48,64 @@ namespace DeluMc.Utils
         /// </summary>
         /// <param name="colorApplier">Function to apply colors</param>
         public delegate void SpecialColors(ColorApplier colorApplier);
+
+        /// <summary>
+        /// Resize the image to the specified width and height.
+        /// From https://stackoverflow.com/a/24199315
+        /// </summary>
+        /// <param name="image">The image to resize.</param>
+        /// <param name="width">The width to resize to.</param>
+        /// <param name="height">The height to resize to.</param>
+        /// <returns>The resized image.</returns>
+        public static Bitmap ResizeNearestNeighborImage(Image image, int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                graphics.SmoothingMode = SmoothingMode.None;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
+        }
+
+        /// <summary>
+        /// Save bitmap to folder
+        /// </summary>
+        /// <param name="bitmap">Bitmap to Save</param>
+        /// <param name="name">Name of Bitmap</param>
+        private static void SaveBitmap(Bitmap bitmap, in string name)
+        {
+            string fileName = $"{name}.png";
+            string filePath = Path.Join(kMapFolderPath, fileName);
+
+            Console.WriteLine($"Saving \"{fileName}\" in \"{filePath}\"");
+            try
+            {
+                bitmap.Save(filePath, ImageFormat.Png);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Error Saving \"{fileName}\": {e}");
+            }
+            finally
+            {
+                bitmap.Dispose();
+            }
+        }
 
         /// <summary>
         /// Save Map
@@ -77,22 +142,29 @@ namespace DeluMc.Utils
                 specialColors.Invoke(colorApplier);
             }
 
-            string fileName = $"{name}.png";
-            string filePath = Path.Join(kMapFolderPath, fileName);
+            
+            int height = 0;
+            int width = 0;
 
-            Console.WriteLine($"Saving \"{fileName}\" in \"{filePath}\"");
-            try
+            if (xSize < zSize)
             {
-                bitmap.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+                float ratio = (float) zSize / (float) xSize;
+                height = Math.Max(kMinImageSize, xSize);
+                width = (int)((float)height * ratio);
             }
-            catch (System.Exception e)
+            else
             {
-                Console.WriteLine($"Error Saving \"{fileName}\": {e}");
+                float ratio = (float) xSize / (float) zSize;
+                width = Math.Max(kMinImageSize, zSize);
+                height = (int)((float)width * ratio);
             }
-            finally
+            using(Bitmap resized = ResizeNearestNeighborImage(bitmap, width, height))
             {
-                bitmap.Dispose();
+                SaveBitmap(resized, name + "_resized");
             }
+
+            SaveBitmap(bitmap, name);
+            bitmap.Dispose();
         }
 
         /// <summary>
