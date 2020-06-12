@@ -114,6 +114,8 @@ namespace DeluMc.Buildings
             public BuildType buildType { get; set; } = 0;
             public char[][][] blocks { get; set; } = null;
             public int[] size { get; set; } = null;
+            public int roadStartZ { get; set; }
+            public int roadStartX { get; set; }
         }
 
 
@@ -142,28 +144,12 @@ namespace DeluMc.Buildings
         }      
 
 
-        /// <summary>
-        ///  
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private static Vector2Int CalculateCenterPivotPlacement(in HouseAreaInput request)
+        private static bool CheckRoadNotBlocked(in HouseAreaInput request, in HouseSchematic house, in Differ differ)
         {
-            Vector2Int placement = new Vector2Int();
-            switch (request.orientation)
-            {
-                case Orientation.North:
-                    placement.Z = (request.max.Z - request.min.Z)/2; 
-                    placement.Z = (request.max.Z - request.min.Z)/2;
-                    break;
-                case Orientation.East:
-                    break;
-                case Orientation.South:
-                    break;
-                case Orientation.West:
-                    break;
-            }
-            return placement;
+            Vector2Int roadPos = new Vector2Int(house.roadStartZ, house.roadStartX);
+            roadPos += CalculateLeftBottomPivotPlacement(request);
+
+            return differ.World[request.y + 1][roadPos.Z][roadPos.X] == AlphaMaterials.Air_0_0;
         }
 
 
@@ -239,7 +225,7 @@ namespace DeluMc.Buildings
                 Console.WriteLine("House area: " + houseArea);
                 if (houseArea <= reqArea)
                 {
-                    if (CheckBoxFit(request, house))
+                    if (CheckBoxFit(request, house) && CheckRoadNotBlocked(request, house, differ))
                     {
                         Console.WriteLine("House chosen: " + i);
                         request.house = house;

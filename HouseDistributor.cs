@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using DeluMc.Utils;
 using DeluMc.Masks;
@@ -11,7 +12,7 @@ namespace DeluMc
 {
     public static class HouseDistributor
     {
-        private const int MIN_HOUSE_SEPARATION = 5;
+        private const int MIN_HOUSE_SEPARATION = 10;
         private const int TERRAFORMING_TRESHOLD = 10;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
@@ -49,37 +50,33 @@ namespace DeluMc
                         Console.WriteLine("Max: " + rect.Max);
                         if (!IsSeparated(point, rect, rectTree))
                             continue;
-
-                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[rect.Min.Z][rect.Min.X] + 1, rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
-
+                        
+                        // Lo ponemos en el Y pelado por el cambio al chequeo que el road no este bloqueado
+                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
+                        
                         if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
                         {
-                            if (rectTree.Insert(point, rect) == null)
-                                Console.WriteLine("Epa!");
+                            // tratar de poner carretera.
+                            // cuidado con esto por la carretera
+                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
                             break;
                         }
-                        Console.WriteLine("Fallo norte");
                         req.orientation = Orientation.East;
                         if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
                         {
-                            if (rectTree.Insert(point, rect) == null)
-                                Console.WriteLine("Epa!");
+                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
                             break;
                         }
-                        Console.WriteLine("Fallo este");
                         req.orientation = Orientation.South;
                         if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
                         {
-                            if (rectTree.Insert(point, rect) == null)
-                                Console.WriteLine("Epa!");
+                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
                             break;
                         }
-                        Console.WriteLine("Fallo sur");
                         req.orientation = Orientation.West;
                         if (HousePlacer.RequestHouseArea(req, BuildType.House, differ))
                         {
-                            if (rectTree.Insert(point, rect) == null)
-                                Console.WriteLine("Epa!");
+                            PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
                             break;
                         }
                         Console.WriteLine("Fallo oeste");
@@ -194,26 +191,18 @@ namespace DeluMc
         /// </returns>
         public static int CalculateTerraformation(in Vector2Int min, in Vector2Int max, int y, in Material[][][] world, in int[][] heightMap)
         {
-            // se pued salir, limitar rects arriba
-            // Esto asegura y-1 >= 0 y que la casa no este flotando?
-            // aunque no deberia pasar por como funcionan los algoritmos
+            // Can go out of bounds, be carefull
             if (y == 0)
                 return int.MaxValue;
 
             int c = 0;
-            // deberia ser inclusivo?
             for (int i = min.Z; i < max.Z; ++i)
             {
                 for (int j = min.X; j < max.X; ++j)
                 {
-                    //if (heightMap[i][j] < 0)
-                    //{
-                    //    Console.WriteLine("a");
-                    //    return int.MaxValue;
-                    //}
                     if (world[y][i][j] != AlphaMaterials.Air_0_0)
                     {
-                        // En caso de que sea grama o flores
+                        // Just in case there is grass or flowers
                         if (heightMap[i][j] == y - 1)
                             continue;
                         c += Math.Abs(heightMap[i][j] - y) + 1;
@@ -224,7 +213,6 @@ namespace DeluMc
                         {
                             if (world[y - 2][i][j] == AlphaMaterials.Air_0_0)
                             {
-                                Console.WriteLine("b");
                                 return int.MaxValue;
                             }
                         }
@@ -237,22 +225,35 @@ namespace DeluMc
         }
 
 
+        private static void PlaceFloorBelow(in Vector2Int min, in Vector2Int max, int y, Differ differ)
+        {
+            Vector2Int size = max - min + Vector2Int.One;
+            for (int i = min.Z; i < min.Z + size.Z; ++i)
+            {
+                for (int j = min.X; j < min.X + size.X; ++j)
+                {
+                    differ.ChangeBlock(y, i, j, AlphaMaterials.RedWool_35_14);
+                } 
+            }
+        }
+
+
         public static bool IsSeparated(Vector2Int point, RectInt rect, DataQuadTree<RectInt> housesQT)
         {
-            /*
+
             DataQuadTree<RectInt>.DistanceToDataPoint nearest = housesQT.NearestNeighbor(point);
             if (nearest.DataNode == null)
                 return true;
             
             return RectInt.Distance(nearest.DataNode.Data, rect) >= MIN_HOUSE_SEPARATION;
-            */
+
+            /*
             DataQuadTree<RectInt>.DistanceToDataPoint[] results = new DataQuadTree<RectInt>.DistanceToDataPoint[4];
             int found = housesQT.KNearestNeighbor(point, 4, results);
-            Console.WriteLine("En el QT!");
             for (int i = 0; i < found; ++i)
             {
                 RectInt hRect = results[i].DataNode.Data;
-                Console.WriteLine("Dist: " + RectInt.Distance(hRect, rect));
+                Console.WriteLine("Distance to kNear house: " + RectInt.Distance(hRect, rect));
                 if (RectInt.Distance(hRect, rect) <= MIN_HOUSE_SEPARATION)
                 {
                     Console.WriteLine("Too close! :(");
@@ -260,6 +261,7 @@ namespace DeluMc
                 }
             }
             return true;
+            */
         }
     }
 }

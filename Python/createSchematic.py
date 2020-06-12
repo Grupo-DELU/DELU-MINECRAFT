@@ -49,6 +49,8 @@ def perform(level, box, options):
             for k in range(0, box.size[1])],
         "size" : [box.size[1], box.size[2], box.size[0]],
         "buildType" : buildDict[options["Build type"]],
+        "roadStartZ" : 0,
+        "roadStartX" : 0,
         }
     
     for y in xrange(box.miny, box.maxy):
@@ -57,6 +59,9 @@ def perform(level, box, options):
                 localX = x - box.minx
                 localY = y - box.miny
                 localZ = z - box.minz
+                if (level.blockAt(x,y,z) == 45):
+                    output["roadStartZ"] = localZ
+                    output["roadStartX"] = localX
                 (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
     
     if not(os.path.exists("schematics")):

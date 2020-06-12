@@ -284,19 +284,7 @@ namespace DeluMc
                                       village, differ.World, new Vector2Int(7,7), differ, villagesQT);
             }
             
-            HousePlacer.RequestHouseArea(
-                new HousePlacer.HouseAreaInput(
-                    0,
-                    new Vector2Int(),
-                    new Vector2Int(zSize - 1, xSize - 1),
-                    roadMap,
-                    houseMap,
-                    differ.World,
-                    Orientation.South,
-                    PremadePalettes.forestPalette), 
-                    BuildType.House, 
-                    differ);
-
+            
             // Write Data Back to Python
             {
                 using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))
