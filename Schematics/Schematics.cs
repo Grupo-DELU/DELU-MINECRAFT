@@ -322,11 +322,13 @@ namespace DeluMc.Buildings
             }
             else
             {
-                Debug.Assert(roadMap[wz][wx] != RoadGenerator.MainRoadMarker && 
-                             roadMap[wz][wx] != RoadGenerator.MainBridgeMarker);
-                             
-                roadMap[wz][wx] = 0;
-                houseMap[wz][wx] = 1;
+                bool isMainRoad = roadMap[wz][wx] != RoadGenerator.MainRoadMarker && 
+                                  roadMap[wz][wx] != RoadGenerator.MainBridgeMarker;
+                if (!isMainRoad)
+                {
+                    roadMap[wz][wx] = 0;
+                    houseMap[wz][wx] = 1;
+                }
             }
         }
 
