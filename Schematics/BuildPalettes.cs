@@ -42,7 +42,6 @@ namespace DeluMc.Buildings.Palettes
                 throw new Exception("\'" + blockType + "\' not found in BuildingPalette used.");
             }
 
-
             return palette[blockType];
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
 using DeluMc.Utils;
 using DeluMc.Masks;
 using DeluMc.MCEdit;
@@ -13,12 +14,18 @@ namespace DeluMc
 {
     public static class HouseDistributor
     {
+        // NOTE: We aren't using West because the algorith is going crazy
+        // when using houses oriented to the West!
         private static Orientation[] orientations = new Orientation[]{Orientation.North,
                                                                       Orientation.South,
                                                                       Orientation.East};
-                                                                      //(Orientation[])Enum.GetValues(typeof(Orientation));
+                                
         private const int MIN_HOUSE_SEPARATION = 10;
         private const int TERRAFORMING_TRESHOLD = 10;
+
+        private static bool placedPlaza = false;
+        private const int PLAZA_RADIUS = 30;
+        private const int HOUSE_RADIUS = 60;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
                                 int[][] houseMap, int[][] roadMap, in int[][] villageMap, in int[][] waterMap,
@@ -27,6 +34,8 @@ namespace DeluMc
                                 ref List<List<Vector2Int>> roads)
         {
             int count = 0;
+            placedPlaza = false;
+
             List<RectInt> houseRects = new List<RectInt>();
             DeltaMap.DeltaPair[] sortedDelta = DeltaMap.SortRectDelta(deltaMap, village.Rect);
 
@@ -55,28 +64,37 @@ namespace DeluMc
                         if (!IsSeparated(point, rect, rectTree))
                             continue;
                         
-                        
+                        int radius = Vector2Int.Manhattan(rect.Center, village.Seed);
+                        List<BuildType> buildings = CreateBuldTypeList(radius);
                         // Lo ponemos en el Y pelado por el cambio al chequeo que el road no este bloqueado
                         HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
-                        
+                        bool finish = false;
                         foreach (Orientation or in orientations)
                         {
                             req.orientation = or;
-                            BuildResult result = HousePlacer.RequestHouseArea(req, BuildType.House, differ);
-                            if (result.success)
+                            foreach (BuildType build in buildings)
                             {
-                                Console.WriteLine("House placed in orientation: " + or.ToString());
-
-                                PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], heightMap, differ);
-                                roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, deltaMap,
-                                                          waterMap, roadMap, treeMap, houseMap, roadQT));
-                                rectTree.Insert(point, rect);
-                                break;
+                                BuildResult result = HousePlacer.RequestHouseArea(req, build    , differ);
+                                if (result.success)
+                                {
+                                    if (build == BuildType.Plaza)
+                                        placedPlaza = true;
+    
+                                    PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], heightMap, differ);
+                                    roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, deltaMap,
+                                                              waterMap, roadMap, treeMap, houseMap, roadQT));
+                                    rectTree.Insert(point, rect);
+                                    finish = true;
+                                    break;
+                                }
                             }
+                            if (finish)
+                                break;
                         }
                     }
                 }
             }
+            placedPlaza = false;
         }
 
 
@@ -258,32 +276,43 @@ namespace DeluMc
         /// <param name="rect">Rect to check</param>
         /// <param name="housesQT">Houses QuadTree</param>
         /// <returns>true if the rect has enough separation/false otherwise</returns>
-        public static bool IsSeparated(Vector2Int point, RectInt rect, DataQuadTree<RectInt> housesQT)
+        private static bool IsSeparated(Vector2Int point, RectInt rect, DataQuadTree<RectInt> housesQT)
         {
-            /*
-            DataQuadTree<RectInt>.DistanceToDataPoint nearest = housesQT.NearestNeighbor(point);
-            if (nearest.DataNode == null)
-                return true;
-            
-            return RectInt.Distance(nearest.DataNode.Data, rect) >= MIN_HOUSE_SEPARATION;
-            */
-
-            
             DataQuadTree<RectInt>.DistanceToDataPoint[] results = new DataQuadTree<RectInt>.DistanceToDataPoint[4];
             int found = housesQT.KNearestNeighbor(point, 4, results);
             for (int i = 0; i < found; ++i)
             {
                 RectInt hRect = results[i].DataNode.Data;
-                Console.WriteLine("Distance to kNear house: " + RectInt.Distance(hRect, rect));
                 if (RectInt.Distance(hRect, rect) <= MIN_HOUSE_SEPARATION)
-                {
-                    Console.WriteLine("Too close! :(");
                     return false;
-                }
             }
             return true;
         }
 
+
+        /// <summary>
+        /// Return a list with the buildings to try depending on the radius
+        /// where the house is going to be placed.
+        /// </summary>
+        /// <param name="radius">Radius to the center of the rect</param>
+        /// <returns>A list containing build types</returns>
+        private static List<BuildType> CreateBuldTypeList(int radius)
+        {
+            List<BuildType> l = new List<BuildType>();
+            if (radius > HOUSE_RADIUS)
+                l.Add(BuildType.Farm);
+            
+            if (radius <= PLAZA_RADIUS && !placedPlaza)
+                l.Add(BuildType.Plaza);
+            
+            l.Add(BuildType.House);
+            return l;
+        }
+
+
+        /// <summary>
+        /// Shuffles the orientation array.
+        /// </summary>
         private static void ShuffleOrientations()
         {
             Random rand = new Random();

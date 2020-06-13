@@ -182,16 +182,16 @@ namespace DeluMc
                     Console.WriteLine($"\tSize {waterBody.Points.Count}");
                 }
             }
-
+            
             DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
             List<VillageMarker> villages;
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
             {
                 int numberOfTries = 1000;
-                int expectedVillageSize = 1000;
+                int expectedVillageSize = 1500;
                 int radius = 2;
                 int villageCount = 4;
-                int maxVillageCount = 6;
+                int maxVillageCount = 5;
                 villages = VillageDistributor.DistributeVillageMarkers(
                     acceptableMap, villageMap, waterAnalysis,
                     villageCount, maxVillageCount, numberOfTries, radius, expectedVillageSize
