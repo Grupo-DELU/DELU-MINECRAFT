@@ -8,6 +8,7 @@ using Utils.SpatialTrees.QuadTrees;
 using DeluMc.Masks;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
+using DeluMc.MCEdit.Biomes;
 
 namespace DeluMc
 {

@@ -1,4 +1,8 @@
-namespace DeluMc.MCEdit
+using DeluMc.MCEdit.Block;
+using DeluMc.Buildings.Palettes;
+using static DeluMc.Buildings.Palettes.PremadePalettes;
+
+namespace DeluMc.MCEdit.Biomes
 {
     public enum Biomes {
     	Ocean = 0,
@@ -64,4 +68,44 @@ namespace DeluMc.MCEdit
     	MesaPlateauFM = 166,
     	MesaPlateauM = 167,
     }
+
+	public static class BiomeUtils
+	{
+		public static Material GetBiomeBlock(Biomes biome)
+		{
+			switch (biome)
+			{
+				// Desert
+				case Biomes.Desert:
+					return AlphaMaterials.Sand_12_0;
+				case Biomes.DesertHills:
+					return AlphaMaterials.Sand_12_0;
+				case Biomes.DesertM:
+					return AlphaMaterials.Sand_12_0;
+				case Biomes.Beach:
+					return AlphaMaterials.Sand_12_0;
+				// Messa
+				case Biomes.Mesa_Bryce:
+					return AlphaMaterials.RedSand_12_1;
+				case Biomes.MesaPlateauFM:
+					return AlphaMaterials.RedSand_12_1;
+				case Biomes.MesaPlateauM:
+					return AlphaMaterials.RedSand_12_1;
+				case Biomes.Messa:
+					return AlphaMaterials.RedSand_12_1;
+				case Biomes.MessaPlateau:
+					return AlphaMaterials.HardenedClay_172_0;
+				case Biomes.MessaPlateauF:
+					return AlphaMaterials.HardenedClay_172_0;
+				
+				default:
+					return AlphaMaterials.GrassBlock_2_0;
+			}
+		}
+
+		public static BuildingPalette GetBiomeBuildPalette(Biomes biomes, Buildings.BuildType build)
+		{
+			return null;
+		}
+	}
 }

@@ -8,6 +8,7 @@ using DeluMc.Utils;
 using DeluMc.MCEdit;
 using DeluMc.Buildings;
 using DeluMc.MCEdit.Block;
+using DeluMc.MCEdit.Biomes;
 using DeluMc.Buildings.Palettes;
 using Utils.SpatialTrees.QuadTrees;
 namespace DeluMc
@@ -266,7 +267,7 @@ namespace DeluMc
             foreach (VillageMarker village in villages)
             {
                 HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap, 
-                                             waterMap, treeMap, village, differ.World, new Vector2Int(7,7), differ, 
+                                             waterMap, treeMap, biomes, village, differ.World, new Vector2Int(7,7), differ, 
                                              villagesQT, roadQT, ref roads);
             }
             

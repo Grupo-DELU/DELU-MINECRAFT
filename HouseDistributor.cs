@@ -8,6 +8,9 @@ using DeluMc.Masks;
 using DeluMc.MCEdit;
 using DeluMc.Buildings;
 using DeluMc.MCEdit.Block;
+using DeluMc.MCEdit.Biomes;
+using static DeluMc.MCEdit.Biomes.BiomeUtils;
+
 using Utils.SpatialTrees.QuadTrees;
 
 namespace DeluMc
@@ -29,7 +32,7 @@ namespace DeluMc
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
                                 int[][] houseMap, int[][] roadMap, in int[][] villageMap, in int[][] waterMap,
-                                in int[][] treeMap, VillageMarker village, Material[][][] world, in Vector2Int size, 
+                                in int[][] treeMap, in Biomes[][] biomes, VillageMarker village, Material[][][] world, in Vector2Int size, 
                                 Differ differ, DataQuadTree<RectInt> rectTree, DataQuadTree<Vector2Int> roadQT,
                                 ref List<List<Vector2Int>> roads)
         {
@@ -74,15 +77,16 @@ namespace DeluMc
                             req.orientation = or;
                             foreach (BuildType build in buildings)
                             {
-                                BuildResult result = HousePlacer.RequestHouseArea(req, build    , differ);
+                                BuildResult result = HousePlacer.RequestHouseArea(req, build, differ);
                                 if (result.success)
                                 {
                                     if (build == BuildType.Plaza)
                                         placedPlaza = true;
     
-                                    PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], heightMap, differ);
-                                    roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, deltaMap,
-                                                              waterMap, roadMap, treeMap, houseMap, roadQT));
+                                    PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], 
+                                                    heightMap, biomes, differ);
+                                    roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, 
+                                                              deltaMap, waterMap, roadMap, treeMap, houseMap, roadQT));
                                     rectTree.Insert(point, rect);
                                     finish = true;
                                     break;
@@ -111,18 +115,22 @@ namespace DeluMc
         {
             List<RectInt> rects = new List<RectInt>();
 
+            // We substract (1, 1) to make them inclusive
             Vector2Int minA = point;
             Vector2Int maxA = point + new Vector2Int(size.Z, size.X);
+            maxA -= Vector2Int.One;
 
-            Vector2Int minB = point - new Vector2Int(0, size.X + 1);
+            Vector2Int minB = point - new Vector2Int(0, size.X);
             Vector2Int maxB = point + new Vector2Int(size.Z, 0);
+            maxB -= Vector2Int.One;
 
-            Vector2Int minC = point - new Vector2Int(size.Z + 1, 0);
+            Vector2Int minC = point - new Vector2Int(size.Z, 0);
             Vector2Int maxC = point + new Vector2Int(0, size.X);
+            maxC -= Vector2Int.One;
 
-            Vector2Int minD = point - new Vector2Int(size.Z + 1, size.X + 1);
+            Vector2Int minD = point - new Vector2Int(size.Z, size.X);
             Vector2Int maxD = point;
-
+            maxD -= Vector2Int.One;
 
             if (maxA.Z < heightMap.Length && maxA.X < heightMap[0].Length && minA.Z >= 0 && minA.X >= 0)
             {
@@ -182,9 +190,10 @@ namespace DeluMc
         /// <returns>true if the rect is usable/false otherwise</returns>
         private static bool IsRectUsable(in RectInt rect, in VillageMarker village, in bool[][] acceptableMap, in int[][] houseMap, in int[][] roadMap, in int[][] villageMap)
         {
-            for (int i = rect.Min.Z; i < rect.Max.Z; ++i)
+            // Chequear rangos aca
+            for (int i = rect.Min.Z; i <= rect.Max.Z; ++i)
             {
-                for (int j = rect.Min.X; j < rect.Max.X; ++j)
+                for (int j = rect.Min.X; j <= rect.Max.X; ++j)
                 {
                     if (!IsUsable(i, j, acceptableMap, houseMap, roadMap, villageMap, village.Rect))
                         return false;
@@ -198,8 +207,8 @@ namespace DeluMc
         /// Calculates an APROXIMATION of the amount of terraformation needed
         /// to place a house inside certain RectInt. 
         /// </summary>
-        /// <param name="min">Min of the rect</param>
-        /// <param name="max">Max of the rect</param>
+        /// <param name="min">Min of the rect (inclusive)</param>
+        /// <param name="max">Max of the rect (inclusive)</param>
         /// <param name="y">Y of the zone</param>
         /// <param name="world">Blocks of the world</param>
         /// <param name="heightMap">HeightMap of the world</param>
@@ -214,9 +223,9 @@ namespace DeluMc
                 return int.MaxValue;
 
             int c = 0;
-            for (int i = min.Z; i < max.Z; ++i)
+            for (int i = min.Z; i <= max.Z; ++i)
             {
-                for (int j = min.X; j < max.X; ++j)
+                for (int j = min.X; j <= max.X; ++j)
                 {
                     if (heightMap[i][j] < 0)
                         return int.MaxValue;
@@ -249,21 +258,22 @@ namespace DeluMc
         /// <summary>
         /// FIlls a rect with blocks and updates the heightmap
         /// </summary>
-        /// <param name="min">Rect min</param>
-        /// <param name="max">Rect max</param>
+        /// <param name="min">Rect min (inclusive)</param>
+        /// <param name="max">Rect max (inclusive)</param>
         /// <param name="y">Rect Y</param>
         /// <param name="heightMap">Heightmap</param>
         /// <param name="differ">Differ</param>
-        private static void PlaceFloorBelow(in Vector2Int min, in Vector2Int max, int y, int[][] heightMap, Differ differ)
+        private static void PlaceFloorBelow(in Vector2Int min, in Vector2Int max, int y, int[][] heightMap, 
+                                            in Biomes[][] biomes, Differ differ)
         {
             // Modify heightmap
             Vector2Int size = max - min + Vector2Int.One;
-            for (int i = min.Z; i < min.Z + size.Z; ++i)
+            for (int i = min.Z; i <= min.Z + size.Z - 1; ++i)
             {
-                for (int j = min.X; j < min.X + size.X; ++j)
+                for (int j = min.X; j <= min.X + size.X - 1; ++j)
                 {
                     heightMap[i][j] = y;
-                    differ.ChangeBlock(y, i, j, AlphaMaterials.RedWool_35_14);
+                    differ.ChangeBlock(y, i, j, GetBiomeBlock(biomes[i][j]));
                 } 
             }
         }
