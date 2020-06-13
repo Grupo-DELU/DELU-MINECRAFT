@@ -321,7 +321,8 @@ namespace DeluMc.Buildings
             }
             else
             {
-                if (roadMap[wz][wx] == 0)
+                if (roadMap[wz][wx] != RoadGenerator.MainRoadMarker ||
+                    roadMap[wz][wx] != RoadGenerator.MainBridgeMarker)
                 {
                     houseMap[wz][wx] = 1;
                 }

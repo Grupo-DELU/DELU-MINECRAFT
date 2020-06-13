@@ -69,6 +69,7 @@ namespace DeluMc
                             BuildResult result = HousePlacer.RequestHouseArea(req, BuildType.House, differ);
                             if (result.success)
                             {
+                                Console.WriteLine("House placed in orientation: " + or.ToString());
                                 // tratar de poner carretera.
                                 // cuidado con esto por la carretera
                                 PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
