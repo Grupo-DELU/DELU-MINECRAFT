@@ -9,6 +9,7 @@ using DeluMc.MCEdit;
 using DeluMc.Buildings;
 using DeluMc.MCEdit.Block;
 using DeluMc.MCEdit.Biomes;
+using DeluMc.Buildings.Palettes;
 using static DeluMc.MCEdit.Biomes.BiomeUtils;
 
 using Utils.SpatialTrees.QuadTrees;
@@ -69,14 +70,24 @@ namespace DeluMc
                         
                         int radius = Vector2Int.Manhattan(rect.Center, village.Seed);
                         List<BuildType> buildings = CreateBuldTypeList(radius);
+                       
                         // Lo ponemos en el Y pelado por el cambio al chequeo que el road no este bloqueado
-                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], rect.Min, rect.Max, roadMap, houseMap, world, Orientation.North, Buildings.Palettes.PremadePalettes.forestPalette);
+                        HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], 
+                                                                                    rect.Min, 
+                                                                                    rect.Max, 
+                                                                                    roadMap, 
+                                                                                    houseMap, 
+                                                                                    world, 
+                                                                                    Orientation.North, 
+                                                                                    PremadePalettes.forestPalette);
                         bool finish = false;
                         foreach (Orientation or in orientations)
                         {
                             req.orientation = or;
                             foreach (BuildType build in buildings)
                             {
+                                BuildingPalette palette = GetBiomeBuildPalette(biomes[point.Z][point.X], build);
+                                req.palettes = palette;
                                 BuildResult result = HousePlacer.RequestHouseArea(req, build, differ);
                                 if (result.success)
                                 {
@@ -173,10 +184,11 @@ namespace DeluMc
         /// <param name="houseMap">House map</param>
         /// <param name="roadMap">Road map</param>
         /// <returns>true if the block is usable/false otherwise</returns>
-        public static bool IsUsable(int z, int x, in bool[][] acceptableMap, in int[][] houseMap, in int[][] roadMap, in int[][] villageMap, in RectInt vRect)
+        public static bool IsUsable(int z, int x, in bool[][] acceptableMap, in int[][] houseMap, in int[][] roadMap, in int[][] villageMap, in RectInt vRect, in VillageMarker village)
         {
             return roadMap[z][x] != RoadGenerator.MainRoadMarker && acceptableMap[z][x] &&
-                   houseMap[z][x] == 0 && villageMap[z][x] >= 1 && vRect.IsInside(z, x);
+                   houseMap[z][x] == 0 && villageMap[z][x] >= 1 && vRect.IsInside(z, x) &&
+                   z != village.Seed.Z && x != village.Seed.X;
         }
 
 
@@ -195,7 +207,7 @@ namespace DeluMc
             {
                 for (int j = rect.Min.X; j <= rect.Max.X; ++j)
                 {
-                    if (!IsUsable(i, j, acceptableMap, houseMap, roadMap, villageMap, village.Rect))
+                    if (!IsUsable(i, j, acceptableMap, houseMap, roadMap, villageMap, village.Rect, village))
                         return false;
                 }
             }
@@ -272,6 +284,8 @@ namespace DeluMc
             {
                 for (int j = min.X; j <= min.X + size.X - 1; ++j)
                 {
+                    if (heightMap[i][j] != (y = 1))
+                        continue;
                     heightMap[i][j] = y;
                     differ.ChangeBlock(y, i, j, GetBiomeFloorBlock(biomes[i][j]));
                 } 

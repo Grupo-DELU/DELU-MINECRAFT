@@ -111,7 +111,32 @@ namespace DeluMc.MCEdit.Biomes
 
 		public static BuildingPalette GetBiomeBuildPalette(Biomes biomes, Buildings.BuildType build)
 		{
-			return null;
+			switch (biomes)
+			{
+				case Biomes.Desert:
+					return PremadePalettes.desertPalette;
+				case Biomes.DesertHills:
+					return PremadePalettes.desertPalette;
+				case Biomes.DesertM:
+					return PremadePalettes.desertPalette;
+
+				// Messa
+				case Biomes.Mesa_Bryce:
+					return PremadePalettes.forestPalette;
+				case Biomes.MesaPlateauFM:
+					return PremadePalettes.forestPalette;
+				case Biomes.MesaPlateauM:
+					return PremadePalettes.forestPalette;
+				case Biomes.Messa:
+					return PremadePalettes.forestPalette;
+				case Biomes.MessaPlateau:
+					return PremadePalettes.forestPalette;
+				case Biomes.MessaPlateauF:
+					return PremadePalettes.forestPalette;
+
+				default:
+					return PremadePalettes.forestPalette;
+			}
 		}
 	}
 }

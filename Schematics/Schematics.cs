@@ -219,16 +219,24 @@ namespace DeluMc.Buildings
             switch (request.orientation)
             {
                 case Orientation.North:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, 
+                            request.min.Z, request.min.X, request.house, request.orientation, 
+                            HousePivot.BottomLeft, request.palettes, differ);
                     break;
                 case Orientation.East:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.min.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, 
+                            request.min.Z, request.max.X, request.house, request.orientation, 
+                            HousePivot.BottomLeft, request.palettes, differ);
                     break;
                 case Orientation.South:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.max.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, 
+                            request.max.Z, request.max.X, request.house, request.orientation, 
+                            HousePivot.BottomLeft, request.palettes, differ);
                     break;
                 case Orientation.West:
-                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, request.max.Z, request.min.X, request.house, request.orientation, HousePivot.BottomLeft, differ);
+                    BuildHouse(request.map, request.houseMap, request.roadMap, request.y, 
+                            request.max.Z, request.min.X, request.house, request.orientation, 
+                            HousePivot.BottomLeft, request.palettes, differ);
                     break;
             }
         }
@@ -384,7 +392,9 @@ namespace DeluMc.Buildings
         /// <param name="house">House to place</param>
         /// <param name="or">House orientation</param>
         /// <param name="pivot">House pivot</param>
-        private static void BuildHouse(Material[][][] map, int[][] houseMap, int[][] roadMap, int y, int z, int x, HouseSchematic house, Orientation or, HousePivot pivot, Differ differ)
+        private static void BuildHouse(Material[][][] map, int[][] houseMap, int[][] roadMap, 
+                                    int y, int z, int x, HouseSchematic house, Orientation or, 
+                                    HousePivot pivot, Palettes.BuildingPalette palette, Differ differ)
         {
             // Orig is the house "left bottom corner" in world position (something like min)
             int origZ, origX; 
@@ -401,7 +411,7 @@ namespace DeluMc.Buildings
                     // X iteration
                     for (int j = 0; j < house.size[2]; ++j)
                     {
-                        Material block = ProcessBlock(i,k,j, house, forestPalette, or);
+                        Material block = ProcessBlock(i,k,j, house, palette, or);
                         switch (or)
                         {
                             case Orientation.North:
