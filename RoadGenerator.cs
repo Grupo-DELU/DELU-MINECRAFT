@@ -78,6 +78,11 @@ namespace DeluMc
         public static float LeafCost = 8.0f;
 
         /// <summary>
+        /// No Road
+        /// </summary>
+        public const int NothingMarker = 0;
+
+        /// <summary>
         /// Side part of a road
         /// </summary>
         public const int RoadMarker = 1;
@@ -257,7 +262,7 @@ namespace DeluMc
                         TreeMap.IsExpanded(Z, X, treeMap)
                     )
                     {
-                        if (roadMap[Z][X] == 0)
+                        if (roadMap[Z][X] == NothingMarker)
                         {
                             switch (centerType)
                             {
