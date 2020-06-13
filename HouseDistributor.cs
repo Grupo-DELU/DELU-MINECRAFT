@@ -13,7 +13,10 @@ namespace DeluMc
 {
     public static class HouseDistributor
     {
-        private static Orientation[] orientations = (Orientation[])Enum.GetValues(typeof(Orientation));
+        private static Orientation[] orientations = new Orientation[]{Orientation.North,
+                                                                      Orientation.South,
+                                                                      Orientation.East};
+                                                                      //(Orientation[])Enum.GetValues(typeof(Orientation));
         private const int MIN_HOUSE_SEPARATION = 10;
         private const int TERRAFORMING_TRESHOLD = 10;
 
@@ -187,7 +190,7 @@ namespace DeluMc
         public static int CalculateTerraformation(in Vector2Int min, in Vector2Int max, int y, in Material[][][] world, in int[][] heightMap)
         {
             // Can go out of bounds, be carefull
-            if (y == 0)
+            if (y == 0 || y >= world.Length)
                 return int.MaxValue;
 
             int c = 0;
@@ -195,6 +198,9 @@ namespace DeluMc
             {
                 for (int j = min.X; j < max.X; ++j)
                 {
+                    if (heightMap[i][j] < 0)
+                        return int.MaxValue;
+
                     if (world[y][i][j] != AlphaMaterials.Air_0_0)
                     {
                         // Just in case there is grass or flowers
@@ -262,10 +268,10 @@ namespace DeluMc
         private static void ShuffleOrientations()
         {
             Random rand = new Random();
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 Orientation temp = orientations[i];
-                int ind = rand.Next(4);
+                int ind = rand.Next(3);
                 orientations[i] = orientations[ind];
                 orientations[ind] = temp;
             }

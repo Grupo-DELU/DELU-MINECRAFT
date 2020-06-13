@@ -160,10 +160,17 @@ namespace DeluMc.Buildings
                     roadPos += pivot;
                     break;
                 case Orientation.South:
+                    pivot += new Vector2Int(-roadPos.Z, -roadPos.X);
+                    roadPos = pivot;
                     break;
                 case Orientation.East:
+                    pivot += new Vector2Int(roadPos.X, -roadPos.Z);
+                    roadPos = pivot;
                     break;
+                // ??? Should be -X, +Z
                 case Orientation.West:
+                    pivot += new Vector2Int(-roadPos.X, roadPos.Z);
+                    roadPos = pivot;
                     break;
             }
             results.doorPos = roadPos;
