@@ -73,7 +73,7 @@ namespace DeluMc.Buildings
     public static class HousePlacer
     {
         private static Dictionary<BuildType, List<HouseSchematic>> houses = new Dictionary<BuildType, List<HouseSchematic>>();
-
+        private static Vector2Int pirateriaTemporal;
         public struct HouseAreaInput
         {
             public int y;
@@ -148,13 +148,12 @@ namespace DeluMc.Buildings
         }      
 
 
-        private static bool CheckRoadNotBlocked(in HouseAreaInput request, in HouseSchematic house, 
-                                                ref BuildResult results, in Differ differ)
+        private static Vector2Int CalculateRoadBlock(in HouseAreaInput request, in HouseSchematic house)
         {
             Vector2Int roadPos = new Vector2Int(house.roadStartZ, house.roadStartX);
             Vector2Int pivot = CalculateLeftBottomPivotPlacement(request);
-            Console.WriteLine("Roadpost: " + roadPos);
-            Console.WriteLine("pivot: " + pivot);
+            Console.WriteLine("House road pos: " + roadPos);
+            Console.WriteLine("House pivot: " + pivot);
             switch (request.orientation)
             {
                 case Orientation.North:
@@ -174,9 +173,16 @@ namespace DeluMc.Buildings
                     roadPos = pivot;
                     break;
             }
-            results.doorPos = roadPos;
-            Console.WriteLine("supuesta road pos: " + roadPos);
-            return differ.World[request.y + 1][roadPos.Z][roadPos.X] == AlphaMaterials.Air_0_0;
+            pirateriaTemporal = roadPos;
+            return roadPos;
+        }
+
+        private static bool CheckRoadNotBlocked(in HouseAreaInput request, in HouseSchematic house, 
+                                                ref BuildResult results, in Differ differ)
+        {
+            results.doorPos = CalculateRoadBlock(request, house);
+            Console.WriteLine("supuesta road pos: " + results.doorPos);
+            return differ.World[request.y + 1][results.doorPos.Z][results.doorPos.X] == AlphaMaterials.Air_0_0;
         }
 
 
@@ -316,15 +322,16 @@ namespace DeluMc.Buildings
             // marked as home (applies when doing schematics).
             char blockType = house.blocks[hy][hz][hx];
             if (blockType == 'e')
-            {
+            {   
                 Console.WriteLine("World road block: " + wz + ", " + wx);
-                roadMap[wz][wx] = 1;
+                roadMap[wz][wx] = 0;
             }
             else
             {
-                bool isMainRoad = roadMap[wz][wx] != RoadGenerator.MainRoadMarker && 
-                                  roadMap[wz][wx] != RoadGenerator.MainBridgeMarker;
-                if (!isMainRoad)
+                bool isMainRoad = roadMap[wz][wx] == RoadGenerator.MainRoadMarker || 
+                                  roadMap[wz][wx] == RoadGenerator.MainBridgeMarker;
+                Vector2Int wpos = new Vector2Int(wz, wx);
+                if (!isMainRoad && wpos != pirateriaTemporal)
                 {
                     roadMap[wz][wx] = 0;
                     houseMap[wz][wx] = 1;

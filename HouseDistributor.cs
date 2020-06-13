@@ -242,14 +242,15 @@ namespace DeluMc
 
         public static bool IsSeparated(Vector2Int point, RectInt rect, DataQuadTree<RectInt> housesQT)
         {
-
+            /*
             DataQuadTree<RectInt>.DistanceToDataPoint nearest = housesQT.NearestNeighbor(point);
             if (nearest.DataNode == null)
                 return true;
             
             return RectInt.Distance(nearest.DataNode.Data, rect) >= MIN_HOUSE_SEPARATION;
+            */
 
-            /*
+            
             DataQuadTree<RectInt>.DistanceToDataPoint[] results = new DataQuadTree<RectInt>.DistanceToDataPoint[4];
             int found = housesQT.KNearestNeighbor(point, 4, results);
             for (int i = 0; i < found; ++i)
@@ -263,7 +264,6 @@ namespace DeluMc
                 }
             }
             return true;
-            */
         }
 
         private static void ShuffleOrientations()
