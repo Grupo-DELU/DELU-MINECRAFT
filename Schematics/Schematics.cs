@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using DeluMc.Utils;
 using DeluMc.MCEdit;
@@ -321,11 +322,11 @@ namespace DeluMc.Buildings
             }
             else
             {
-                if (roadMap[wz][wx] != RoadGenerator.MainRoadMarker ||
-                    roadMap[wz][wx] != RoadGenerator.MainBridgeMarker)
-                {
-                    houseMap[wz][wx] = 1;
-                }
+                Debug.Assert(roadMap[wz][wx] != RoadGenerator.MainRoadMarker && 
+                             roadMap[wz][wx] != RoadGenerator.MainBridgeMarker);
+                             
+                roadMap[wz][wx] = 0;
+                houseMap[wz][wx] = 1;
             }
         }
 
