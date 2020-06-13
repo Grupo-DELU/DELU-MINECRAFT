@@ -152,8 +152,6 @@ namespace DeluMc.Buildings
         {
             Vector2Int roadPos = new Vector2Int(house.roadStartZ, house.roadStartX);
             Vector2Int pivot = CalculateLeftBottomPivotPlacement(request);
-            Console.WriteLine("House road pos: " + roadPos);
-            Console.WriteLine("House pivot: " + pivot);
             switch (request.orientation)
             {
                 case Orientation.North:
@@ -181,7 +179,6 @@ namespace DeluMc.Buildings
                                                 ref BuildResult results, in Differ differ)
         {
             results.doorPos = CalculateRoadBlock(request, house);
-            Console.WriteLine("supuesta road pos: " + results.doorPos);
             return differ.World[request.y + 1][results.doorPos.Z][results.doorPos.X] == AlphaMaterials.Air_0_0;
         }
 
@@ -323,7 +320,7 @@ namespace DeluMc.Buildings
             char blockType = house.blocks[hy][hz][hx];
             if (blockType == 'e')
             {   
-                Console.WriteLine("World road block: " + wz + ", " + wx);
+                Console.WriteLine("House world road block: " + wz + ", " + wx);
                 roadMap[wz][wx] = 0;
             }
             else
