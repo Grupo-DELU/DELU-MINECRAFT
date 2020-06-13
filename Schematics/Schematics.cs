@@ -289,10 +289,10 @@ namespace DeluMc.Buildings
             Material block = null;
             switch (blockType)
             {
-                case 'd':
+                case 'g':
                     block = ProcessDoor(y, z, x, house, palette, ori);
                     break;
-                case 'n':
+                case 'i':
                     block = null;
                     break;
                 default:
@@ -318,7 +318,7 @@ namespace DeluMc.Buildings
             // Important: Road block must be at the bottom of the schematic box or else, it could be
             // marked as home (applies when doing schematics).
             char blockType = house.blocks[hy][hz][hx];
-            if (blockType == 'e')
+            if (blockType == 'f')
             {   
                 Console.WriteLine("House world road block: " + wz + ", " + wx);
                 roadMap[wz][wx] = 0;
@@ -349,9 +349,9 @@ namespace DeluMc.Buildings
         /// <returns>Correct door block material</returns>
         private static Material ProcessDoor(int y, int z, int x, HouseSchematic house, Palettes.BuildingPalette palette, Orientation ori)
         {
-            Material door = palette.GetFromPalette('d');
+            Material door = palette.GetFromPalette('g');
             // Uppder door block
-            if (house.blocks[y+1][z][x] != 'd')
+            if (house.blocks[y+1][z][x] != 'g')
             {
                 return AlphaMaterials.Set.GetMaterial(door.ID, 8);
             }

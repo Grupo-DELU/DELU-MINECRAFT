@@ -46,22 +46,22 @@ namespace DeluMc.Buildings.Palettes
         }
 
         public BuildingPalette(
-            Material wall = null, 
-            Material floor = null, 
-            Material windows = null,
-            Material columns = null,
+            Material block1 = null, 
+            Material block2 = null, 
+            Material block3 = null,
+            Material block4 = null,
             Material door = null,
-            Material roof = null,
+            Material block5 = null,
             Material road = null)
         {
-            palette.Add('w', wall);
-            palette.Add('f', floor);
-            palette.Add('v', windows);
-            palette.Add('c', columns);
-            palette.Add('d', door);
-            palette.Add('r', roof);
-            palette.Add('o', AlphaMaterials.Air_0_0);
-            palette.Add('e', road);
+            palette.Add('a', block1);
+            palette.Add('b', block2);
+            palette.Add('c', block3);
+            palette.Add('d', block4);
+            palette.Add('e', block5);
+            palette.Add('f', road);
+            palette.Add('g', door);
+            palette.Add('h', AlphaMaterials.Air_0_0);
         }
     }
 

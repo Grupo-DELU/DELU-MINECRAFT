@@ -1,14 +1,14 @@
 """
 Schematics char meaning
-    -'w' -> block1 -> Bedrock -> 7
-    -'f' -> block2 -> Sponge -> 19
-    -'v' -> block3 -> Glass -> 20
-    -'c' -> block4 -> Netherack -> 87
-    -'r' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
-    -'e' -> Road -> Bricks -> 45 (NOT SLAB)
-    -'d' -> Door -> CraftingTable -> 58
-    -'o' -> Air -> Air -> 0
-    -'n' -> Don't replace -> Anything that isn't above
+    -'a' -> block1 -> Bedrock -> 7
+    -'b' -> block2 -> Sponge -> 19
+    -'c' -> block3 -> Glass -> 20
+    -'d' -> block4 -> Netherack -> 87
+    -'e' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
+    -'f' -> Road -> Bricks -> 45 (NOT SLAB)
+    -'g' -> Door -> CraftingTable -> 58
+    -'h' -> Air -> Air -> 0
+    -'i' -> Don't replace -> Anything that isn't above
 
 Converts the box blocks into the schematic char formats and
 serializes the data of the structure into a .json file to
@@ -22,14 +22,14 @@ import json;
 import os;
 
 formatDict = {
-    7:'w',
-    19:'f',
-    20:'v',
-    87:'c',
-    155:'r',
-    45:'e',
-    58:'d',
-    0:'o',}
+    7:'a',
+    19:'b',
+    20:'c',
+    87:'d',
+    155:'e',
+    45:'f',
+    58:'g',
+    0:'h',}
 
 buildDict = {
     "House": 0,
@@ -79,4 +79,4 @@ Conversion table above.
 def blockToFormat(id):
     if (id in formatDict):
         return formatDict[id]
-    return 'n'
+    return 'i'

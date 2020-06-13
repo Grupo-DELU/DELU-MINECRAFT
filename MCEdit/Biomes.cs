@@ -71,7 +71,13 @@ namespace DeluMc.MCEdit.Biomes
 
 	public static class BiomeUtils
 	{
-		public static Material GetBiomeBlock(Biomes biome)
+		/// <summary>
+		/// Returns a block to place as the biome floor block.
+		/// Used for terraformation
+		/// </summary>
+		/// <param name="biome">Biome to get block from</param>
+		/// <returns>A block to place for floor terraformation</returns>
+		public static Material GetBiomeFloorBlock(Biomes biome)
 		{
 			switch (biome)
 			{
