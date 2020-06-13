@@ -32,7 +32,6 @@ namespace DeluMc
 
             for (int i = 0; i < village.Points.Count; ++i)
             {
-                //Console.WriteLine("Punto " + sortedDelta[i].coordinates);
                 Vector2Int point = sortedDelta[i].coordinates;
                 List<RectInt> possibilities = TestRectPlacement(point, size, world, heightMap);
                 if (possibilities.Count > 0)
@@ -53,9 +52,6 @@ namespace DeluMc
                     foreach (RectInt rect in possibilities)
                     {
                         ShuffleOrientations();
-                        Console.WriteLine("======================================");
-                        Console.WriteLine("Min: " + rect.Min);
-                        Console.WriteLine("Max: " + rect.Max);
                         if (!IsSeparated(point, rect, rectTree))
                             continue;
                         
@@ -70,9 +66,8 @@ namespace DeluMc
                             if (result.success)
                             {
                                 Console.WriteLine("House placed in orientation: " + or.ToString());
-                                // tratar de poner carretera.
-                                // cuidado con esto por la carretera
-                                PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], differ);
+
+                                PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], heightMap, differ);
                                 roads.Add(RoadGenerator.PointToRoad(result.doorPos.Z, result.doorPos.X, acceptable, deltaMap,
                                                           waterMap, roadMap, treeMap, houseMap, roadQT));
                                 rectTree.Insert(point, rect);
@@ -82,16 +77,22 @@ namespace DeluMc
                     }
                 }
             }
-            Console.WriteLine(count);
         }
 
 
+        /// <summary>
+        /// Test four Rects rotated around a point to see if 
+        /// it could be usable for house placement.
+        /// </summary>
+        /// <param name="point">Point to rotate around</param>
+        /// <param name="size">Size of the rect</param>
+        /// <param name="world">World blocks</param>
+        /// <param name="heightMap">Height map</param>
+        /// <returns>A list of rects that could be usable for placing houses</returns>
         private static List<RectInt> TestRectPlacement(in Vector2Int point, in Vector2Int size, in Material[][][] world, in int[][] heightMap)
         {
             List<RectInt> rects = new List<RectInt>();
-            // Son 8 posibles orientaciones
-            // Solo usare 4
-            // TODO: This can go out of bounds. Must clamp or ignore box.
+
             Vector2Int minA = point;
             Vector2Int maxA = point + new Vector2Int(size.Z, size.X);
 
@@ -138,14 +139,14 @@ namespace DeluMc
 
 
         /// <summary>
-        /// 
+        /// Checks if the position at (z,x) is usable for a house
         /// </summary>
-        /// <param name="z"></param>
-        /// <param name="x"></param>
-        /// <param name="acceptableMap"></param>
-        /// <param name="houseMap"></param>
-        /// <param name="roadMap"></param>
-        /// <returns></returns>
+        /// <param name="z">Z position to check</param>
+        /// <param name="x">X position to chck</param>
+        /// <param name="acceptableMap">Acceptable map</param>
+        /// <param name="houseMap">House map</param>
+        /// <param name="roadMap">Road map</param>
+        /// <returns>true if the block is usable/false otherwise</returns>
         public static bool IsUsable(int z, int x, in bool[][] acceptableMap, in int[][] houseMap, in int[][] roadMap, in int[][] villageMap, in RectInt vRect)
         {
             return roadMap[z][x] != RoadGenerator.MainRoadMarker && acceptableMap[z][x] &&
@@ -154,13 +155,13 @@ namespace DeluMc
 
 
         /// <summary>
-        /// 
+        /// Checks if a rect is usable for placing a house
         /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="acceptableMap"></param>
-        /// <param name="houseMap"></param>
-        /// <param name="roadMap"></param>
-        /// <returns></returns>
+        /// <param name="rect">Rect to check</param>
+        /// <param name="acceptableMap">Acceptable map</param>
+        /// <param name="houseMap">House map</param>
+        /// <param name="roadMap">Road map</param>
+        /// <returns>true if the rect is usable/false otherwise</returns>
         private static bool IsRectUsable(in RectInt rect, in VillageMarker village, in bool[][] acceptableMap, in int[][] houseMap, in int[][] roadMap, in int[][] villageMap)
         {
             for (int i = rect.Min.Z; i < rect.Max.Z; ++i)
@@ -227,19 +228,36 @@ namespace DeluMc
         }
 
 
-        private static void PlaceFloorBelow(in Vector2Int min, in Vector2Int max, int y, Differ differ)
+        /// <summary>
+        /// FIlls a rect with blocks and updates the heightmap
+        /// </summary>
+        /// <param name="min">Rect min</param>
+        /// <param name="max">Rect max</param>
+        /// <param name="y">Rect Y</param>
+        /// <param name="heightMap">Heightmap</param>
+        /// <param name="differ">Differ</param>
+        private static void PlaceFloorBelow(in Vector2Int min, in Vector2Int max, int y, int[][] heightMap, Differ differ)
         {
+            // Modify heightmap
             Vector2Int size = max - min + Vector2Int.One;
             for (int i = min.Z; i < min.Z + size.Z; ++i)
             {
                 for (int j = min.X; j < min.X + size.X; ++j)
                 {
+                    heightMap[i][j] = y;
                     differ.ChangeBlock(y, i, j, AlphaMaterials.RedWool_35_14);
                 } 
             }
         }
 
 
+        /// <summary>
+        /// Checks if a rect got enough separation from the other ones
+        /// </summary>
+        /// <param name="point">Point of the rect in the QT</param>
+        /// <param name="rect">Rect to check</param>
+        /// <param name="housesQT">Houses QuadTree</param>
+        /// <returns>true if the rect has enough separation/false otherwise</returns>
         public static bool IsSeparated(Vector2Int point, RectInt rect, DataQuadTree<RectInt> housesQT)
         {
             /*
