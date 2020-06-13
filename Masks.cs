@@ -78,6 +78,8 @@ namespace DeluMc.Masks
         {
             int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
             int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
+            int acaciaLID = AlphaMaterials.AcaciaLeaves_NoDecay_161_4.ID;
+            int acaciaWoodID = AlphaMaterials.AcaciaWood_East_West_Acacia_162_4.ID;
             int airID = AlphaMaterials.Air_0_0.ID;
 
             int y = heightMap[z][x];
@@ -87,9 +89,10 @@ namespace DeluMc.Masks
             }
             
             Material block = box[y][z][x];
-
+            
             // Replace for a IsTree function
-            while ((block.ID == leavesID || block.ID == woodRootID || block.ID == airID) && y > -1)
+            while ((block.ID == leavesID || block.ID == woodRootID || block.ID == acaciaLID || 
+                    block.ID == acaciaWoodID || block.ID == airID) && y > -1)
             {
                 if (block.ID == woodRootID && treeMap[z][x] != 2)
                     treeMap[z][x] = 2;
