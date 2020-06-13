@@ -36,9 +36,6 @@ namespace DeluMc.Masks
         public static void FixBoxHeights(Material[][][] box, int[][] heightmap, int[][] treeMap,
                                     int iz, int ix, int fz, int fx)
         {
-            int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
-            int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
-
             for (int i = iz; i < fz; ++i)
             {
                 for (int j = ix; j < fx; ++j)
@@ -47,7 +44,7 @@ namespace DeluMc.Masks
                     if (y >= 0)
                     {
                         Material block = box[y][i][j];
-                        if (block.ID == leavesID || block.ID == woodRootID)
+                        if (IsTrunk(block.ID) || IsLeaves(block.ID))
                         {
                             treeMap[i][j] = 1;
                             heightmap[i][j] = FindGroundHeight(box, heightmap, treeMap, i, j);
@@ -76,10 +73,6 @@ namespace DeluMc.Masks
         /// <param name="x">X pos to check</param>
         public static int FindGroundHeight(Material[][][] box, int[][] heightMap, int[][] treeMap, int z, int x)
         {
-            int leavesID = AlphaMaterials.OakLeaves_NoDecay_18_4.ID;
-            int woodRootID = AlphaMaterials.JungleWood_East_West_17_7.ID;
-            int acaciaLID = AlphaMaterials.AcaciaLeaves_NoDecay_161_4.ID;
-            int acaciaWoodID = AlphaMaterials.AcaciaWood_East_West_Acacia_162_4.ID;
             int airID = AlphaMaterials.Air_0_0.ID;
 
             int y = heightMap[z][x];
@@ -91,10 +84,9 @@ namespace DeluMc.Masks
             Material block = box[y][z][x];
             
             // Replace for a IsTree function
-            while ((block.ID == leavesID || block.ID == woodRootID || block.ID == acaciaLID || 
-                    block.ID == acaciaWoodID || block.ID == airID) && y > -1)
+            while ((IsLeaves(block.ID) || IsTrunk(block.ID) || block.ID == airID) && y > -1)
             {
-                if (block.ID == woodRootID && treeMap[z][x] != 2)
+                if (IsTrunk(block.ID) && treeMap[z][x] != 2)
                     treeMap[z][x] = 2;
                 // Maybe we must be carefull with what is considered ground in this case.
                 y -= 1;
@@ -104,6 +96,31 @@ namespace DeluMc.Masks
                 }
             }
             return y;
+        }
+
+
+        /// <summary>
+        /// Checks if a block is a tree leaf.
+        /// </summary>
+        /// <param name="id">ID of the block</param>
+        /// <returns>true if the block is a tree leaf/false otherwise</returns>
+        public static bool IsLeaves(int id)
+        {
+            return id == AlphaMaterials.OakLeaves_NoDecay_18_4.ID || 
+            id == AlphaMaterials.AcaciaLeaves_NoDecay_161_4.ID ||
+            id == AlphaMaterials.BrownMushroomBlock_East_99_6.ID ||
+            id == AlphaMaterials.RedMushroomBlock_AllOutside_100_14.ID;
+        }
+
+        /// <summary>
+        /// Checks if a block is a tree trunk.
+        /// </summary>
+        /// <param name="id">ID of the block</param>
+        /// <returns>true if the block is a tree trunk/false otherwise</returns>
+        public static bool IsTrunk(int id)
+        {
+            return id == AlphaMaterials.JungleWood_East_West_17_7.ID ||
+                   id == AlphaMaterials.AcaciaWood_East_West_Acacia_162_4.ID;
         }
     }
 
