@@ -19,7 +19,7 @@ namespace DeluMc
         /// Probability of Success of Seed
         /// It is the sum of the distance from the seed to all the nodes in the Village
         /// </summary>
-        public int PValue { get; private set; }
+        public long PValue { get; private set; }
 
         /// <summary>
         /// Rect that covers the village
@@ -44,7 +44,7 @@ namespace DeluMc
         /// <param name="rect">Rect that covers the village</param>
         /// <param name="points">Points Belonging to the village</param>
         /// <param name="id">Village Id</param>
-        public VillageMarker(in Vector2Int seed, int pValue, in RectInt rect, List<Vector2Int> points, int id)
+        public VillageMarker(in Vector2Int seed, long pValue, in RectInt rect, List<Vector2Int> points, int id)
         {
             this.Seed = seed;
             this.PValue = pValue;
@@ -71,6 +71,44 @@ namespace DeluMc
 #endif
         }
 
+        /// <summary>
+        /// Recalculates the new PValue for the new Seed of the Village
+        /// </summary>
+        /// <param name="newSeed">New Seed To Use</param>
+        /// <returns>New PValue</returns>
+        public long RecalulatePValue(in Vector2Int newSeed)
+        {
+            Seed = newSeed;
+            long newPvalue = 0;
+            Parallel.For<long>(0, Points.Count, 
+                () => 0,
+                (int index, ParallelLoopState loop, long accumulator)
+                =>
+                {
+                    accumulator += VillageMarkerPlacer.ChebyshevDistance(Seed, Points[index].Z, Points[index].X);
+                    return accumulator;
+                },
+                (long acc) => Interlocked.Add(ref newPvalue, acc)
+            );
+            PValue = newPvalue;
+            return PValue;
+        }
+
+        public static long TheoreticalBestPValue(int VillageNodeCount)
+        {
+            if (VillageNodeCount == 0)
+            {
+                return 0;
+            }
+            else if (VillageNodeCount == 1)
+            {
+                return 1;
+            }
+            long bestSquareSide = (long)Math.Sqrt((double)VillageNodeCount);
+            long bestSquareHalfSide = bestSquareSide / 2;
+            long pValue = 0;
+            return pValue;
+        }
     }
 
     /// <summary>
@@ -115,7 +153,7 @@ namespace DeluMc
             List<ZPoint2D> newCircles = new List<ZPoint2D>(kExpectedCircles);
             newCircles.Add(new ZPoint2D { RealPoint = seed });
             List<Vector2Int> selectedNodes = new List<Vector2Int>(maxNumNodes);
-            int pValue = 0;
+            long pValue = 0;
             int prevSelectedNodesCount = -1;
             int addedCircles;
 
@@ -276,7 +314,7 @@ namespace DeluMc
         /// <param name="toZ">Ending Point Z Coordinate</param>
         /// <param name="toX">Ending Point X Coordinate</param>
         /// <returns>The Chebyshev Distance between the two points</returns>
-        private static int ChebyshevDistance(in Vector2Int from, int toZ, int toX)
+        public static int ChebyshevDistance(in Vector2Int from, int toZ, int toX)
         {
             return Math.Max(Math.Abs(from.Z - toZ), Math.Abs(from.X - toX));
         }
@@ -298,7 +336,7 @@ namespace DeluMc
         /// <param name="selectedNodes">Selected Nodes for the village</param>
         /// <param name="id">Village ID, must be greater than 0</param>
         /// <returns>PValue of added nodes to Village</returns>
-        private static int GetValidNodes(
+        private static long GetValidNodes(
             bool[][] acceptableMap, int[][] villageMap, in Vector2Int seed, List<RectInt> circlesCovers, RectInt testCover,
             ref RectInt coverRect, List<Vector2Int> selectedNodes, int id)
         {
@@ -330,7 +368,7 @@ namespace DeluMc
                 Tasker.Run2DTasks(testCoverSize.Z, testCoverSize.X, null, cleanVillageMap);
             }
 
-            int newPValue = 0;
+            long newPValue = 0;
             {
                 int oldEnd = selectedNodes.Count;
                 Mutex mut = new Mutex();
