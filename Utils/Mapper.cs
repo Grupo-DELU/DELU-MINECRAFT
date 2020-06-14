@@ -101,10 +101,6 @@ namespace DeluMc.Utils
             {
                 Console.WriteLine($"Error Saving \"{fileName}\": {e}");
             }
-            finally
-            {
-                bitmap.Dispose();
-            }
         }
 
         /// <summary>
@@ -158,9 +154,17 @@ namespace DeluMc.Utils
                 width = Math.Max(kMinImageSize, zSize);
                 height = (int)((float)width * ratio);
             }
-            using(Bitmap resized = ResizeNearestNeighborImage(bitmap, width, height))
+
+            try
             {
-                SaveBitmap(resized, name + "_resized");
+                using(Bitmap resized = ResizeNearestNeighborImage(bitmap, width, height))
+                {
+                    SaveBitmap(resized, name + "_resized");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Failed to Generate Resized ({xSize}x{zSize}->{width}x{height})Image Version: {e}");
             }
 
             SaveBitmap(bitmap, name);
