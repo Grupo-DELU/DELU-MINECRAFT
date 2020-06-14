@@ -9,6 +9,7 @@ using DeluMc.Masks;
 using DeluMc.MCEdit;
 using DeluMc.MCEdit.Block;
 using DeluMc.MCEdit.Biomes;
+using static DeluMc.MCEdit.Biomes.BiomeUtils;
 
 namespace DeluMc
 {
@@ -96,7 +97,7 @@ namespace DeluMc
                                     rectCover.IsInside(nz, nx)
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
-                                    world.ChangeBlock(averageHeightInt, nz, nx, AlphaMaterials.Cobblestone_4_0);
+                                    world.ChangeBlock(averageHeightInt, nz, nx, GetBiomeRoadBlock(biomes[nz][nx]));
                                     //heightMap[nz][nx] = averageHeightInt; // TODO: Maybe its wrong
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)

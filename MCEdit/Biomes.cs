@@ -83,24 +83,19 @@ namespace DeluMc.MCEdit.Biomes
 			{
 				// Desert
 				case Biomes.Desert:
-					return AlphaMaterials.Sand_12_0;
 				case Biomes.DesertHills:
-					return AlphaMaterials.Sand_12_0;
 				case Biomes.DesertM:
-					return AlphaMaterials.Sand_12_0;
 				case Biomes.Beach:
 					return AlphaMaterials.Sand_12_0;
+
 				// Messa
 				case Biomes.Mesa_Bryce:
-					return AlphaMaterials.RedSand_12_1;
 				case Biomes.MesaPlateauFM:
-					return AlphaMaterials.RedSand_12_1;
 				case Biomes.MesaPlateauM:
-					return AlphaMaterials.RedSand_12_1;
 				case Biomes.Messa:
 					return AlphaMaterials.RedSand_12_1;
+
 				case Biomes.MessaPlateau:
-					return AlphaMaterials.HardenedClay_172_0;
 				case Biomes.MessaPlateauF:
 					return AlphaMaterials.HardenedClay_172_0;
 				
@@ -155,6 +150,38 @@ namespace DeluMc.MCEdit.Biomes
 						default:
 							return null;
 					}
+			}
+		}
+
+
+		/// <summary>
+		/// Returns a block to build the roads with depending on the biome
+		/// the road is on.
+		/// </summary>
+		/// <param name="biome"></param>
+		/// <returns></returns>
+		public static Material GetBiomeRoadBlock(Biomes biome)
+		{
+			switch (biome)
+			{
+				// Desert
+				case Biomes.Desert:
+				case Biomes.DesertHills:
+				case Biomes.DesertM:
+				case Biomes.Beach:
+					return AlphaMaterials.Gravel_13_0;
+					
+				// Messa
+				case Biomes.Mesa_Bryce:
+				case Biomes.MesaPlateauFM:
+				case Biomes.MesaPlateauM:
+				case Biomes.Messa:
+				case Biomes.MessaPlateau:
+				case Biomes.MessaPlateauF:
+					return AlphaMaterials.Bricks_45_0;
+				
+				default:
+					return AlphaMaterials.Path_208_0;
 			}
 		}
 	}

@@ -189,7 +189,7 @@ namespace DeluMc
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
             {
                 int numberOfTries = 1000;
-                int expectedVillageSize = 1700;
+                int expectedVillageSize = 2500;
                 int radius = 3;
                 int villageCount = 3;
                 int maxVillageCount = 3;
