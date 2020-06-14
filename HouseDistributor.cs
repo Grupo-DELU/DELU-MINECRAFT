@@ -28,8 +28,8 @@ namespace DeluMc
         private const int TERRAFORMING_TRESHOLD = 10;
 
         private static bool placedPlaza = false;
-        private const int PLAZA_RADIUS = 30;
-        private const int HOUSE_RADIUS = 60;
+        private const int PLAZA_RADIUS = 25;
+        private const int HOUSE_RADIUS = 40;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
                                 int[][] houseMap, int[][] roadMap, in int[][] villageMap, in int[][] waterMap,
@@ -86,6 +86,8 @@ namespace DeluMc
                             req.orientation = or;
                             foreach (BuildType build in buildings)
                             {
+                                Console.WriteLine("==============================");
+                                Console.WriteLine("Distance to seed: " + radius);
                                 BuildingPalette palette = GetBiomeBuildPalette(biomes[point.Z][point.X], build);
                                 req.palettes = palette;
                                 BuildResult result = HousePlacer.RequestHouseArea(req, build, differ);
@@ -100,6 +102,7 @@ namespace DeluMc
                                                               deltaMap, waterMap, roadMap, treeMap, houseMap, roadQT));
                                     rectTree.Insert(point, rect);
                                     finish = true;
+                                    Console.WriteLine("House placed!");
                                     break;
                                 }
                             }

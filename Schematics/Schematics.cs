@@ -137,14 +137,27 @@ namespace DeluMc.Buildings
             }
             int sizeX = Math.Abs(request.min.X - request.max.X) + 1;
             int sizeZ = Math.Abs(request.min.Z - request.max.Z) + 1;
-            if ((request.orientation & (Orientation.South | Orientation.North)) != 0)
+            switch (request.orientation)
             {
-                return house.size[1] <= sizeZ && house.size[2] <= sizeX;
+                case Orientation.South:
+                case Orientation.North:
+                    return house.size[1] <= sizeZ && house.size[2] <= sizeX;
+                
+                case Orientation.West:
+                case Orientation.East:
+                    return house.size[2] <= sizeZ && house.size[1] <= sizeX;
+                
+                default:
+                    return true;
             }
-            else
-            {
-                return house.size[2] <= sizeZ && house.size[1] <= sizeX;
-            }
+            //if ((request.orientation & (Orientation.South | Orientation.North)) != 0)
+            //{
+            //    return house.size[1] <= sizeZ && house.size[2] <= sizeX;
+            //}
+            //else
+            //{
+            //    return house.size[2] <= sizeZ && house.size[1] <= sizeX;
+            //}
         }      
 
 
