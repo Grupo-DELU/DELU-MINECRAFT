@@ -284,7 +284,7 @@ namespace DeluMc
             {
                 for (int j = min.X; j <= min.X + size.X - 1; ++j)
                 {
-                    if (heightMap[i][j] != (y = 1))
+                    if (heightMap[i][j] != (y - 1))
                         continue;
                     heightMap[i][j] = y;
                     differ.ChangeBlock(y, i, j, GetBiomeFloorBlock(biomes[i][j]));
