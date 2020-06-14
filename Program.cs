@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Drawing;
 using System.Collections.Generic;
 using DeluMc.Pipes;
 using DeluMc.Masks;
@@ -11,6 +10,8 @@ using DeluMc.MCEdit.Block;
 using DeluMc.MCEdit.Biomes;
 using DeluMc.Buildings.Palettes;
 using Utils.SpatialTrees.QuadTrees;
+
+using SixLabors.ImageSharp;
 namespace DeluMc
 {
     class Program
@@ -332,7 +333,7 @@ namespace DeluMc
                                 if (0 <= deltaMap[z][x] && deltaMap[z][x] <= DeltaMap.kMaxDelta)
                                 {
                                     float tVal = 1.0f - deltaMap[z][x] / DeltaMap.kMaxDelta;
-                                    return Color.FromArgb(255, 0, (int)(255.0f * tVal + 100.0f * (1.0f - tVal)), 0);
+                                    return Color.FromRgba(0, (byte)(255.0f * tVal + 100.0f * (1.0f - tVal)), 0, 255);
                                 }
                                 else if (deltaMap[z][x] > DeltaMap.kMaxDelta)
                                 {
@@ -366,7 +367,7 @@ namespace DeluMc
                             colorWork = (int z, int x) => {
                                 if (heightMap[z][x] >= 0)
                                 {
-                                    return Color.FromArgb(255, heightMap[z][x], heightMap[z][x], heightMap[z][x]);
+                                    return Color.FromRgba((byte)heightMap[z][x], (byte)heightMap[z][x], (byte)heightMap[z][x], 255);
                                 }
                                 else
                                 {
