@@ -7,15 +7,15 @@ namespace DeluMc.Buildings.Palettes
 {
     /*
     Schematics char meaning
-        -'w' -> block1 -> Bedrock -> 7
-        -'f' -> block2 -> Sponge -> 19
-        -'v' -> block3 -> Glass -> 20
-        -'c' -> block4 -> Netherack -> 87
-        -'r' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
-        -'e' -> Road -> Bricks -> 45 (NOT SLAB)
-        -'d' -> Door -> CraftingTable -> 58
-        -'o' -> Air -> Air -> 0
-        -'n' -> Don't replace -> Anything that isn't above
+        -'a' -> block1 -> Bedrock -> 7
+        -'b' -> block2 -> Sponge -> 19
+        -'c' -> block3 -> Glass -> 20
+        -'d' -> block4 -> Netherack -> 87
+        -'e' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
+        -'f' -> Road -> Bricks -> 45 (NOT SLAB)
+        -'g' -> Door -> CraftingTable -> 58
+        -'h' -> Air -> Air -> 0
+        -'i' -> Don't replace -> Anything that isn't above
      */     
     
     /// <summary>
@@ -77,7 +77,7 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.OakWood_BarkOnly_17_12,
             AlphaMaterials.OakDoor_Lower_Unopened_East_64_0,
             AlphaMaterials.Cobblestone_4_0,
-            AlphaMaterials.Gravel_13_0);
+            AlphaMaterials.Podzol_3_2);
 
         public static readonly BuildingPalette desertPalette = new BuildingPalette(
             AlphaMaterials.SmoothSandstone_24_2,
@@ -95,7 +95,7 @@ namespace DeluMc.Buildings.Palettes
             null,
             null, 
             null, 
-            AlphaMaterials.Gravel_13_0
+            AlphaMaterials.Podzol_3_2
         );
 
         public static readonly BuildingPalette plazaDesertPalette = new BuildingPalette(
@@ -115,7 +115,7 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.Wheat_Age7_Max_59_7,
             null, 
             null, 
-            AlphaMaterials.Gravel_13_0
+            AlphaMaterials.Podzol_3_2
         );
 
         public static readonly BuildingPalette farmDesertPalette = new BuildingPalette(

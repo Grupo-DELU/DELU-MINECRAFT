@@ -150,14 +150,6 @@ namespace DeluMc.Buildings
                 default:
                     return true;
             }
-            //if ((request.orientation & (Orientation.South | Orientation.North)) != 0)
-            //{
-            //    return house.size[1] <= sizeZ && house.size[2] <= sizeX;
-            //}
-            //else
-            //{
-            //    return house.size[2] <= sizeZ && house.size[1] <= sizeX;
-            //}
         }      
 
 
@@ -268,18 +260,18 @@ namespace DeluMc.Buildings
             int reqArea = sizeX * sizeZ;
             BuildResult results = new BuildResult();
 
-            Console.WriteLine("Area requested: " + reqArea);
-            Console.WriteLine("House type requested: " + Enum.GetName(typeof(BuildType), houseType));
+            //Console.WriteLine("Area requested: " + reqArea);
+            //Console.WriteLine("House type requested: " + Enum.GetName(typeof(BuildType), houseType));
             for (int i = 0; i < houses[houseType].Count; i++)
             {
                 HouseSchematic house = houses[houseType][i];
                 int houseArea = house.size[1] * house.size[2];
-                Console.WriteLine("House area: " + houseArea);
+                //Console.WriteLine("House area: " + houseArea);
                 if (houseArea <= reqArea)
                 {
                     if (CheckBoxFit(request, house) && CheckRoadNotBlocked(request, house, ref results, differ))
                     {
-                        Console.WriteLine("House chosen: " + i);
+                        //Console.WriteLine("House chosen: " + i);
                         request.house = house;
                         BuildInArea(request, differ);
                         results.success = true;

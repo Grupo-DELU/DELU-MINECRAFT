@@ -169,7 +169,7 @@ namespace DeluMc.MCEdit.Biomes
 				case Biomes.DesertHills:
 				case Biomes.DesertM:
 				case Biomes.Beach:
-					return AlphaMaterials.Gravel_13_0;
+					return AlphaMaterials.Granite_1_1;
 					
 				// Messa
 				case Biomes.Mesa_Bryce:

@@ -86,8 +86,8 @@ namespace DeluMc
                             req.orientation = or;
                             foreach (BuildType build in buildings)
                             {
-                                Console.WriteLine("==============================");
-                                Console.WriteLine("Distance to seed: " + radius);
+                                //Console.WriteLine("==============================");
+                                //Console.WriteLine("Distance to seed: " + radius);
                                 BuildingPalette palette = GetBiomeBuildPalette(biomes[point.Z][point.X], build);
                                 req.palettes = palette;
                                 BuildResult result = HousePlacer.RequestHouseArea(req, build, differ);
@@ -102,7 +102,7 @@ namespace DeluMc
                                                               deltaMap, waterMap, roadMap, treeMap, houseMap, roadQT));
                                     rectTree.Insert(point, rect);
                                     finish = true;
-                                    Console.WriteLine("House placed!");
+                                    //Console.WriteLine("House placed!");
                                     break;
                                 }
                             }
