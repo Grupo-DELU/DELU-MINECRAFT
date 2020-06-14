@@ -37,7 +37,8 @@ namespace DeluMc
 
             List<Vector2Int> road;
             int nz, nx, ny, count;
-            int averageHeight;
+            float averageHeight;
+            int averageHeightInt;
             // Ugly code but dumb fast
             for (int j = 0; j < roads.Count; j++)
             {
@@ -77,12 +78,13 @@ namespace DeluMc
                                 nx = road[i].X + dx;
                                 if (rectCover.IsInside(nz, nx) && roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
                                 {
-                                    averageHeight += heightMap[nz][nx];
+                                    averageHeight += (float)heightMap[nz][nx] + 0.5f;
                                     ++count;
                                 }
                             }
                         }
-                        averageHeight /= count;
+                        averageHeight /= (float)count;
+                        averageHeightInt = (int)averageHeight;
 
                         for (int dz = -1; dz <= 1; dz++)
                         {
@@ -94,11 +96,12 @@ namespace DeluMc
                                     rectCover.IsInside(nz, nx)
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
-                                    world.ChangeBlock(averageHeight, nz, nx, AlphaMaterials.Cobblestone_4_0);
+                                    world.ChangeBlock(averageHeightInt, nz, nx, AlphaMaterials.Cobblestone_4_0);
+                                    heightMap[nz][nx] = averageHeightInt; // TODO: Maybe its wrong
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
-                                        ny = averageHeight + dy;
+                                        ny = averageHeightInt + dy;
                                         if (ny < maxY)
                                         {
                                             world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
