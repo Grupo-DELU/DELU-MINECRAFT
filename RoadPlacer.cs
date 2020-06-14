@@ -60,13 +60,13 @@ namespace DeluMc
 
                         if (0 <= i - 2 && roadMap[road[i - 2].Z][road[i - 2].X] == RoadGenerator.MainRoadMarker)
                         {
-                            averageHeight += (float)heightMap[road[i - 2].Z][road[i - 2].X] + 0.5f;
+                            averageHeight += (float)heightMap[road[i - 2].Z][road[i - 2].X];
                             ++count;
                         }
 
                         if (i + 2 < road.Count && roadMap[road[i + 2].Z][road[i + 2].X] == RoadGenerator.MainRoadMarker)
                         {
-                            averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X] + 0.5f;
+                            averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X];
                             ++count;
                         }
 
@@ -78,13 +78,13 @@ namespace DeluMc
                                 nx = road[i].X + dx;
                                 if (rectCover.IsInside(nz, nx) && roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
                                 {
-                                    averageHeight += (float)heightMap[nz][nx] + 0.5f;
+                                    averageHeight += (float)heightMap[nz][nx];
                                     ++count;
                                 }
                             }
                         }
                         averageHeight /= (float)count;
-                        averageHeightInt = (int)(averageHeight - 0.25f);
+                        averageHeightInt = (int)Math.Round((double)averageHeight);
 
                         for (int dz = -1; dz <= 1; dz++)
                         {
@@ -97,7 +97,7 @@ namespace DeluMc
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
                                     world.ChangeBlock(averageHeightInt, nz, nx, AlphaMaterials.Cobblestone_4_0);
-                                    heightMap[nz][nx] = averageHeightInt; // TODO: Maybe its wrong
+                                    //heightMap[nz][nx] = averageHeightInt; // TODO: Maybe its wrong
                                     // Clear top
                                     for (int dy = 1; dy <= 2; dy++)
                                     {
