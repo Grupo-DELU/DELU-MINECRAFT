@@ -63,12 +63,13 @@ namespace DeluMc.Utils
         {
 
             return image.Clone(context => context
-        .Resize(new ResizeOptions
-        {
-            Sampler = new BoxResampler(),
-            Mode = ResizeMode.Max,
-            Size = new Size(width, height)
-        }));
+                .Resize(new ResizeOptions
+                {
+                    Sampler = new BoxResampler(),
+                    Mode = ResizeMode.Max,
+                    Size = new Size(width, height)
+                })
+            );
         }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace DeluMc.Utils
                 {
                     for (int x = 0; x < xSize; x++)
                     {
-                        bitmap[z, xSize -1 -x] = colorWork.Invoke(z, x);
+                        bitmap[z, xSize - 1 - x] = colorWork.Invoke(z, x);
                     }
                 }
             }
