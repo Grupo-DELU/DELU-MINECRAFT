@@ -29,7 +29,7 @@ namespace DeluMc
 
         private static bool placedPlaza = false;
         private const int PLAZA_RADIUS = 25;
-        private const int HOUSE_RADIUS = 40;
+        private const int HOUSE_RADIUS = 45;
 
         public static void FillVillage(in float[][] deltaMap, in int[][] heightMap, in bool[][] acceptable,
                                 int[][] houseMap, int[][] roadMap, in int[][] villageMap, in int[][] waterMap,

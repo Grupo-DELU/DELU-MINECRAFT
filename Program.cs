@@ -191,7 +191,7 @@ namespace DeluMc
             {
                 int numberOfTries = 1000;
                 int expectedVillageSize = 2500;
-                int radius = 3;
+                int radius = 4;
                 int villageCount = 3;
                 int maxVillageCount = 3;
                 villages = VillageDistributor.DistributeVillageMarkers(
