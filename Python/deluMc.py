@@ -2,11 +2,15 @@ import delu_mc.utils.pipeProcess as pipeProcessHandler
 import delu_mc.utils.pipeHandler as pipeHandler
 import delu_mc.utils.configUtils as configUtils
 
+from timeit import default_timer as timer
+
+
 # IMPORTANT: This must be done before any other import that requires config
 configUtils.configurePaths(__file__)
 
 
 def perform(level, box, options):
+    start_time = timer()
     pipeProcess = pipeProcessHandler.PipeProcess()
     pipeProcess.open()
     pipeServer = pipeProcess.getPipeServer()
@@ -57,6 +61,8 @@ def perform(level, box, options):
                              box.minz + dz, block_data)
 
     pipeProcess.close()
+    end_time = timer()
+    print("Python Time: " + str(end_time - start_time) + " secs") # Time in seconds, e.g. 5.38091952400282
 
 
 '''
