@@ -109,33 +109,52 @@ namespace DeluMc.MCEdit.Biomes
 			}
 		}
 
+
+		/// <summary>
+		/// Returns a building palette taking account the biome and
+		/// buildtype of the house.
+		/// </summary>
+		/// <param name="biomes">Build biome</param>
+		/// <param name="build">Build type</param>
+		/// <returns></returns>
 		public static BuildingPalette GetBiomeBuildPalette(Biomes biomes, Buildings.BuildType build)
 		{
 			switch (biomes)
 			{
 				case Biomes.Desert:
-					return PremadePalettes.desertPalette;
 				case Biomes.DesertHills:
-					return PremadePalettes.desertPalette;
 				case Biomes.DesertM:
-					return PremadePalettes.desertPalette;
+					switch (build)
+					{
+						case Buildings.BuildType.House:
+							return desertPalette;
+						case Buildings.BuildType.Farm:
+							return farmDesertPalette;
+						case Buildings.BuildType.Plaza:
+							return plazaDesertPalette;
+						default:
+							return null;
+					}
 
 				// Messa
-				case Biomes.Mesa_Bryce:
-					return PremadePalettes.forestPalette;
-				case Biomes.MesaPlateauFM:
-					return PremadePalettes.forestPalette;
-				case Biomes.MesaPlateauM:
-					return PremadePalettes.forestPalette;
-				case Biomes.Messa:
-					return PremadePalettes.forestPalette;
-				case Biomes.MessaPlateau:
-					return PremadePalettes.forestPalette;
-				case Biomes.MessaPlateauF:
-					return PremadePalettes.forestPalette;
-
+				//case Biomes.Mesa_Bryce:
+				//case Biomes.MesaPlateauFM:
+				//case Biomes.MesaPlateauM:
+				//case Biomes.Messa:
+				//case Biomes.MessaPlateau:
+				//case Biomes.MessaPlateauF:
 				default:
-					return PremadePalettes.forestPalette;
+					switch (build)
+					{
+						case Buildings.BuildType.House:
+							return forestPalette;
+						case Buildings.BuildType.Farm:
+							return farmForestPalette;
+						case Buildings.BuildType.Plaza:
+							return plazaForestPalette;
+						default:
+							return null;
+					}
 			}
 		}
 	}
