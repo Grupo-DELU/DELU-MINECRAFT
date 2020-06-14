@@ -189,10 +189,10 @@ namespace DeluMc
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
             {
                 int numberOfTries = 1000;
-                int expectedVillageSize = 1500;
-                int radius = 2;
-                int villageCount = 4;
-                int maxVillageCount = 5;
+                int expectedVillageSize = 1700;
+                int radius = 3;
+                int villageCount = 3;
+                int maxVillageCount = 3;
                 villages = VillageDistributor.DistributeVillageMarkers(
                     acceptableMap, villageMap, waterAnalysis,
                     villageCount, maxVillageCount, numberOfTries, radius, expectedVillageSize

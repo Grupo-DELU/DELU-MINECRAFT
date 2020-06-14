@@ -24,7 +24,7 @@ namespace DeluMc
                                                                       Orientation.South,
                                                                       Orientation.East};
                                 
-        private const int MIN_HOUSE_SEPARATION = 10;
+        private const int MIN_HOUSE_SEPARATION = 7;
         private const int TERRAFORMING_TRESHOLD = 10;
 
         private static bool placedPlaza = false;
