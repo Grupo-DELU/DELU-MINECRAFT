@@ -1,9 +1,11 @@
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
+
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace DeluMc.Utils
 {
@@ -57,29 +59,16 @@ namespace DeluMc.Utils
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeNearestNeighborImage(Image image, int width, int height)
+        public static Image<Rgba32> ResizeNearestNeighborImage(Image<Rgba32> image, int width, int height)
         {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
 
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-                graphics.SmoothingMode = SmoothingMode.None;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                using (var wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
-
-            return destImage;
+            return image.Clone(context => context
+        .Resize(new ResizeOptions
+        {
+            Sampler = new BoxResampler(),
+            Mode = ResizeMode.Max,
+            Size = new Size(width, height)
+        }));
         }
 
         /// <summary>
@@ -87,7 +76,7 @@ namespace DeluMc.Utils
         /// </summary>
         /// <param name="bitmap">Bitmap to Save</param>
         /// <param name="name">Name of Bitmap</param>
-        private static void SaveBitmap(Bitmap bitmap, in string name)
+        private static void SaveBitmap(Image bitmap, in string name)
         {
             string fileName = $"{name}.png";
             string filePath = Path.Join(kMapFolderPath, fileName);
@@ -95,7 +84,7 @@ namespace DeluMc.Utils
             Console.WriteLine($"Saving \"{fileName}\" in \"{filePath}\"");
             try
             {
-                bitmap.Save(filePath, ImageFormat.Png);
+                bitmap.Save(filePath);
             }
             catch (System.Exception e)
             {
@@ -116,7 +105,7 @@ namespace DeluMc.Utils
             /// <summary>
             /// Z and X are flipped due to minecraft left handed system
             /// </summary>
-            Bitmap bitmap = new Bitmap(zSize, xSize);
+            Image<Rgba32> bitmap = new Image<Rgba32>(zSize, xSize);
 
             if (colorWork != null)
             {
@@ -124,7 +113,7 @@ namespace DeluMc.Utils
                 {
                     for (int x = 0; x < xSize; x++)
                     {
-                        bitmap.SetPixel(z, xSize - 1 - x, colorWork.Invoke(z, x));
+                        bitmap[z, xSize -1 -x] = colorWork.Invoke(z, x);
                     }
                 }
             }
@@ -133,31 +122,31 @@ namespace DeluMc.Utils
             {
                 ColorApplier colorApplier = (int z, int x, in Color color) =>
                 {
-                    bitmap.SetPixel(z, xSize - 1 - x, color);
+                    bitmap[z, xSize - 1 - x] = color;
                 };
                 specialColors.Invoke(colorApplier);
             }
 
-            
+
             int height = 0;
             int width = 0;
 
             if (xSize < zSize)
             {
-                float ratio = (float) zSize / (float) xSize;
+                float ratio = (float)zSize / (float)xSize;
                 height = Math.Max(kMinImageSize, xSize);
                 width = (int)((float)height * ratio);
             }
             else
             {
-                float ratio = (float) xSize / (float) zSize;
+                float ratio = (float)xSize / (float)zSize;
                 width = Math.Max(kMinImageSize, zSize);
                 height = (int)((float)width * ratio);
             }
 
             try
             {
-                using(Bitmap resized = ResizeNearestNeighborImage(bitmap, width, height))
+                using (Image<Rgba32> resized = ResizeNearestNeighborImage(bitmap, width, height))
                 {
                     SaveBitmap(resized, name + "_resized");
                 }
