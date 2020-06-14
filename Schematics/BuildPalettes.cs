@@ -87,5 +87,45 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.BirchDoor_Lower_Unopened_East_194_0,
             AlphaMaterials.Sandstone_24_0,
             AlphaMaterials.Gravel_13_0);
+        
+        public static readonly BuildingPalette plazaForestPalette = new BuildingPalette(
+            AlphaMaterials.Cobblestone_4_0,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.AcaciaFence_192_0,
+            null,
+            null, 
+            null, 
+            AlphaMaterials.Gravel_13_0
+        );
+
+        public static readonly BuildingPalette plazaDesertPalette = new BuildingPalette(
+            AlphaMaterials.SmoothSandstone_24_2,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.BirchFence_189_0,
+            null,
+            null, 
+            null, 
+            AlphaMaterials.Gravel_13_0
+        );
+
+        public static readonly BuildingPalette farmForestPalette = new BuildingPalette(
+            AlphaMaterials.OakWood_BarkOnly_17_12,
+            AlphaMaterials.Farmland_Wet_Moisture7_60_7,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.Wheat_Age7_Max_59_7,
+            null, 
+            null, 
+            AlphaMaterials.Gravel_13_0
+        );
+
+        public static readonly BuildingPalette farmDesertPalette = new BuildingPalette(
+            AlphaMaterials.OakWood_BarkOnly_17_12,
+            AlphaMaterials.Farmland_Dry_Moisture4_60_4,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.Wheat_Age7_Max_59_7,
+            null, 
+            null, 
+            AlphaMaterials.Gravel_13_0
+        );
     }
 }
