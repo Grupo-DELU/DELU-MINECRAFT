@@ -60,13 +60,13 @@ namespace DeluMc
 
                         if (0 <= i - 2 && roadMap[road[i - 2].Z][road[i - 2].X] == RoadGenerator.MainRoadMarker)
                         {
-                            averageHeight += heightMap[road[i - 2].Z][road[i - 2].X];
+                            averageHeight += (float)heightMap[road[i - 2].Z][road[i - 2].X] + 0.5f;
                             ++count;
                         }
 
                         if (i + 2 < road.Count && roadMap[road[i + 2].Z][road[i + 2].X] == RoadGenerator.MainRoadMarker)
                         {
-                            averageHeight += heightMap[road[i + 2].Z][road[i + 2].X];
+                            averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X] + 0.5f;
                             ++count;
                         }
 
@@ -84,7 +84,7 @@ namespace DeluMc
                             }
                         }
                         averageHeight /= (float)count;
-                        averageHeightInt = (int)averageHeight;
+                        averageHeightInt = (int)(averageHeight - 0.25f);
 
                         for (int dz = -1; dz <= 1; dz++)
                         {
