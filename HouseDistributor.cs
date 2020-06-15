@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -25,7 +26,7 @@ namespace DeluMc
                                                                       Orientation.East};
                                 
         private const int MIN_HOUSE_SEPARATION = 7;
-        private const int TERRAFORMING_TRESHOLD = 10;
+        private const int TERRAFORMING_TRESHOLD = 15;
 
         private static bool placedPlaza = false;
         private const int PLAZA_RADIUS = 25;
@@ -96,6 +97,7 @@ namespace DeluMc
                                 {
                                     if (build == BuildType.Plaza)
                                     {
+                                        Debug.Assert(!placedPlaza);
                                         placedPlaza = true;
                                         village.RecalulatePValue(rect.Center);
                                         scaler = (double)village.PValue / (double)VillageMarker.TheoreticalBestPValue(village.Points.Count);

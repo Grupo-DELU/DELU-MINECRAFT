@@ -93,16 +93,7 @@ namespace DeluMc.Masks
                                                        new Vector2Int(rect.Min.Z + i, rect.Min.X + j));
                 }
             }
-            //Parallel.For(0, n, pos =>
-            //{
-            //    int i = pos % n;
-            //    int j = pos / n;
-            //    ordered[i + j] = new DeltaPair(deltaMap[rect.Min.Z + i][rect.Min.X + j], 
-            //                                   new Vector2Int(rect.Min.Z + i, rect.Min.X + j));
-            //}
-            //);
             Array.Sort(ordered, new DeltaPairComparer());
-            Console.WriteLine("Nro ordered: " + rect.Size.X * rect.Size.Z);
             return ordered;
         }
 
