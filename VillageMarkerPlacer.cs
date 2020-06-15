@@ -94,6 +94,12 @@ namespace DeluMc
             return PValue;
         }
 
+        /// <summary>
+        /// Given the amount of nodes inside a village calculate the best theoretical PValue
+        /// Note: This only works because we use the Chebyshev Distance
+        /// </summary>
+        /// <param name="VillageNodeCount">Amount of Nodes in Village</param>
+        /// <returns>Best Theoretical PValue</returns>
         public static long TheoreticalBestPValue(int VillageNodeCount)
         {
             if (VillageNodeCount == 0)
@@ -106,8 +112,25 @@ namespace DeluMc
             }
             long bestSquareSide = (long)Math.Sqrt((double)VillageNodeCount);
             long bestSquareHalfSide = bestSquareSide / 2;
-            long pValue = 0;
-            return pValue;
+            /// <summary>
+            /// This solution is based on the fact that we use the Chebyshev Distance.
+            /// In theory the best PValue comes from an Square.
+            /// 
+            /// The amount of nodes inside a village is equivalent to its area.
+            /// Therfore we know the area of the square that has the best Pvalue (we call it Best Square)
+            /// We the side of the square from it and its half_side.
+            /// 
+            /// Then comes the fun part
+            /// 
+            /// The best PValue is comes from the sum of all the onion inscribed squares inside the Best Square
+            /// 
+            /// The PValue of an onion inscribed square is equal to the discrete perimeter (remember each corner is repeated 4 times) multiplied by the half side of that square
+            /// 
+            /// Therfore the answer is the sum from 1 to half_side of: (4 * k * 2 - 4) * k == 4 * (2 * k - 1) * k
+            /// In Closed form: (2/3) * n * (n + 1) * (4 * n - 1)
+            /// See this for closed form: https://www.wolframalpha.com/input/?i=sum&assumption=%7B%22F%22%2C+%22Sum%22%2C+%22sumlowerlimit%22%7D+-%3E%221%22&assumption=%7B%22C%22%2C+%22sum%22%7D+-%3E+%7B%22Calculator%22%7D&assumption=%7B%22F%22%2C+%22Sum%22%2C+%22sumfunction%22%7D+-%3E%224+*+%28k+*+2+-+1%29+*+k%22&assumption=%7B%22F%22%2C+%22Sum%22%2C+%22sumupperlimit2%22%7D+-%3E%22n%22&assumption=%7B%22FVarOpt%22%7D+-%3E+%7B%7B%22Sum%22%2C+%22sumvariable%22%7D%7D
+            /// </summary>
+            return (bestSquareHalfSide * (bestSquareHalfSide + 1) * (4 * bestSquareHalfSide - 1) * 2) / 3;
         }
     }
 
