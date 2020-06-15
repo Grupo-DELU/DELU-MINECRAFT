@@ -116,6 +116,7 @@ namespace DeluMc.MCEdit.Biomes
 		{
 			switch (biomes)
 			{
+				// Desert
 				case Biomes.Desert:
 				case Biomes.DesertHills:
 				case Biomes.DesertM:
@@ -131,13 +132,43 @@ namespace DeluMc.MCEdit.Biomes
 							return null;
 					}
 
-				// Messa
-				//case Biomes.Mesa_Bryce:
-				//case Biomes.MesaPlateauFM:
-				//case Biomes.MesaPlateauM:
-				//case Biomes.Messa:
-				//case Biomes.MessaPlateau:
-				//case Biomes.MessaPlateauF:
+				// Savanna
+				case Biomes.Savanna:
+				case Biomes.SavannaM:
+				case Biomes.SavannaPlateau:
+				case Biomes.SavannaPlateauM:
+					switch (build)
+					{
+						case Buildings.BuildType.House:
+							return savannaPalette;
+						case Buildings.BuildType.Farm:
+							return farmSavannaPalette;
+						case Buildings.BuildType.Plaza:
+							return plazaForestPalette;
+						default:
+							return null;
+					}
+
+				// Taiga
+				case Biomes.Taiga:
+				case Biomes.TaigaM:
+				case Biomes.TaigaHills:
+				case Biomes.ColdTaiga:
+				case Biomes.ColdTaigaM:
+				case Biomes.ColdTaigaHills:
+					switch (build)
+					{
+						case Buildings.BuildType.House:
+							return savannaPalette;
+						case Buildings.BuildType.Farm:
+							return farmSavannaPalette;
+						case Buildings.BuildType.Plaza:
+							return plazaForestPalette;
+						default:
+							return null;
+					}
+
+
 				default:
 					switch (build)
 					{
@@ -169,7 +200,14 @@ namespace DeluMc.MCEdit.Biomes
 				case Biomes.DesertHills:
 				case Biomes.DesertM:
 				case Biomes.Beach:
-					return AlphaMaterials.Granite_1_1;
+					return AlphaMaterials.Cobblestone_4_0;
+
+				case Biomes.Jungle:
+				case Biomes.JungleEdge:
+				case Biomes.JungleEdgeM:
+				case Biomes.JungleHills:
+				case Biomes.JungleM:
+					return AlphaMaterials.MossyStoneBricks_98_1;
 					
 				// Messa
 				case Biomes.Mesa_Bryce:
@@ -179,6 +217,12 @@ namespace DeluMc.MCEdit.Biomes
 				case Biomes.MessaPlateau:
 				case Biomes.MessaPlateauF:
 					return AlphaMaterials.Bricks_45_0;
+
+				case Biomes.Savanna:
+				case Biomes.SavannaM:
+				case Biomes.SavannaPlateau:
+				case Biomes.SavannaPlateauM:
+					return AlphaMaterials.Path_208_0;
 				
 				default:
 					return AlphaMaterials.Path_208_0;

@@ -73,8 +73,8 @@ namespace DeluMc.Buildings.Palettes
         public static readonly BuildingPalette forestPalette = new BuildingPalette(
             AlphaMaterials.DarkOakWoodPlanks_5_5,
             AlphaMaterials.RedWool_35_14,
-            AlphaMaterials.AcaciaFence_192_0,
-            AlphaMaterials.OakWood_BarkOnly_17_12,
+            AlphaMaterials.OakFence_85_0,
+            AlphaMaterials.OakWood_Upright_17_0,
             AlphaMaterials.OakDoor_Lower_Unopened_East_64_0,
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.Podzol_3_2);
@@ -87,11 +87,20 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.BirchDoor_Lower_Unopened_East_194_0,
             AlphaMaterials.Sandstone_24_0,
             AlphaMaterials.Gravel_13_0);
+
+        public static readonly BuildingPalette savannaPalette = new BuildingPalette(
+            AlphaMaterials.AcaciaWoodPlanks_5_4,
+            AlphaMaterials.OrangeWool_35_1,
+            AlphaMaterials.AcaciaFence_192_0,
+            AlphaMaterials.AcaciaWood_Upright_Acacia_162_0,
+            AlphaMaterials.AcaciaDoor_Lower_Opened_East_196_4,
+            AlphaMaterials.Cobblestone_4_0,
+            AlphaMaterials.Podzol_3_2);
         
         public static readonly BuildingPalette plazaForestPalette = new BuildingPalette(
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.Water_Still_Level0_9_7,
-            AlphaMaterials.AcaciaFence_192_0,
+            AlphaMaterials.OakFence_85_0,
             null,
             null, 
             null, 
@@ -109,7 +118,7 @@ namespace DeluMc.Buildings.Palettes
         );
 
         public static readonly BuildingPalette farmForestPalette = new BuildingPalette(
-            AlphaMaterials.OakWood_BarkOnly_17_12,
+            AlphaMaterials.OakWood_Upright_17_0,
             AlphaMaterials.Farmland_Wet_Moisture7_60_7,
             AlphaMaterials.Water_Still_Level0_9_7,
             AlphaMaterials.Wheat_Age7_Max_59_7,
@@ -118,11 +127,21 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.Podzol_3_2
         );
 
+        public static readonly BuildingPalette farmSavannaPalette = new BuildingPalette(
+            AlphaMaterials.AcaciaWood_Upright_Acacia_162_0,
+            AlphaMaterials.Farmland_Wet_Moisture7_60_7,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.Carrots_Age7_141_7,
+            null, 
+            null, 
+            AlphaMaterials.Podzol_3_2
+        );
+
         public static readonly BuildingPalette farmDesertPalette = new BuildingPalette(
-            AlphaMaterials.OakWood_BarkOnly_17_12,
+            AlphaMaterials.Sandstone_24_0,
             AlphaMaterials.Farmland_Dry_Moisture4_60_4,
             AlphaMaterials.Water_Still_Level0_9_7,
-            AlphaMaterials.Wheat_Age7_Max_59_7,
+            AlphaMaterials.Potatoes_Age7_142_7,
             null, 
             null, 
             AlphaMaterials.Gravel_13_0
