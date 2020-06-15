@@ -38,6 +38,7 @@ namespace DeluMc
                                 ref List<List<Vector2Int>> roads)
         {
             int count = 0;
+            double scaler = (double)village.PValue / (double)VillageMarker.TheoreticalBestPValue(village.Points.Count);
             placedPlaza = false;
 
             List<RectInt> houseRects = new List<RectInt>();
@@ -69,7 +70,7 @@ namespace DeluMc
                             continue;
                         
                         int radius = Vector2Int.Manhattan(rect.Center, village.Seed);
-                        List<BuildType> buildings = CreateBuldTypeList(radius);
+                        List<BuildType> buildings = CreateBuldTypeList(radius, scaler, village);
                        
                         // Lo ponemos en el Y pelado por el cambio al chequeo que el road no este bloqueado
                         HousePlacer.HouseAreaInput req = new HousePlacer.HouseAreaInput(heightMap[point.Z][point.X], 
@@ -94,7 +95,11 @@ namespace DeluMc
                                 if (result.success)
                                 {
                                     if (build == BuildType.Plaza)
+                                    {
                                         placedPlaza = true;
+                                        village.RecalulatePValue(rect.Center);
+                                        scaler = (double)village.PValue / (double)VillageMarker.TheoreticalBestPValue(village.Points.Count);
+                                    }
     
                                     PlaceFloorBelow(rect.Min, rect.Max, heightMap[point.Z][point.X], 
                                                     heightMap, biomes, differ);
@@ -323,13 +328,13 @@ namespace DeluMc
         /// </summary>
         /// <param name="radius">Radius to the center of the rect</param>
         /// <returns>A list containing build types</returns>
-        private static List<BuildType> CreateBuldTypeList(int radius)
+        private static List<BuildType> CreateBuldTypeList(int radius, double scaler, in VillageMarker village)
         {
             List<BuildType> l = new List<BuildType>();
-            if (radius > HOUSE_RADIUS)
+            if (radius > (int)((double)HOUSE_RADIUS * scaler))
                 l.Add(BuildType.Farm);
             
-            if (radius <= PLAZA_RADIUS && !placedPlaza)
+            if (radius <= (int)((double)PLAZA_RADIUS * scaler) && !placedPlaza)
                 l.Add(BuildType.Plaza);
             
             l.Add(BuildType.House);
