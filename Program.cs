@@ -273,20 +273,6 @@ namespace DeluMc
             }
             
             RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
-            // Write Data Back to Python
-            {
-                using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))
-                {
-                    differ.SerializeChanges(writer);
-
-                    // Return data To Python
-                    Console.WriteLine(writer.BaseStream.Length);
-                    pipeClient.WriteMemoryBlock((MemoryStream)writer.BaseStream);
-                }
-            }
-
-            // Close Pipe
-            pipeClient.DeInit();
 
             {
                 // Drawing
@@ -444,6 +430,21 @@ namespace DeluMc
 
                 Mapper.SaveMaps(saveMapInfos);
             }
+
+            // Write Data Back to Python
+            {
+                using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))
+                {
+                    differ.SerializeChanges(writer);
+
+                    // Return data To Python
+                    Console.WriteLine(writer.BaseStream.Length);
+                    pipeClient.WriteMemoryBlock((MemoryStream)writer.BaseStream);
+                }
+            }
+
+            // Close Pipe
+            pipeClient.DeInit();
             Clocker.RemoveClock("StartClock", true, true, true);
         }
     }
