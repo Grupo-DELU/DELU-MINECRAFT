@@ -132,7 +132,7 @@ namespace DeluMc
                 }
             }
             Clocker.RemoveClock("PipeClock", true, true, true);
-
+            Clocker.AddAndStartClock("AlgorithmClock");
             {
                 Tasker.WorkChunk[] workChunks = {
                         (int zStart, int zEnd, int xStart, int xEnd) =>
@@ -447,6 +447,7 @@ namespace DeluMc
 
             // Close Pipe
             pipeClient.DeInit();
+            Clocker.RemoveClock("AlgorithmClock", true, true, true);
             Clocker.RemoveClock("StartClock", true, true, true);
         }
     }
