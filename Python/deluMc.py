@@ -23,25 +23,25 @@ def perform(level, box, options):
     writer = pipeHandler.MemoryStreamWriter()
 
     # We are going to access using YZX for better cache access
-    writer.writeInt32(y_size)
-    writer.writeInt32(z_size)
-    writer.writeInt32(x_size)
+    writer.writeInt16(y_size)
+    writer.writeInt16(z_size)
+    writer.writeInt16(x_size)
 
     for y in xrange(box.miny, box.maxy):
         for z in xrange(box.minz, box.maxz):
             for x in xrange(box.minx, box.maxx):
                 block_id = level.blockAt(x, y, z)
                 block_data = level.blockDataAt(x, y, z)
-                writer.writeInt32(block_id)
-                writer.writeInt32(block_data)
+                writer.writeInt16(block_id)
+                writer.writeInt16(block_data)
 
     biomes, hm, wm = biomeHMCalculator(level, box)
     for z in xrange(0, z_size):
         for x in xrange(0, x_size):
             b, h, w = biomes[z][x], hm[z][x], wm[z][x]
-            writer.writeInt32(int(b))
-            writer.writeInt32(int(h))
-            writer.writeInt32(int(w))
+            writer.writeInt16(int(b))
+            writer.writeInt16(int(h))
+            writer.writeInt16(int(w))
 
     # Send Work
     pipeServer.writeMemoryBlock(writer.getRawBuffer())
@@ -51,11 +51,11 @@ def perform(level, box, options):
 
     sizeOfListChanges = reader.readInt32()
     for _ in xrange(sizeOfListChanges):
-        dy = reader.readInt32()
-        dz = reader.readInt32()
-        dx = reader.readInt32()
-        block_id = reader.readInt32()
-        block_data = reader.readInt32()
+        dy = reader.readInt16()
+        dz = reader.readInt16()
+        dx = reader.readInt16()
+        block_id = reader.readInt16()
+        block_data = reader.readInt16()
         level.setBlockAt(box.minx + dx, box.miny + dy, box.minz + dz, block_id)
         level.setBlockDataAt(box.minx + dx, box.miny + dy,
                              box.minz + dz, block_data)

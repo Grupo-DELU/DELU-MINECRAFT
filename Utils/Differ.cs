@@ -158,14 +158,14 @@ namespace DeluMc.Utils
         /// <param name="writer">Binary Writer to use</param>
         public void SerializeChanges(BinaryWriter writer)
         {
-            writer.Write(mChanges.Count);
+            writer.Write((int)mChanges.Count);
             foreach (ZPoint3D p in mChanges)
             {
-                writer.Write(p.Y);
-                writer.Write(p.Z);
-                writer.Write(p.X);
-                writer.Write(World[p.Y][p.Z][p.X].ID);
-                writer.Write(World[p.Y][p.Z][p.X].Data);
+                writer.Write((short)p.Y);
+                writer.Write((short)p.Z);
+                writer.Write((short)p.X);
+                writer.Write((short)World[p.Y][p.Z][p.X].ID);
+                writer.Write((short)World[p.Y][p.Z][p.X].Data);
             }
         }
     }

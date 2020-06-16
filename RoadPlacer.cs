@@ -37,9 +37,13 @@ namespace DeluMc
             int maxY = world.World.Length;
 
             List<Vector2Int> road;
-            int nz, nx, ny, count;
+            List<int> newHeight = new List<int>();
+            List<int> torchPoint = new List<int>();
+            int nz, nx, ny;
             float averageHeight;
-            int averageHeightInt;
+            bool torchPlaced;
+            Random sharedRnd = new Random();
+            DataQuadTree<int> lights = new DataQuadTree<int>(rectCover.Min, rectCover.Max);
             // Ugly code but dumb fast
             for (int j = 0; j < roads.Count; j++)
             {
@@ -50,43 +54,76 @@ namespace DeluMc
                     continue;
                 }
 
+                newHeight.Capacity = Math.Max(newHeight.Capacity, road.Count);
+                torchPoint.Capacity = Math.Max(newHeight.Capacity, road.Count);
+
+                int diff = road.Count - newHeight.Count;
+                for (int i = 0; i < diff; i++)
+                {
+                    newHeight.Add(0);
+                    torchPoint.Add(0);
+                }
+
+                // Pre Pass for land roads
+                Parallel.For(0, road.Count, () => new Random(),
+                    (int i, ParallelLoopState _, Random rnd) =>
+                    {
+                        if (roadMap[road[i].Z][road[i].X] == RoadGenerator.MainRoadMarker)
+                        {
+                            // Road
+                            int count = 0;
+                            float averageHeight = 0;
+                            if (0 <= i - 2 && roadMap[road[i - 2].Z][road[i - 2].X] == RoadGenerator.MainRoadMarker)
+                            {
+                                averageHeight += (float)heightMap[road[i - 2].Z][road[i - 2].X];
+                                ++count;
+                            }
+
+                            if (i + 2 < road.Count && roadMap[road[i + 2].Z][road[i + 2].X] == RoadGenerator.MainRoadMarker)
+                            {
+                                averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X];
+                                ++count;
+                            }
+                            
+                            torchPoint[i] = 0;
+
+                            int nz, nx;
+                            for (int dz = -1; dz <= 1; dz++)
+                            {
+                                for (int dx = -1; dx <= 1; dx++)
+                                {
+                                    nz = road[i].Z + dz;
+                                    nx = road[i].X + dx;
+                                    if (rectCover.IsInside(nz, nx))
+                                    {
+                                        if (roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
+                                        {
+                                            averageHeight += (float)heightMap[nz][nx];
+                                            ++count;
+                                        }
+                                        else if (roadMap[nz][nx] == RoadGenerator.RoadMarker)
+                                        {
+                                            ++torchPoint[i];
+                                        }
+                                    }
+                                }
+                            }
+                            averageHeight /= (float)count;
+                            newHeight[i] = (int)Math.Round((double)averageHeight);
+                        }
+                        return rnd;
+                    },
+                    (Random rnd) => {return;}
+                );
+
                 for (int i = 0; i < road.Count; i++)
                 {
                     if (roadMap[road[i].Z][road[i].X] == RoadGenerator.MainRoadMarker)
                     {
                         // Normal Road
                         #region ROAD_PLACEMENT
-                        count = 0;
-                        averageHeight = 0;
-
-                        if (0 <= i - 2 && roadMap[road[i - 2].Z][road[i - 2].X] == RoadGenerator.MainRoadMarker)
-                        {
-                            averageHeight += (float)heightMap[road[i - 2].Z][road[i - 2].X];
-                            ++count;
-                        }
-
-                        if (i + 2 < road.Count && roadMap[road[i + 2].Z][road[i + 2].X] == RoadGenerator.MainRoadMarker)
-                        {
-                            averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X];
-                            ++count;
-                        }
-
-                        for (int dz = -1; dz <= 1; dz++)
-                        {
-                            for (int dx = -1; dx <= 1; dx++)
-                            {
-                                nz = road[i].Z + dz;
-                                nx = road[i].X + dx;
-                                if (rectCover.IsInside(nz, nx) && roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
-                                {
-                                    averageHeight += (float)heightMap[nz][nx];
-                                    ++count;
-                                }
-                            }
-                        }
-                        averageHeight /= (float)count;
-                        averageHeightInt = (int)Math.Round((double)averageHeight);
-
+                        DataQuadTree<int>.DistanceToDataPoint closestLight = lights.NearestNeighbor(road[i]);
+                        torchPlaced = closestLight.DataNode != null && closestLight.ManClosestDistance <= 5;
                         for (int dz = -1; dz <= 1; dz++)
                         {
                             for (int dx = -1; dx <= 1; dx++)
@@ -97,15 +134,52 @@ namespace DeluMc
                                     rectCover.IsInside(nz, nx)
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
-                                    world.ChangeBlock(averageHeightInt, nz, nx, GetBiomeRoadBlock(biomes[nz][nx]));
-                                    //heightMap[nz][nx] = averageHeightInt; // TODO: Maybe its wrong
-                                    // Clear top
-                                    for (int dy = 1; dy <= 2; dy++)
+                                    world.ChangeBlock(newHeight[i], nz, nx, GetBiomeRoadBlock(biomes[nz][nx]));
+                                    heightMap[nz][nx] = newHeight[i]; // TODO: Maybe its wrong
+
+                                    if (torchPlaced || roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
                                     {
-                                        ny = averageHeightInt + dy;
-                                        if (ny < maxY)
+                                        // Clear top
+                                        for (int dy = 1; dy <= 2; dy++)
                                         {
-                                            world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
+                                            ny = newHeight[i] + dy;
+                                            if (ny < maxY)
+                                            {
+                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Try Place Torch
+                                        if (sharedRnd.Next(0, torchPoint[i]-1) == 0)
+                                        {
+                                            torchPlaced = true;
+                                            lights.Insert(road[i], 0);
+                                            // Place Base
+                                            ny = newHeight[i] + 1;
+                                            if (ny < maxY)
+                                            {
+                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.AcaciaFence_192_0);
+                                            }
+                                            // Place Torch
+                                            ny += 1;
+                                            if (ny < maxY)
+                                            {
+                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.Torch_Up_50_5);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Clear top
+                                            for (int dy = 1; dy <= 2; dy++)
+                                            {
+                                                ny = newHeight[i] + dy;
+                                                if (ny < maxY)
+                                                {
+                                                    world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -177,7 +251,7 @@ namespace DeluMc
                         }
 
                         // Get Bridge Average Height, add 1 to put it above water
-                        averageHeight /= pivots.Count;
+                        averageHeight /= (float)pivots.Count;
                         averageHeight += 3;
 
                         Parallel.ForEach(bridgeParts, () => world.CreateCollector(),

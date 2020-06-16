@@ -634,7 +634,13 @@ namespace DeluMc
             Func<int, int, int, int, float> distanceHeuristicFunc
                 = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap, treeMap, houseMap); };
 
-            Vector2Int target = roadQT.NearestNeighbor(new Vector2Int(sZ, sX)).DataNode.Data;
+            DataQuadTreeNode<Vector2Int>.DataQuadTreeNodeData firstNode = roadQT.NearestNeighbor(new Vector2Int(sZ, sX)).DataNode;
+            if (firstNode.Node == null)
+            {
+                Console.WriteLine("Error Generating PointToRoad, No Roads");
+                return new List<Vector2Int>();
+            }
+            Vector2Int target = firstNode.Data;
             PointExt startPoint = new PointExt { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, target.Z, target.X) };
 
             parents.Add(startPoint, null);
