@@ -158,7 +158,7 @@ namespace DeluMc.Utils
         }
 
 
-        private static double GetTime(string name, bool s = false, bool ms = false, bool ns = false)
+        public static double GetTime(string name, bool s = false, bool ms = false, bool ns = false)
         {
             if (!s && !ms && !ns)
             {
