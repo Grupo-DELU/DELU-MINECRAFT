@@ -38,7 +38,7 @@ namespace DeluMc
 
             List<Vector2Int> road;
             List<int> newHeight = new List<int>();
-            List<int> sidesPerMainRoad = new List<int>();
+            List<int> torchPoint = new List<int>();
             int nz, nx, ny;
             float averageHeight;
             bool torchPlaced;
@@ -55,18 +55,18 @@ namespace DeluMc
                 }
 
                 newHeight.Capacity = Math.Max(newHeight.Capacity, road.Count);
-                sidesPerMainRoad.Capacity = Math.Max(newHeight.Capacity, road.Count);
+                torchPoint.Capacity = Math.Max(newHeight.Capacity, road.Count);
 
                 int diff = road.Count - newHeight.Count;
                 for (int i = 0; i < diff; i++)
                 {
                     newHeight.Add(0);
-                    sidesPerMainRoad.Add(0);
+                    torchPoint.Add(0);
                 }
 
                 // Pre Pass for land roads
-                Parallel.For(0, road.Count,
-                    (int i) =>
+                Parallel.For(0, road.Count, () => new Random(),
+                    (int i, ParallelLoopState _, Random rnd) =>
                     {
                         if (roadMap[road[i].Z][road[i].X] == RoadGenerator.MainRoadMarker)
                         {
@@ -85,7 +85,7 @@ namespace DeluMc
                                 ++count;
                             }
                             
-                            sidesPerMainRoad[i] = 0;
+                            torchPoint[i] = 0;
 
                             int nz, nx;
                             for (int dz = -1; dz <= 1; dz++)
@@ -103,7 +103,7 @@ namespace DeluMc
                                         }
                                         else if (roadMap[nz][nx] == RoadGenerator.RoadMarker)
                                         {
-                                            ++sidesPerMainRoad[i];
+                                            ++torchPoint[i];
                                         }
                                     }
                                 }
@@ -111,7 +111,9 @@ namespace DeluMc
                             averageHeight /= (float)count;
                             newHeight[i] = (int)Math.Round((double)averageHeight);
                         }
-                    }
+                        return rnd;
+                    },
+                    (Random rnd) => {return;}
                 );
 
                 for (int i = 0; i < road.Count; i++)
@@ -121,7 +123,7 @@ namespace DeluMc
                         // Normal Road
                         #region ROAD_PLACEMENT
                         DataQuadTree<int>.DistanceToDataPoint closestLight = lights.NearestNeighbor(road[i]);
-                        torchPlaced = (closestLight.DataNode != null && closestLight.ManClosestDistance > 10);
+                        torchPlaced = closestLight.DataNode != null && closestLight.ManClosestDistance <= 5;
                         for (int dz = -1; dz <= 1; dz++)
                         {
                             for (int dx = -1; dx <= 1; dx++)
@@ -150,7 +152,7 @@ namespace DeluMc
                                     else
                                     {
                                         // Try Place Torch
-                                        if (sharedRnd.Next(0, sidesPerMainRoad[i] - 1) == 0)
+                                        if (sharedRnd.Next(0, torchPoint[i]-1) == 0)
                                         {
                                             torchPlaced = true;
                                             lights.Insert(road[i], 0);
@@ -180,7 +182,6 @@ namespace DeluMc
                                             }
                                         }
                                     }
-
                                 }
                             }
                         }
