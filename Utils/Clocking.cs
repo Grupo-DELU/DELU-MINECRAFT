@@ -137,6 +137,40 @@ namespace DeluMc.Utils
             watches[name].Reset();
         }
 
+        private static double GetTime(Stopwatch watch, bool s = false, bool ms = false, bool ns = false)
+        {
+            TimeSpan time = watch.Elapsed;
+            if (!s && !ms && !ns)
+            {
+                Console.WriteLine("Use at least one time return option!");
+                return -1d;
+            }
+            if (s)
+                return time.TotalSeconds;
+            if (ms)
+                return time.TotalMilliseconds;
+            if (ns && Stopwatch.IsHighResolution)
+                return watch.ElapsedTicks * Clocker.nanosecPerTick;
+            else if (ns)
+                return time.TotalSeconds * 1000000000d;
+            
+            return -1d;
+        }
+
+
+        private static double GetTime(string name, bool s = false, bool ms = false, bool ns = false)
+        {
+            if (!s && !ms && !ns)
+            {
+                Console.WriteLine("Use at least one time return option!");
+                return -1d;
+            }
+            if (!ContainsClock(name, true))
+                return -1d;
+
+            return GetTime(watches[name], s, ms, ns);
+        }
+
 
         private static void PrintTime(Stopwatch watch, bool s = false, bool ms = false, bool ns = false)
         {
@@ -155,6 +189,8 @@ namespace DeluMc.Utils
                 Console.WriteLine($"Elapsed time in miliseconds: {time.TotalMilliseconds}");
             if (ns && Stopwatch.IsHighResolution)
                 Console.WriteLine($"Elapsed time in nanoseconds: {watch.ElapsedTicks * Clocker.nanosecPerTick}");
+            else if (ns)
+                Console.WriteLine($"Elapsed aprox time in nanoseconds: {time.TotalSeconds * 1000000000}");
         }
 
 
