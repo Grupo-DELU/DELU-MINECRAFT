@@ -44,6 +44,7 @@ namespace DeluMc
             // Launch Debugger
             Debugger();
             Clocker.AddAndStartClock("StartClock");
+            Clocker.AddAndStartClock("PipeClock");
 
             if (args.Length != 1)
             {
@@ -130,6 +131,7 @@ namespace DeluMc
                     }
                 }
             }
+            Clocker.RemoveClock("PipeClock", true, true, true);
 
             {
                 Tasker.WorkChunk[] workChunks = {
