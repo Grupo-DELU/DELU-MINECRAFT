@@ -76,9 +76,9 @@ namespace DeluMc
             using (BinaryReader reader = pipeClient.ReadMemoryBlock())
             {
                 Material[][][] blocks;
-                ySize = reader.ReadInt32();
-                zSize = reader.ReadInt32();
-                xSize = reader.ReadInt32();
+                ySize = reader.ReadInt16();
+                zSize = reader.ReadInt16();
+                xSize = reader.ReadInt16();
                 Console.WriteLine($"Y: {ySize} Z: {zSize} X: {xSize}");
                 blocks = new Material[ySize][][];
                 for (int y = 0; y < ySize; y++)
@@ -89,7 +89,7 @@ namespace DeluMc
                         blocks[y][z] = new Material[xSize];
                         for (int x = 0; x < xSize; x++)
                         {
-                            blocks[y][z][x] = AlphaMaterials.Set.GetMaterial(reader.ReadInt32(), reader.ReadInt32());
+                            blocks[y][z][x] = AlphaMaterials.Set.GetMaterial(reader.ReadInt16(), reader.ReadInt16());
                         }
                     }
                 }
@@ -123,9 +123,9 @@ namespace DeluMc
                     lavaMap[z] = new bool[xSize];
                     for (int x = 0; x < xSize; x++)
                     {
-                        biomes[z][x] = (Biomes)reader.ReadInt32();
-                        heightMap[z][x] = reader.ReadInt32();
-                        waterMap[z][x] = reader.ReadInt32();
+                        biomes[z][x] = (Biomes)reader.ReadInt16();
+                        heightMap[z][x] = reader.ReadInt16();
+                        waterMap[z][x] = reader.ReadInt16();
                         treeMap[z][x] = 0;
                         deltaMap[z][x] = 0;
                     }
