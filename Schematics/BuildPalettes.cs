@@ -7,15 +7,15 @@ namespace DeluMc.Buildings.Palettes
 {
     /*
     Schematics char meaning
-        -'a' -> block1 -> Bedrock -> 7
-        -'b' -> block2 -> Sponge -> 19
-        -'c' -> block3 -> Glass -> 20
-        -'d' -> block4 -> Netherack -> 87
-        -'e' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
-        -'f' -> Road -> Bricks -> 45 (NOT SLAB)
-        -'g' -> Door -> CraftingTable -> 58
-        -'h' -> Air -> Air -> 0
-        -'i' -> Don't replace -> Anything that isn't above
+        -"a" -> block1 -> Bedrock -> 7
+        -"b" -> block2 -> Sponge -> 19
+        -"c" -> block3 -> Glass -> 20
+        -"d" -> block4 -> Netherack -> 87
+        -"e" -> block5 -> Quartz BLOCK (NOT ORE) -> 155
+        -"f" -> Road -> Bricks -> 45 (NOT SLAB)
+        -"g" -> Door -> CraftingTable -> 58
+        -"h" -> Air -> Air -> 0
+        -"i" -> Don't replace -> Anything that isn't above
      */     
     
     /// <summary>
@@ -23,14 +23,20 @@ namespace DeluMc.Buildings.Palettes
     /// </summary>
     public class BuildingPalette
     {
-        private readonly Dictionary<char, Material> palette = new Dictionary<char, Material>();
+        private readonly Dictionary<string, Material> palette = new Dictionary<string, Material>()
+                                                                {
+                                                                    {"te", AlphaMaterials.Torch_East_50_1},
+                                                                    {"tw", AlphaMaterials.Torch_West_50_2},
+                                                                    {"ts", AlphaMaterials.Torch_South_50_3},
+                                                                    {"tn", AlphaMaterials.Torch_North_50_4}
+                                                                };
         
         /// <summary>
         /// Returns the block that blockType is mapped to.
         /// </summary>
         /// <param name="blockType">Schematic block type</param>
         /// <returns>block that blocktype is mapped to</returns>
-        public Material GetFromPalette(char blockType)
+        public Material GetFromPalette(string blockType)
         {
             if (!(palette.ContainsKey(blockType)))
             {
@@ -54,14 +60,14 @@ namespace DeluMc.Buildings.Palettes
             Material block5 = null,
             Material road = null)
         {
-            palette.Add('a', block1);
-            palette.Add('b', block2);
-            palette.Add('c', block3);
-            palette.Add('d', block4);
-            palette.Add('e', block5);
-            palette.Add('f', road);
-            palette.Add('g', door);
-            palette.Add('h', AlphaMaterials.Air_0_0);
+            palette.Add("a", block1);
+            palette.Add("b", block2);
+            palette.Add("c", block3);
+            palette.Add("d", block4);
+            palette.Add("e", block5);
+            palette.Add("f", road);
+            palette.Add("g", door);
+            palette.Add("h", AlphaMaterials.Air_0_0);
         }
     }
 
@@ -96,6 +102,15 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.AcaciaDoor_Lower_Opened_East_196_4,
             AlphaMaterials.Cobblestone_4_0,
             AlphaMaterials.Podzol_3_2);
+
+        public static readonly BuildingPalette junglePalette = new BuildingPalette(
+            AlphaMaterials.JungleWoodPlanks_5_3,
+            AlphaMaterials.LimeWool_35_5,
+            AlphaMaterials.JungleFence_190_0,
+            AlphaMaterials.JungleWood_Upright_17_3,
+            AlphaMaterials.JungleDoor_Lower_Opened_East_195_4,
+            AlphaMaterials.StoneBricks_98_0,
+            AlphaMaterials.Podzol_3_2);
         
         public static readonly BuildingPalette plazaForestPalette = new BuildingPalette(
             AlphaMaterials.Cobblestone_4_0,
@@ -115,6 +130,16 @@ namespace DeluMc.Buildings.Palettes
             null, 
             null, 
             AlphaMaterials.Gravel_13_0
+        );
+
+        public static readonly BuildingPalette junglePlazaPalette = new BuildingPalette(
+            AlphaMaterials.StoneBricks_98_0,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.JungleFence_190_0,
+            null,
+            null, 
+            null, 
+            AlphaMaterials.Podzol_3_2
         );
 
         public static readonly BuildingPalette farmForestPalette = new BuildingPalette(
@@ -142,6 +167,16 @@ namespace DeluMc.Buildings.Palettes
             AlphaMaterials.Farmland_Dry_Moisture4_60_4,
             AlphaMaterials.Water_Still_Level0_9_7,
             AlphaMaterials.Potatoes_Age7_142_7,
+            null, 
+            null, 
+            AlphaMaterials.Gravel_13_0
+        );
+
+        public static readonly BuildingPalette farmJunglePalette = new BuildingPalette(
+            AlphaMaterials.JungleWood_Upright_17_3,
+            AlphaMaterials.Farmland_Dry_Moisture4_60_4,
+            AlphaMaterials.Water_Still_Level0_9_7,
+            AlphaMaterials.Beetroot_Age3_207_3,
             null, 
             null, 
             AlphaMaterials.Gravel_13_0

@@ -268,7 +268,7 @@ namespace DeluMc
             foreach (VillageMarker village in villages)
             {
                 HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap, 
-                                             waterMap, treeMap, biomes, village, differ.World, new Vector2Int(7,7), differ, 
+                                             waterMap, treeMap, biomes, village, differ.World, new Vector2Int(8,8), differ, 
                                              villagesQT, roadQT, ref roads);
             }
             

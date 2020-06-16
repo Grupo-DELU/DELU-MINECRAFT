@@ -1,14 +1,20 @@
 """
 Schematics char meaning
-    -'a' -> block1 -> Bedrock -> 7
-    -'b' -> block2 -> Sponge -> 19
-    -'c' -> block3 -> Glass -> 20
-    -'d' -> block4 -> Netherack -> 87
-    -'e' -> block5 -> Quartz BLOCK (NOT ORE) -> 155
-    -'f' -> Road -> Bricks -> 45 (NOT SLAB)
-    -'g' -> Door -> CraftingTable -> 58
-    -'h' -> Air -> Air -> 0
-    -'i' -> Don't replace -> Anything that isn't above
+    -"a" -> block1 -> Bedrock -> 7
+    -"b" -> block2 -> Sponge -> 19
+    -"c" -> block3 -> Glass -> 20
+    -"d" -> block4 -> Netherack -> 87
+    -"e" -> block5 -> Quartz BLOCK (NOT ORE) -> 155
+    -"f" -> Road -> Bricks -> 45 (NOT SLAB)
+    -"g" -> Door -> CraftingTable -> 58
+    -"h" -> Air -> Air -> 0
+    -"i" -> Don't replace -> Anything that isn't above
+
+    Torches
+    -"te" -> torch oriente east -> 50:1
+    -"tw" -> torch oriente west -> 50:2
+    -"ts" -> torch oriente south -> 50:3
+    -"tn" -> torch oriente north -> 50:4
 
 Converts the box blocks into the schematic char formats and
 serializes the data of the structure into a .json file to
@@ -22,14 +28,14 @@ import json;
 import os;
 
 formatDict = {
-    7:'a',
-    19:'b',
-    20:'c',
-    87:'d',
-    155:'e',
-    45:'f',
-    58:'g',
-    0:'h',}
+    7:"a",
+    19:"b",
+    20:"c",
+    87:"d",
+    155:"e",
+    45:"f",
+    58:"g",
+    0:"h",}
 
 buildDict = {
     "House": 0,
@@ -62,7 +68,8 @@ def perform(level, box, options):
                 if (level.blockAt(x,y,z) == 45):
                     output["roadStartZ"] = localZ
                     output["roadStartX"] = localX
-                (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z))
+                data = level.blockDataAt(x,y,z)
+                (output["blocks"])[localY][localZ][localX] = blockToFormat(level.blockAt(x,y,z), data)
     
     if not(os.path.exists("schematics")):
         os.mkdir("schematics")
@@ -72,11 +79,36 @@ def perform(level, box, options):
     json.dump(output, file, indent = 4)
     file.close()
     
+
+"""
+Convert torch block data to string identifier associated.
+"""
+def processTorch(data):
+    #East
+    if (data == 1):
+        return "te"
+    #West
+    elif (data == 2):
+        return "tw"
+    #South
+    elif (data == 3):
+        return "ts"
+    #North
+    elif (data == 4):
+        return "tn"
+
+    return "i"
+
 """
 Converts block ID to char identifier associated.
 Conversion table above.
 """
-def blockToFormat(id):
+def blockToFormat(id, data):
     if (id in formatDict):
         return formatDict[id]
+
+    if (id == 50):
+        return processTorch(data)
+    
     return 'i'
+

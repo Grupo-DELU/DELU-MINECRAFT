@@ -116,7 +116,7 @@ namespace DeluMc.Buildings
         public class HouseSchematic
         {
             public BuildType buildType { get; set; } = 0;
-            public char[][][] blocks { get; set; } = null;
+            public string[][][] blocks { get; set; } = null;
             public int[] size { get; set; } = null;
             public int roadStartZ { get; set; }
             public int roadStartX { get; set; }
@@ -298,15 +298,27 @@ namespace DeluMc.Buildings
         /// <returns></returns>
         private static Material ProcessBlock(int y, int z, int x, HouseSchematic house, Palettes.BuildingPalette palette, Orientation ori)
         {
-            char blockType = house.blocks[y][z][x];
+            string blockType = house.blocks[y][z][x];
             Material block = null;
             switch (blockType)
             {
-                case 'g':
+                case "g":
                     block = ProcessDoor(y, z, x, house, palette, ori);
                     break;
-                case 'i':
+                case "i":
                     block = null;
+                    break;
+                case "tw":
+                    block = ProcessTorch("tw", ori);
+                    break;
+                case "te":
+                    block = ProcessTorch("te", ori);
+                    break;
+                case "tn":
+                    block = ProcessTorch("tn", ori);
+                    break;
+                case "ts":
+                    block = ProcessTorch("ts", ori);
                     break;
                 default:
                     block = palette.GetFromPalette(blockType);
@@ -330,8 +342,8 @@ namespace DeluMc.Buildings
         {
             // Important: Road block must be at the bottom of the schematic box or else, it could be
             // marked as home (applies when doing schematics).
-            char blockType = house.blocks[hy][hz][hx];
-            if (blockType == 'f')
+            string blockType = house.blocks[hy][hz][hx];
+            if (blockType == "f")
             {   
                 Console.WriteLine("House world road block: " + wz + ", " + wx);
                 roadMap[wz][wx] = 0;
@@ -362,9 +374,9 @@ namespace DeluMc.Buildings
         /// <returns>Correct door block material</returns>
         private static Material ProcessDoor(int y, int z, int x, HouseSchematic house, Palettes.BuildingPalette palette, Orientation ori)
         {
-            Material door = palette.GetFromPalette('g');
+            Material door = palette.GetFromPalette("g");
             // Uppder door block
-            if (house.blocks[y+1][z][x] != 'g')
+            if (house.blocks[y+1][z][x] != "g")
             {
                 return AlphaMaterials.Set.GetMaterial(door.ID, 8);
             }
@@ -383,6 +395,69 @@ namespace DeluMc.Buildings
                 default:
                     return null;
             }
+        }
+
+
+        private static Material ProcessTorch(string torch, Orientation orientation)
+        {
+            switch (torch)
+            {
+                case "tw":
+                    switch (orientation)
+                    {
+                        case Orientation.West:
+                            return AlphaMaterials.Torch_South_50_3;
+                        case Orientation.East:
+                            return AlphaMaterials.Torch_North_50_4;
+                        case Orientation.South:
+                            return AlphaMaterials.Torch_East_50_1;
+                        case Orientation.North:
+                            return AlphaMaterials.Torch_West_50_2;
+                    }
+                    break;
+                case "te":
+                    switch (orientation)
+                    {
+                        case Orientation.West:
+                            return AlphaMaterials.Torch_North_50_4;
+                        case Orientation.East:
+                            return AlphaMaterials.Torch_South_50_3;
+                        case Orientation.South:
+                            return AlphaMaterials.Torch_West_50_2;
+                        case Orientation.North:
+                            return AlphaMaterials.Torch_East_50_1;
+                    }
+                    break;
+                case "tn":
+                    switch (orientation)
+                    {
+                        case Orientation.West:
+                            return AlphaMaterials.Torch_West_50_2;
+                        case Orientation.East:
+                            return AlphaMaterials.Torch_East_50_1;
+                        case Orientation.South:
+                            return AlphaMaterials.Torch_South_50_3;
+                        case Orientation.North:
+                            return AlphaMaterials.Torch_North_50_4;
+                    }
+                    break;  
+                case "ts":
+                    switch (orientation)
+                    {
+                        case Orientation.West:
+                            return AlphaMaterials.Torch_East_50_1;
+                        case Orientation.East:
+                            return AlphaMaterials.Torch_West_50_2;
+                        case Orientation.South:
+                            return AlphaMaterials.Torch_North_50_4;
+                        case Orientation.North:
+                            return AlphaMaterials.Torch_South_50_3;
+                    }
+                    break;  
+                default:
+                    return null;
+            }
+            return null;
         }
 
 

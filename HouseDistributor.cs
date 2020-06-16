@@ -26,7 +26,7 @@ namespace DeluMc
                                                                       Orientation.East};
                                 
         private const int MIN_HOUSE_SEPARATION = 7;
-        private const int TERRAFORMING_TRESHOLD = 15;
+        private const int TERRAFORMING_TRESHOLD = 25;
 
         private static bool placedPlaza = false;
         private const int PLAZA_RADIUS = 25;

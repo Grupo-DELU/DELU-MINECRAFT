@@ -168,6 +168,22 @@ namespace DeluMc.MCEdit.Biomes
 							return null;
 					}
 
+				case Biomes.Jungle:
+				case Biomes.JungleEdge:
+				case Biomes.JungleEdgeM:
+				case Biomes.JungleHills:
+				case Biomes.JungleM:
+					switch (build)
+					{
+						case Buildings.BuildType.House:
+							return junglePalette;
+						case Buildings.BuildType.Farm:
+							return junglePlazaPalette;
+						case Buildings.BuildType.Plaza:
+							return farmJunglePalette;
+						default:
+							return null;
+					}
 
 				default:
 					switch (build)
