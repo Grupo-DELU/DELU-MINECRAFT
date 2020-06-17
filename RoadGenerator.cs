@@ -625,7 +625,7 @@ namespace DeluMc
         /// <returns>Road Connecting the two points, if any</returns>
         public static List<Vector2Int> PointToRoad(int sZ, int sX, bool[][] acceptableMap, float[][] deltaMap, int[][] waterMap, int[][] roadMap, int[][] treeMap, int[][] houseMap, DataQuadTree<Vector2Int> roadQT)
         {
-            System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0);
+            System.Diagnostics.Debug.Assert(acceptableMap.Length > 0 && acceptableMap[0].Length > 0 && roadQT != null);
             RectInt rectCover = new RectInt(Vector2Int.Zero, new Vector2Int(acceptableMap.Length - 1, acceptableMap[0].Length - 1));
             Dictionary<PointExt, PointExt> parents = new Dictionary<PointExt, PointExt>();
             Dictionary<PointExt, float> distances = new Dictionary<PointExt, float>();
@@ -634,13 +634,13 @@ namespace DeluMc
             Func<int, int, int, int, float> distanceHeuristicFunc
                 = (int z, int x, int tZ, int tX) => { return Heuristic(z, x, tZ, tX, rectCover, acceptableMap, deltaMap, waterMap, roadMap, treeMap, houseMap); };
 
-            DataQuadTreeNode<Vector2Int>.DataQuadTreeNodeData firstNode = roadQT.NearestNeighbor(new Vector2Int(sZ, sX)).DataNode;
-            if (firstNode.Node == null)
+            DataQuadTree<Vector2Int>.DistanceToDataPoint firstNode = roadQT.NearestNeighbor(new Vector2Int(sZ, sX));
+            if (firstNode == null ||  firstNode.DataNode == null)
             {
                 Console.WriteLine("Error Generating PointToRoad, No Roads");
                 return new List<Vector2Int>();
             }
-            Vector2Int target = firstNode.Data;
+            Vector2Int target = firstNode.DataNode.Data;
             PointExt startPoint = new PointExt { RealPoint = new Vector2Int(sZ, sX), Distance = distanceHeuristicFunc(sZ, sX, target.Z, target.X) };
 
             parents.Add(startPoint, null);
