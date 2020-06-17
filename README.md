@@ -48,6 +48,8 @@ To build use ```build [Debug|Release]``` for Windows and ```./build.sh [Debug|Re
 
 If the program is built using Debug, it will add debugging capabilities to the build. For Windows it will trigger the debugger at the start. For Linux it will sleep the thread for 15 seconds so a debugger can be attached in that time.
 
+**Note**, in **LINUX** you might have to give permissions with the ```chmod``` to the ```build.sh``` file in order to execute it.
+
 ## Links of interest
 
 * [MCEdit-Unified Repository](https://github.com/Podshot/MCEdit-Unified)
