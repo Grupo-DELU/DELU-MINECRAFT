@@ -43,7 +43,7 @@ namespace DeluMc
         {
             // Launch Debugger
             Debugger();
-            Clocker.AddAndStartClock("StartClock");
+            Clocker.AddAndStartClock("TotalClock");
             Clocker.AddAndStartClock("PipeClock");
 
             if (args.Length != 1)
@@ -131,7 +131,7 @@ namespace DeluMc
                     }
                 }
             }
-            Clocker.RemoveClock("PipeClock", true, true, true);
+            Clocker.PauseClock("PipeClock");
             Clocker.AddAndStartClock("AlgorithmClock");
             {
                 Tasker.WorkChunk[] workChunks = {
@@ -186,7 +186,7 @@ namespace DeluMc
                     Console.WriteLine($"\tSize {waterBody.Points.Count}");
                 }
             }
-            
+
             DataQuadTree<Vector2Int> roadQT = new DataQuadTree<Vector2Int>(new Vector2Int(), new Vector2Int(zSize - 1, xSize - 1));
             List<VillageMarker> villages;
             List<List<Vector2Int>> roads = new List<List<Vector2Int>>();
@@ -266,14 +266,14 @@ namespace DeluMc
             }
 
 
-            DataQuadTree<RectInt> villagesQT = new DataQuadTree<RectInt>(new Vector2Int(0,0), new Vector2Int(zSize, xSize));
+            DataQuadTree<RectInt> villagesQT = new DataQuadTree<RectInt>(new Vector2Int(0, 0), new Vector2Int(zSize, xSize));
             foreach (VillageMarker village in villages)
             {
-                HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap, 
-                                             waterMap, treeMap, biomes, village, differ.World, new Vector2Int(8,8), differ, 
+                HouseDistributor.FillVillage(deltaMap, heightMap, acceptableMap, houseMap, roadMap, villageMap,
+                                             waterMap, treeMap, biomes, village, differ.World, new Vector2Int(8, 8), differ,
                                              villagesQT, roadQT, ref roads);
             }
-            
+
             RoadPlacer.RoadsPlacer(roads, roadMap, heightMap, waterMap, biomes, differ);
 
             {
@@ -447,8 +447,17 @@ namespace DeluMc
 
             // Close Pipe
             pipeClient.DeInit();
+            Clocker.PauseClock("AlgorithmClock");
+            Clocker.PauseClock("TotalClock");
+            double pipeTime = Clocker.GetTime("PipeClock", true);
+            double algoTime = Clocker.GetTime("AlgorithmClock", true);
+            double totalTime = Clocker.GetTime("TotalClock", true);
+            Clocker.PrintAllTime(true, true, true);
+            Clocker.RemoveClock("PipeClock", true, true, true);
             Clocker.RemoveClock("AlgorithmClock", true, true, true);
-            Clocker.RemoveClock("StartClock", true, true, true);
+            Clocker.RemoveClock("TotalClock", true, true, true);
+            Console.WriteLine($"Pipe Percentage of Time: {pipeTime / totalTime * 100.0}% ({pipeTime} secs)");
+            Console.WriteLine($"Algorithm Percentage of Time: {algoTime / totalTime * 100.0}% ({algoTime} secs)");
         }
     }
 }
