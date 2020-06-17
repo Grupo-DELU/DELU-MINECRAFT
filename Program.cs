@@ -132,6 +132,7 @@ namespace DeluMc
                 }
             }
             Clocker.PauseClock("PipeClock");
+            Console.WriteLine("Ora pro nobis");
             Clocker.AddAndStartClock("AlgorithmClock");
             {
                 Tasker.WorkChunk[] workChunks = {
