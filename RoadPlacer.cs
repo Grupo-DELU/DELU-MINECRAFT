@@ -19,6 +19,11 @@ namespace DeluMc
     public static class RoadPlacer
     {
         /// <summary>
+        /// Minimum Valid Distance Between Lights
+        /// </summary>
+        private const int kLightMinDistance = 10;
+
+        /// <summary>
         /// Place the blocks in the marked roads and bridges
         /// </summary>
         /// <param name="roads">Roads to place</param>
@@ -38,12 +43,14 @@ namespace DeluMc
 
             List<Vector2Int> road;
             List<int> newHeight = new List<int>();
-            List<int> torchPoint = new List<int>();
+            List<Vector2Int> torchPoint = new List<Vector2Int>();
             int nz, nx, ny;
             float averageHeight;
             bool torchPlaced;
+            DataQuadTree<int>.DistanceToDataPoint closestLight;
             Random sharedRnd = new Random();
             DataQuadTree<int> lights = new DataQuadTree<int>(rectCover.Min, rectCover.Max);
+            Dictionary<ZPoint2D, int> lightPoints = new Dictionary<ZPoint2D, int>();
             // Ugly code but dumb fast
             for (int j = 0; j < roads.Count; j++)
             {
@@ -61,7 +68,7 @@ namespace DeluMc
                 for (int i = 0; i < diff; i++)
                 {
                     newHeight.Add(0);
-                    torchPoint.Add(0);
+                    torchPoint.Add(Vector2Int.Zero);
                 }
 
                 // Pre Pass for land roads
@@ -84,8 +91,8 @@ namespace DeluMc
                                 averageHeight += (float)heightMap[road[i + 2].Z][road[i + 2].X];
                                 ++count;
                             }
-                            
-                            torchPoint[i] = 0;
+
+                            List<Vector2Int> sides = new List<Vector2Int>(8);
 
                             int nz, nx;
                             for (int dz = -1; dz <= 1; dz++)
@@ -103,17 +110,25 @@ namespace DeluMc
                                         }
                                         else if (roadMap[nz][nx] == RoadGenerator.RoadMarker)
                                         {
-                                            ++torchPoint[i];
+                                            sides.Add(new Vector2Int(dz, dx));
                                         }
                                     }
                                 }
+                            }
+                            if (sides.Count > 0)
+                            {
+                                torchPoint[i] = sides[rnd.Next(0, sides.Count - 1)];
+                            }
+                            else
+                            {
+                                torchPoint[i] = new Vector2Int(-2, -2);
                             }
                             averageHeight /= (float)count;
                             newHeight[i] = (int)Math.Round((double)averageHeight);
                         }
                         return rnd;
                     },
-                    (Random rnd) => {return;}
+                    (Random rnd) => { return; }
                 );
 
                 for (int i = 0; i < road.Count; i++)
@@ -122,8 +137,6 @@ namespace DeluMc
                     {
                         // Normal Road
                         #region ROAD_PLACEMENT
-                        DataQuadTree<int>.DistanceToDataPoint closestLight = lights.NearestNeighbor(road[i]);
-                        torchPlaced = closestLight.DataNode != null && closestLight.ManClosestDistance <= 5;
                         for (int dz = -1; dz <= 1; dz++)
                         {
                             for (int dx = -1; dx <= 1; dx++)
@@ -135,54 +148,26 @@ namespace DeluMc
                                     && (roadMap[nz][nx] == RoadGenerator.MainRoadMarker || roadMap[nz][nx] == RoadGenerator.RoadMarker))
                                 {
                                     world.ChangeBlock(newHeight[i], nz, nx, GetBiomeRoadBlock(biomes[nz][nx]));
-                                    heightMap[nz][nx] = newHeight[i]; // TODO: Maybe its wrong
-
-                                    if (torchPlaced || roadMap[nz][nx] == RoadGenerator.MainRoadMarker)
+                                    heightMap[nz][nx] = newHeight[i];
+                                    // Clear top
+                                    for (int dy = 1; dy <= 2; dy++)
                                     {
-                                        // Clear top
-                                        for (int dy = 1; dy <= 2; dy++)
+                                        ny = newHeight[i] + dy;
+                                        if (ny < maxY)
                                         {
-                                            ny = newHeight[i] + dy;
-                                            if (ny < maxY)
-                                            {
-                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // Try Place Torch
-                                        if (sharedRnd.Next(0, torchPoint[i]-1) == 0)
-                                        {
-                                            torchPlaced = true;
-                                            lights.Insert(road[i], 0);
-                                            // Place Base
-                                            ny = newHeight[i] + 1;
-                                            if (ny < maxY)
-                                            {
-                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.AcaciaFence_192_0);
-                                            }
-                                            // Place Torch
-                                            ny += 1;
-                                            if (ny < maxY)
-                                            {
-                                                world.ChangeBlock(ny, nz, nx, AlphaMaterials.Torch_Up_50_5);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // Clear top
-                                            for (int dy = 1; dy <= 2; dy++)
-                                            {
-                                                ny = newHeight[i] + dy;
-                                                if (ny < maxY)
-                                                {
-                                                    world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
-                                                }
-                                            }
+                                            world.ChangeBlock(ny, nz, nx, AlphaMaterials.Air_0_0);
                                         }
                                     }
                                 }
+                            }
+
+                            closestLight = lights.NearestNeighbor(road[i]);
+                            torchPlaced = closestLight.DataNode != null && closestLight.ManClosestDistance <= kLightMinDistance;
+                            if (!torchPlaced && torchPoint[i].Z != -2)
+                            {
+                                ZPoint2D tPoint = new ZPoint2D { RealPoint = road[i] + torchPoint[i] };
+                                lights.Insert(tPoint.RealPoint, 0);
+                                lightPoints[tPoint] = newHeight[i];
                             }
                         }
                         #endregion // ROAD_PLACEMENT
@@ -210,6 +195,9 @@ namespace DeluMc
                         while (bridgeStack.Count != 0)
                         {
                             curr = bridgeStack.Pop();
+
+                            closestLight = lights.NearestNeighbor(curr.RealPoint);
+                            torchPlaced = closestLight.DataNode != null && closestLight.ManClosestDistance <= kLightMinDistance;
 
                             for (int dz = -1; dz <= 1; dz++)
                             {
@@ -254,9 +242,11 @@ namespace DeluMc
                         averageHeight /= (float)pivots.Count;
                         averageHeight += 3;
 
-                        Parallel.ForEach(bridgeParts, () => world.CreateCollector(),
-                            (Vector2Int point, ParallelLoopState _, Differ.ChangeCollector collector) =>
+                        Parallel.ForEach(bridgeParts, () => new Tuple<Differ.ChangeCollector, Random>(world.CreateCollector(), new Random()),
+                            (Vector2Int point, ParallelLoopState _, Tuple<Differ.ChangeCollector, Random> tData) =>
                             {
+                                Differ.ChangeCollector collector = tData.Item1;
+                                Random rnd = tData.Item2;
                                 float height = 1.0f * Math.Max(heightMap[point.Z][point.X] + 1, averageHeight);
                                 float factor = 1.0f;
                                 float temp;
@@ -270,7 +260,7 @@ namespace DeluMc
                                 int finalHeight = (int)height;
                                 collector.ChangeBlock(finalHeight, point.Z, point.X, AlphaMaterials.WoodenDoubleSlab_Seamed_43_2);
                                 // Clear top
-                                for (int dy = 1; dy <= 2; dy++)
+                                for (int dy = 1; dy <= 3; dy++)
                                 {
                                     ny = finalHeight + dy;
                                     if (ny < maxY)
@@ -288,16 +278,48 @@ namespace DeluMc
                                         || (rectCover.IsInside(point.Z + 0, point.X - 1) && waterMap[point.Z + 0][point.X - 1] == 1 && roadMap[point.Z + 0][point.X - 1] == 0)
                                         )
                                     {
-                                        collector.ChangeBlock(finalHeight + 1, point.Z, point.X, AlphaMaterials.AcaciaFence_192_0);
+                                        int ny = finalHeight + 1;
+                                        if (ny < maxY)
+                                        {
+                                            collector.ChangeBlock(ny, point.Z, point.X, AlphaMaterials.AcaciaFence_192_0);
+                                        }
+
+                                        if (rnd.Next(0, 5) == 0)
+                                        {
+                                            ny = finalHeight + 2;
+                                            if (ny < maxY)
+                                            {
+                                                collector.ChangeBlock(ny, point.Z, point.X, AlphaMaterials.Torch_Up_50_5);
+                                            }
+                                        }
                                     }
                                 }
-                                return collector;
+                                return tData;
                             },
-                            (Differ.ChangeCollector collector) => { world.ApplyChangeCollector(collector); }
+                            (Tuple<Differ.ChangeCollector, Random> tData) => { world.ApplyChangeCollector(tData.Item1); }
                         );
 
                         #endregion
                     }
+                }
+            }
+
+            // Place Lights
+            foreach (var iter in lightPoints)
+            {
+                // Place Base
+                nz = iter.Key.RealPoint.Z;
+                nx = iter.Key.RealPoint.X;
+                ny = heightMap[nz][nx] + 1;
+                if (ny < maxY)
+                {
+                    world.ChangeBlock(ny, nz, nx, AlphaMaterials.AcaciaFence_192_0);
+                }
+                // Place Torch
+                ny += 1;
+                if (ny < maxY)
+                {
+                    world.ChangeBlock(ny, nz, nx, AlphaMaterials.Torch_Up_50_5);
                 }
             }
         }
